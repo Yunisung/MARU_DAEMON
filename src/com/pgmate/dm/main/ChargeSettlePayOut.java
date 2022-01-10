@@ -1,0 +1,306 @@
+package com.pgmate.dm.main;
+
+import java.io.FileInputStream;
+import java.text.DecimalFormat;
+import java.util.List;
+import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.pgmate.dm.bean.FirmBean;
+import com.pgmate.dm.dao.ChargeSettlePayOutDAO;
+import com.pgmate.dm.dao.VaPayOutDAO;
+import com.pgmate.dm.util.FirmClient;
+import com.pgmate.dm.util.SmsGw;
+import com.pgmate.lib.util.lang.CommonUtil;
+import com.pgmate.lib.util.map.SharedMap;
+
+/**
+ * @author Administrator
+ *
+ */
+public class ChargeSettlePayOut {
+	private static Logger logger = LoggerFactory.getLogger( com.pgmate.dm.main.ChargeSettlePayOut.class );
+	private SmsGw smsGw = null;
+	private String msgBody = "";
+	
+	private String firmServer = "pgwas2";
+	private String compNm = "";
+	private int frimPort = 10026;
+	private int firmTimeOut = 70000;
+	private int firmStartTime = 3000; //출금 시작 시간
+	private int firmEndTime = 233000; //출금 중지 시간 
+    
+	public static void main(String[] args){
+		new ChargeSettlePayOut();
+	}
+	
+	public ChargeSettlePayOut() {
+		logger.info("==================================================");
+		logger.info("ChargeSettleFirm Strart");
+		smsGw = new SmsGw();
+		
+		configSetting();
+		chargeSettleFirm();
+		logger.info("ChargeSettleFirm End");
+		logger.info("==================================================");
+	}
+	
+	public void chargeSettleFirm(){
+		ChargeSettlePayOutDAO dao = new ChargeSettlePayOutDAO();
+		
+		try {
+			int currentTime = CommonUtil.parseInt(CommonUtil.getCurrentDate("HHmmss"));
+			
+			//매일 23:30~00:30분까지는 은행 점검시간이라서 출금기능 막음
+			if(currentTime > firmEndTime || currentTime < firmStartTime) {
+				logger.info("- -- --- ---- ---- ---- 출금 서비스 가능한 시간이 아닙니다. ---- ---- ---- --- -- -");
+				return;
+			}
+			
+			//충전정산 출금대상거래 에서 출금하지 않은 데이터중에 전송시도가 남은 거래건들 조회
+			List<SharedMap<String,Object>> firmList = dao.getChargeSettleFirmList();
+			logger.info("chargeSettle firmList COUNT : {}", firmList.size());
+			
+			
+			if(firmList.size() > 0) {
+				logger.info("==================================================");
+				logger.info("충전정산 출금 START");
+				
+				for(SharedMap<String,Object> data : firmList){
+					dao.updateStatus(data.getString("trxId"));
+				}
+				
+				for(SharedMap<String,Object> data : firmList){
+					int errCnt = 0;
+					boolean errFlag = false;
+					String status = "실패";
+					FirmBean firmBean = new FirmBean();
+					String idx = "";
+					msgBody = "";
+					compNm = "";
+					
+					SharedMap<String, Object> chargeMngMap = dao.getMchtChargeMng(data.getString("mchtId"));
+					
+					if("0".equals(data.getString("retry"))){
+						logger.info("충전정산 출금 : [{}][{}]", data.getString("trxId"), data.getString("retry"));
+						
+						if(data.getString("recordInfo") != null && !"".equals(data.getString("recordInfo"))) {
+							compNm = data.getString("recordInfo");
+						}
+						
+						//최초 1회 출금요청
+						//출금요청
+						//운영
+						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
+						//테스트
+//						firmBean = new FirmBean();
+//						firmBean.resultCd = "XXXX";
+//						firmBean.resultMsg = "실패";
+//						firmBean.idx = dao.insertTrx("020",data.getLong("amount"),data.getString("bankCd"),data.getString("decAccount").replace("-", "").trim(),"테스트", data.getString("trxId"));
+						
+						idx = String.valueOf(firmBean.idx);
+						
+						if("".equals(idx) || "0".equals(idx)) {
+							idx = dao.getIdx(data.getString("trxId"));
+							
+							logger.info("idx 재검색 : [{}][{}]", data.getString("trxId"), idx);
+						}
+						
+						if(!firmBean.resultCd.equals("0000") ) {
+							msgBody = "충전정산 출금 실패. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+							logger.info(msgBody);
+							errFlag = true;
+						}else {
+							status = "완료";
+							msgBody = "충전정산 출금 성공. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+							logger.info(msgBody);
+							
+							// 출금 완료 결과 noti 발송
+							if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+								String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
+								data.put("payLoad", payLoad);
+								data.put("trxType", "출금");
+								new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+							}
+						}
+						
+						if(!dao.updateRefIdUpdate(data.getString("trxId"), idx)) {
+							msgBody = "PG_CHARGE_SETTLE UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
+							
+							logger.info(msgBody);
+						}
+						
+						if(!dao.updateRefIdUpdate2(data.getString("trxId"), idx)) {
+							msgBody = "PG_CHARGE_SETTLE_FIRM UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
+							
+							logger.info(msgBody);
+						}
+					}else {
+						String orgSeq = "";
+						
+						orgSeq = dao.getSeqNo(data.getString("trxId"));
+						
+						logger.info("충전정산 결과확인 출금 : [{}][{}][{}]", data.getString("trxId"), data.getString("retry"), orgSeq);
+						
+						//출금 실패한 건들은 결과확인
+						//운영
+						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck("089", orgSeq);
+						//테스트
+//						firmBean = new FirmBean();
+//						firmBean.resultCd = "0000";
+//						firmBean.resultMsg = "처리완료";
+						
+						if(!firmBean.resultCd.equals("0000") ) {
+							msgBody = "충전정산 결과확인 실패. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
+							logger.info(msgBody);
+							errFlag = true;
+						}else {
+							status = "완료";
+							msgBody = "충전정산 결과확인 성공. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
+							logger.info(msgBody);
+							
+							// 출금완료 결과 noti 발송
+							if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+								String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
+								data.put("payLoad", payLoad);
+								data.put("trxType", "출금");
+								new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+							}
+						}
+					}
+					
+					//실시간출금 결과 저장
+					if(!dao.updatePayOutRes(data.getString("trxId"), firmBean.resultCd, firmBean.resultMsg, status)) {
+						msgBody = "PG_CHARGE_SETTLE_FIRM UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
+						
+						logger.info(msgBody);
+						smsGw.sendMessage("0", "4", msgBody);
+					}
+					
+					if(errFlag) {
+						String sendCnt = dao.getRetry(data.getString("trxId"));
+						
+						//출금 실패시 출금 전송 횟수가 3회일 경우 SMS 알림 발송
+						if(!"".equals(sendCnt)) {
+							errCnt = Integer.parseInt(sendCnt);
+							
+							//3회 실패 시 
+							if(errCnt == 3) {
+								//펌에러 테이블에 저장 
+								SharedMap<String, Object> errData = dao.getChargeSettle(data.getString("trxId"));
+								errData.put("refId", data.getString("refId"));
+								errData.put("resultCd", data.getString("resultCd"));
+								errData.put("resultMsg", data.getString("resultMsg"));
+								String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
+								errData.put("regDay", regDate.substring(0, 8));
+								dao.insertTrxErr(errData);
+								
+								if(!firmBean.resultCd.equals("XXXX") && !firmBean.resultCd.equals("")) {
+									//실패거래건의 실출금액 조회
+									long netAmt = errData.getLong("netAmount");
+									//실패거래건의 실출금액 만큼 해당 계정의 이후 결제건의 잔액에 더해줌 
+									dao.updateChargeSettleBalance(data.getString("trxId"), data.getString("mchtId"), netAmt);
+									//실패건 PG_CHARGE_SETTLE 테이블에서 삭제
+									dao.deleteChargeSettle(data.getString("trxId"));
+									
+									logger.debug("hookAddr [{}]",chargeMngMap.getString("hookAddr"));
+									// 출금 실패결과 noti 발송
+									if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+										String payLoad = setPayLoad(data, "출금실패", firmBean.resultCd, firmBean.resultMsg);
+										data.put("payLoad", payLoad);
+										data.put("trxType", "출금");
+										new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+									}
+								}
+								
+								msgBody = "충전정산 출금 " + errCnt + "회 실패. 확인요망 [" + data.getString("trxId") + "][" + firmBean.resultMsg + "]";
+								
+								logger.info(msgBody);
+								smsGw.sendMessage("0", "4", msgBody);
+								
+								
+							}
+						}
+					}
+				}
+				logger.info("충전정산 출금 END");
+				logger.info("==================================================");
+			}
+		} catch(Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			msgBody = "충전정산 출금 오류발생. 확인요망 [" + e.getMessage() + "]";
+			smsGw.sendMessage("0", "4", msgBody);
+		}
+	}
+	
+	
+	/**
+     * config 파일 읽어서 변수에 세팅
+     */
+    public void configSetting() {
+    	try{
+            // 프로퍼티 파일 위치
+    		//운영
+            String propFile = "/home/MARU/MARU_DAEMON/conf/firmconfig.properties"; 
+    		//테스트
+    		//String propFile = "/home/MARU/MARU_DAEMON/conf/firmconfig.properties";
+    		
+            // 프로퍼티 객체 생성
+            Properties props = new Properties();
+            
+            // 프로퍼티 파일 스트림에 담기
+            FileInputStream fis = new FileInputStream(propFile);
+
+            // 프로퍼티 파일 로딩
+            props.load(new java.io.BufferedInputStream(fis));
+            
+            // 항목 읽기
+            firmServer = props.getProperty("firm_server");
+
+            String strFirmPort = props.getProperty("firm_port");
+            String strFirmTimeOut = props.getProperty("firm_timeout");
+            String strStartTime = props.getProperty("firm_starttime");
+            String strEndTime = props.getProperty("firm_endtime");
+            
+            if(strFirmPort != null && !"".equals(strFirmPort)) {
+            	frimPort = Integer.parseInt(strFirmPort);
+            }
+            
+            if(strFirmTimeOut != null && !"".equals(strFirmTimeOut)) {
+            	firmTimeOut = Integer.parseInt(strFirmTimeOut);
+            }
+            
+            if(strStartTime != null && !"".equals(strStartTime)) {
+            	firmStartTime = Integer.parseInt(strStartTime);
+            }
+            
+            if(strEndTime != null && !"".equals(strEndTime)) {
+            	firmEndTime = Integer.parseInt(strEndTime);
+            }
+        }catch(Exception e){
+        	logger.info(e.getMessage(), e);
+        }
+    }
+    
+    /*
+     * 펌뱅킹 노티 데이터 설정
+     */
+    public String setPayLoad(SharedMap<String, Object> sharedMap, String status, String resultCd, String resultMsg){
+		SharedMap<String, String> payLoadMap = new SharedMap<String, String>();
+		
+		payLoadMap.put("mchtId",sharedMap.getString("mchtId"));
+		payLoadMap.put("trxId",sharedMap.getString("trxId"));
+		payLoadMap.put("trxDay",sharedMap.getString("trxDay"));
+		payLoadMap.put("trxTime",sharedMap.getString("trxTime"));
+		payLoadMap.put("status",status);
+		payLoadMap.put("trackId",sharedMap.getString("trackId"));
+		payLoadMap.put("resultCd",resultCd);
+		payLoadMap.put("resultMsg",resultMsg);
+		payLoadMap.put("amount",sharedMap.getString("amount"));
+		String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
+		return payLoad;
+	}
+}

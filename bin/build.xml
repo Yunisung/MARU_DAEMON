@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="../../MARU_DAEMON" default="compile" name="COMP">
+
+  <!-- Project Default Directory -->
+	<property name="src.dir" location="${basedir}\src"/>
+	<property name="lib.dir" location="${basedir}\lib"/>
+	<property name="dist.dir" location="${basedir}\dist"/>
+	<property name="classes.dir" location="${basedir}\classes"/>
+	<property name="properties.dir" location="${basedir}\conf"/>
+
+	<!-- Project Default Classpath -->
+	<path id="project.classpath">
+		<fileset dir="${lib.dir}">
+      		<include name="*.jar"/>
+    	</fileset>
+  </path>
+
+  <echo message ="#### SET PROJECT CLASSPATH ####"/>
+
+  <!-- Make Directory -->
+  <target name="init">
+  	<tstamp>
+       <format property="time" pattern="yyyy-MM-dd hh:mm" />
+    </tstamp>
+	<mkdir dir="${classes.dir}"/>
+  	<mkdir dir="${basedir}\lib"/>
+  </target>
+ 
+  <echo message ="#### COMPILE COMPLETE ####"/>
+
+    <target name="compile" depends="init">
+    <javac destdir="${classes.dir}" srcdir="${src.dir}" optimize="true" debug="true" deprecation="true" encoding="utf-8" includeantruntime="false">
+      <classpath refid="project.classpath"/>
+    </javac>
+    <jar destfile="${lib.dir}\MARU_dm.jar" basedir="${classes.dir}" excludes="com/pgmate/dm/**"/>
+    
+  </target>
+
+  <echo message ="#### START COMPILE  ####"/>
+
+</project>

@@ -1,0 +1,13 @@
+{
+  "db": {
+    "dbType": "MYSQL",
+    "poolName": "PAYSHARP_APP",
+    "driver": "org.mariadb.jdbc.Driver",
+    "jdbcUrl": "jdbc:mariadb://203.245.13.54:13306/CP_MARU",
+    "userName": "MARU",
+    "passWord": "rhkddnjs0801!#",
+    "maxConnection": 20,
+    "minConnection": 10,
+    "partitionCount": 1
+  }
+}

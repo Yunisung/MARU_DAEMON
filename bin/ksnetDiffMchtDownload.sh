@@ -11,13 +11,12 @@ CP=`echo $CP | cut -c2-`
 
 # JVM_ARGS for VM
 ##########################
-JVM_ARGS="-DMARU_SETTLE -DCP_CONF=../conf -Dlogback.configurationFile=../conf/logback.xml -Dfile.encoding=UTF-8"
+JVM_ARGS="-DMARU_WEBHOOK -DCP_CONF=../conf -Dlogback.configurationFile=../conf/logback.xml -Dfile.encoding=UTF-8"
 JVM_ARGS="$JVM_ARGS -Xss512k -Xms64m -Xmx128m"
 JVM_ARGS="$JVM_ARGS -cp $CP:../classes"
 
-#DATE TEST
 TARGET_DATE="$(date +%Y%m%d)"
+#TARGET_DATE="20210704"
 
-#TARGET_DATE="170101"
 
-java $JVM_ARGS com.pgmate.dm.main.Settle $TARGET_DATE
+java $JVM_ARGS com.pgmate.dm.main.KsnetDiffMchtDownLoad $TARGET_DATE

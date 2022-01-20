@@ -275,7 +275,7 @@ public class VaPayOut {
     	try{
             // 프로퍼티 파일 위치
     		//운영
-            String propFile = "/home/MARU/MARU_DAEMON/conf/firmconfig.properties"; 
+            String propFile = "/home/bkwinners/MARU/MARU_DAEMON/conf/firmconfig.properties"; 
     		//테스트
     		//String propFile = "/home/MARU/MARU_DAEMON/conf/firmconfig.properties";
             //로컬

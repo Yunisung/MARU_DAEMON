@@ -399,7 +399,7 @@ public class BankAccountSearch {
     public void configSetting() {
     	try{
             // 프로퍼티 파일 위치
-            String propFile = "/home/MARU/MARU_DAEMON/conf/bankconfig.properties";
+            String propFile = "/home/bkwinners/MARU/MARU_DAEMON/conf/bankconfig.properties";
 
             // 프로퍼티 객체 생성
             Properties props = new Properties();

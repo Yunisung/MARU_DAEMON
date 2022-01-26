@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd /home/bkwinners/MARU//MARU_DAEMON/bin
+cd /home/bkwinners/MARU/MARU_DAEMON/bin
 
 # SET LIBRARY
 for i in ../lib/*.jar; do

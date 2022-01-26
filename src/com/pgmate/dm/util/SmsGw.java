@@ -15,8 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.pgmate.dm.dao.CodeDAO;
 import com.pgmate.lib.util.map.SharedMap;
-
-
+import com.pgmate.lib.sms.SmsUtil;
 /**
  * @author Administrator
  *
@@ -55,59 +54,10 @@ public class SmsGw{
 			String[] smsnum = smslist.split(",");
 			
 	        for(int i = 0; i < smsnum.length; i++) {
-	        	SharedMap<String, Object> jsonMap = new SharedMap<String, Object>();
-	    		List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
-	    		SharedMap<String, Object> map2 = new SharedMap<String, Object>();
 	    		
-	    		map2.put("to", "82"+ smsnum[i].substring(1).replaceAll("-", ""));
-	    		list.add(map2);
-	    		jsonMap.put("destinations", list);
-	    		jsonMap.put("from","18551838");
-	    		jsonMap.put("ttl","0");
-	    				
-	    		jsonMap.put("text",msg);
-	    		String json = jsonMap.toJson();
+	        	//220126 박윤성 : SMS 통합
+	        	SmsUtil.sendSms(SmsUtil.SMS_URL, smsnum[i].replaceAll("\\[^0-9]+", ""), msg);
 	    		
-	    		logger.info("SMS Message : " + json);
-
-    			URL url = new URL(SMS_URL);
-    			HttpURLConnection con = (HttpURLConnection)url.openConnection();
-    			con.setConnectTimeout(10000);
-    			con.setReadTimeout(10000);
-    			
-    			String authKey = new CodeDAO().getInfoBankSmsKey();
-    			
-    			con.addRequestProperty("Accept", "application/json");
-    			con.addRequestProperty("Authorization", authKey);
-    			con.setRequestMethod("POST");
-    			con.setRequestProperty("Content-Type", "application/json");
-
-    			con.setDoInput(true);
-    			con.setDoOutput(true);
-    			con.setUseCaches(false);
-    			con.setDefaultUseCaches(false);
-    			
-    			OutputStreamWriter wr = new OutputStreamWriter(con.getOutputStream());
-    			wr.write(json);
-    			wr.flush();
-    			
-    			String resData = "";
-    			StringBuilder sb2 = new StringBuilder();
-    			
-    			logger.debug("SMS ResponseCode [{}]",con.getResponseCode());
-    			
-    			if(con.getResponseCode() == HttpURLConnection.HTTP_OK) {
-    				BufferedReader br = new BufferedReader(
-    						new InputStreamReader(con.getInputStream(), "utf-8"));
-    				String line;
-    				while ((line = br.readLine()) != null) {
-    					sb2.append(line).append("\n");
-    				}
-    				br.close();
-    				
-    				resData = sb2.toString();
-    				logger.debug("SMS resData [{}]",resData);
-    			}
 	        }
 		}catch (Exception e) {
 			logger.info(e.getMessage(), e);

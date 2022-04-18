@@ -2,6 +2,7 @@ package com.pgmate.dm.main;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +22,9 @@ import com.pgmate.lib.util.lang.ByteUtil;
 import com.pgmate.lib.util.lang.CommonUtil;
 import com.pgmate.lib.util.map.SharedMap;
 
-public class GalaxiaRecovery extends KsnetRecovery {
+public class GalaxiaRecovery {
 	
-	private static Logger logger = LoggerFactory.getLogger( com.pgmate.dm.main.KsnetRecovery.class );
+	private static Logger logger = LoggerFactory.getLogger( com.pgmate.dm.main.GalaxiaRecovery.class );
 	
 	public GalaxiaRecovery() {
 		recoveryTrx();
@@ -40,7 +41,7 @@ public class GalaxiaRecovery extends KsnetRecovery {
 				logger.info("거래내역 list size : {}",newList.size());
 				
 				for(SharedMap<String,Object> data : newList){
-					SharedMap<String,Object> tmnMap = getMchtTmnByTmnId(data.getString("tmnId"));
+					SharedMap<String,Object> tmnMap = getMchtTmnByTmnId(data.getString("store_id"));
 					if(!tmnMap.getString("tmnId").equals(data.getString("tmnId"))){
 						data.put("exeStatus", "실패");
 						data.put("summary", "터미널 아이디가 없습니다.");
@@ -177,6 +178,250 @@ public class GalaxiaRecovery extends KsnetRecovery {
 		}
 	}
 	
+	public String getFunction(String function, String value) {
+		String returnVal = "";
+		String query = "SELECT " + function + "(?) as val";
+
+		DBManager db = null;
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet rset = null;
+
+		try {
+			db = DBFactory.getInstance();
+			conn = db.getConnection();
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, value);
+			rset = pstmt.executeQuery();
+
+			while (rset.next()) {
+				returnVal = rset.getString(1);
+			}
+			conn.commit();
+		} catch (Exception t) {
+			logger.debug("sql error : {}, query : {}", t.getMessage(), query);
+		} finally {
+			db.close(conn, pstmt, rset);
+		}
+		return returnVal;
+	}
+	
+	private String getTrackId() {
+		return "TX" + getFunction("FN_NEXTVAL2", "TRACKID");
+	}
+	
+	private String getTrxId() {
+		return "T" + getFunction("FN_NEXTVAL2", "TRN");
+	}
+
+	private SharedMap<String, Object> getMchtTmnByTmnId(String tmnId) {
+		String key = "PG_MCHT_TMN_" + tmnId;
+				
+		if (Cache.map.containsKey(key)) {
+			return Cache.map.getUnchecked(key);
+		} else {
+			DAO dao = new DAO();
+			dao.setTable("PG_MCHT_TMN");
+			dao.setColumns("*");
+			dao.addWhere("tmnId", tmnId, DAO.eq);
+			RecordSet rset = dao.search();
+			
+			if(rset.size() > 0){
+				return Cache.map.put(key, rset.getRow(0));
+			
+			}else{
+				return new SharedMap<String,Object>();
+			}
+		}
+	}
+	
+	public SharedMap<String,Object> getDBIssuer(String bin){
+		String key = "PG_CODE_BIN_"+bin;
+		SharedMap<String,Object> issuerMap = new SharedMap<String,Object>();
+		if(CommonUtil.isNullOrSpace(bin)){
+			return issuerMap;
+		}
+		
+		if (Cache.map.containsKey(key)) {
+			return Cache.map.getUnchecked(key);
+		} else {
+		
+			DAO dao = new DAO();
+			dao.setTable("PG_CODE_BIN");
+			dao.addWhere("bin", bin, DAO.eq);
+			dao.setColumns("*");
+			RecordSet rset = dao.search();
+		
+			if(rset.size() == 0){
+				issuerMap.put("bin", bin);
+				issuerMap.put("issuer", "기타");
+				issuerMap.put("type", "신용");
+			}else{
+				issuerMap = rset.getRowFirst();
+			}
+			
+			return Cache.map.put(key, rset.getRow(0));
+		}
+	}
+	
+	public void insertCard(String cardId, String value) {
+		DAO dao = new DAO();
+		dao.setTable("PG_TRX_BOX");
+		dao.setRecord("cardId", cardId);//1개
+		dao.setRecord("value", value);
+		logger.info("set card : {}", dao.insert());
+	}
+	
+	public SharedMap<String,Object> getPayMap(SharedMap<String,Object> data,String mchtId){
+		DAO dao = new DAO();
+		dao.setTable("PG_TRX_PAY");
+		dao.addWhere("reqDay"	, data.getString("rootTrxDay"));
+		dao.addWhere("reqTime"	, data.getString("rootTrxTime"));
+		dao.addWhere("mchtId"	, mchtId);
+		dao.addWhere("tmnId"	, data.getString("tmnId"));
+		dao.addWhere("bin"		, data.getString("bin"));
+		dao.addWhere("authCd"	, data.getString("authCd"));
+		dao.addWhere("vanId"	, data.getString("vanId"));
+		dao.addWhere("amount"	, -data.getLong("amount"));
+		
+		dao.setColumns("*");
+		RecordSet rset = dao.search();
+		return rset.getRowFirst();
+	}
+	
+	
+	public boolean insertTrxPay(SharedMap<String,Object> map){
+		String query = "insert into PG_TRX_PAY (trxId,mchtId,tmnId,trackId,payerName,payerEmail,payerTel,amount,installment,cardId,cardType,bin,last4,status,prodId,issuer,acquirer,reqDay,reqTime,authCd,resultCd,resultMsg,van,vanId,vanTrxId,regDay,regTime,regDate)  values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		int inserted = 0;
+		DBManager db = null ;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		
+		try{
+			db 		= DBFactory.getInstance();
+			conn	= db.getConnection();
+			pstmt	= conn.prepareStatement(query);
+			int i=1;
+	
+			pstmt.setString(i++, map.getString("trxId"));
+			pstmt.setString(i++, map.getString("mchtId"));
+			pstmt.setString(i++, map.getString("tmnId"));
+			pstmt.setString(i++, map.getString("trackId"));
+			pstmt.setString(i++, map.getString("payerName"));
+			pstmt.setString(i++, map.getString("payerEmail"));
+			pstmt.setString(i++, map.getString("payerTel"));
+			pstmt.setLong(i++  , map.getLong("amount"));
+			pstmt.setString(i++, map.getString("installment"));
+			pstmt.setString(i++, map.getString("cardId"));
+			pstmt.setString(i++, map.getString("cardType"));
+			pstmt.setString(i++, map.getString("bin"));
+			pstmt.setString(i++, map.getString("last4"));
+			pstmt.setString(i++, map.getString("status"));
+			pstmt.setString(i++, map.getString("prodId"));
+			pstmt.setString(i++, map.getString("issuer"));
+			pstmt.setString(i++, map.getString("acquirer"));
+			pstmt.setString(i++, map.getString("reqDay"));
+			pstmt.setString(i++, map.getString("reqTime"));
+			pstmt.setString(i++, map.getString("authCd"));
+			pstmt.setString(i++, map.getString("resultCd"));
+			pstmt.setString(i++, map.getString("resultMsg"));
+			pstmt.setString(i++, map.getString("van"));
+			pstmt.setString(i++, map.getString("vanId"));
+			pstmt.setString(i++, map.getString("vanTrxId"));
+			pstmt.setString(i++, map.getString("regDay"));
+			pstmt.setString(i++, map.getString("regTime"));
+			pstmt.setString(i++, map.getString("regDate"));
+			inserted = pstmt.executeUpdate();
+			conn.commit();
+		}catch(Exception e){
+			logger.debug("insert batch pay error : {}",CommonUtil.getExceptionMessage(e));
+		}finally{
+			db.close(pstmt);
+			db.close(conn);
+		}
+		
+		if(inserted > 0){
+			logger.info("vanTrxId =[{}], [{}],[{}]",map.getString("vanTrxId"),map.getString("trxId")," create TRX_PAY");
+			return true;
+		}else{
+			logger.info("vanTrxId =[{}], [{}],[{}]",map.getString("vanTrxId"),map.getString("trxId")," fail   TRX_PAY");
+			return false;
+		}
+	}
+
+	public boolean insertTrxRfd(SharedMap<String,Object> map){
+		int inserted = 0;
+		String query = "insert into PG_TRX_RFD (trxId,mchtId,tmnId,trackId,status,rfdType,rfdAll,rfdAmount,rfdVat,cardId,bin,last4,issuer,acquirer,rootTrnDay,rootTrxId,rootTrackId,rootAmount,rootVat,reqDay,reqTime,authCd,resultCd,resultMsg,van,vanId,vanTrxId,vanResultCd,vanResultMsg,regDay,regTime,regDate) "
+				+" values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		
+		DBManager db = null ;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		
+		try{
+			db 		= DBFactory.getInstance();
+			conn	= db.getConnection();
+			pstmt	= conn.prepareStatement(query);
+			
+			int i=1;
+			pstmt.setString(i++, map.getString("trxId"));
+			pstmt.setString(i++, map.getString("mchtId"));
+			pstmt.setString(i++, map.getString("tmnId"));
+			pstmt.setString(i++, map.getString("trackId"));
+			pstmt.setString(i++, map.getString("status"));
+			pstmt.setString(i++, map.getString("rfdType"));
+			pstmt.setString(i++, map.getString("rfdAll"));
+			pstmt.setLong(i++  , map.getLong("rfdAmount"));
+			pstmt.setLong(i++, map.getLong("rfdVat"));
+			pstmt.setString(i++, map.getString("cardId"));
+			pstmt.setString(i++, map.getString("bin"));
+			pstmt.setString(i++, map.getString("last4"));
+			pstmt.setString(i++, map.getString("issuer"));
+			pstmt.setString(i++, map.getString("acquirer"));
+			pstmt.setString(i++, map.getString("rootTrnDay"));
+			pstmt.setString(i++, map.getString("rootTrxId"));
+			pstmt.setString(i++, map.getString("rootTrackId"));
+			pstmt.setLong(i++  , map.getLong("rootAmount"));
+			pstmt.setLong(i++, map.getLong("rootVat"));
+			pstmt.setString(i++, map.getString("reqDay"));
+			pstmt.setString(i++, map.getString("reqTime"));
+			pstmt.setString(i++, map.getString("authCd"));
+			pstmt.setString(i++, map.getString("resultCd"));
+			pstmt.setString(i++, map.getString("resultMsg"));
+			pstmt.setString(i++, map.getString("van"));
+			pstmt.setString(i++, map.getString("vanId"));
+			pstmt.setString(i++, map.getString("vanTrxId"));
+			pstmt.setString(i++, map.getString("resultCd"));
+			pstmt.setString(i++, map.getString("resultMsg"));
+			pstmt.setString(i++, map.getString("regDay"));
+			pstmt.setString(i++, map.getString("regTime"));
+			pstmt.setString(i++, map.getString("regDate"));
+
+			inserted = pstmt.executeUpdate();
+			conn.commit();
+		}catch(Exception e){
+			logger.debug("insert batch rfd error : {}",CommonUtil.getExceptionMessage(e));
+		}finally{
+			db.close(pstmt);
+			db.close(conn);
+		}
+		
+		if(inserted > 0){
+			logger.info("vanTrxId =[{}], [{}],[{}]",map.getString("vanTrxId"),map.getString("trxId")," create TRX_RFD");
+			return true;
+		}else{
+			logger.info("vanTrxId =[{}], [{}],[{}]",map.getString("vanTrxId"),map.getString("trxId")," fail   TRX_RFD");
+			return false;
+		}
+	}
+	
+	public long calcRootVat(long amount){
+		if(amount < 0){
+			return -new Double(-amount *10 /110).longValue();
+		}else{
+			return new Double(amount *10 /110).longValue();
+		}
+	}
 	
 	public List<SharedMap<String,Object>> getGalaxiaList(){
 		

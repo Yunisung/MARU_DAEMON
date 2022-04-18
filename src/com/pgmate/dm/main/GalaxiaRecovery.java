@@ -41,7 +41,7 @@ public class GalaxiaRecovery {
 				logger.info("거래내역 list size : {}",newList.size());
 				
 				for(SharedMap<String,Object> data : newList){
-					SharedMap<String,Object> tmnMap = getMchtTmnByTmnId(data.getString("store_id"));
+					SharedMap<String,Object> tmnMap = getMchtTmnByTmnId(data.getString("tmnId"));
 					if(!tmnMap.getString("tmnId").equals(data.getString("tmnId"))){
 						data.put("exeStatus", "실패");
 						data.put("summary", "터미널 아이디가 없습니다.");

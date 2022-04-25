@@ -9,6 +9,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.pgmate.dm.util.SmsGw;
 import com.pgmate.lib.dao.DAO;
 import com.pgmate.lib.dao.RecordSet;
 import com.pgmate.lib.key.CPKEY;
@@ -25,9 +26,11 @@ import com.pgmate.lib.util.map.SharedMap;
 public class GalaxiaRecovery {
 	
 	private static Logger logger = LoggerFactory.getLogger( com.pgmate.dm.main.GalaxiaRecovery.class );
+	private SmsGw smsGw = null;
 	
 	public GalaxiaRecovery() {
 		recoveryTrx();
+		smsGw = new SmsGw();
 	}
 	
 	public void recoveryTrx(){
@@ -170,10 +173,13 @@ public class GalaxiaRecovery {
 				}
 				
 				if(setList.size() > 0){
+					logger.info("update load size  =[{}]",setList.size());
 					updateLoadGalaxia(setList);
 				}
 			}
 		}catch(Exception e) {
+			String msgBody = "갤럭시아 단말기 거래내역 등록 오류. 확인요망";
+			smsGw.sendMessage("0", "1", msgBody);
             logger.error(e.getMessage(), e);
 		}
 	}

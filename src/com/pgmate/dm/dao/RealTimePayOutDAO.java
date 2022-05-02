@@ -94,6 +94,58 @@ public class RealTimePayOutDAO extends DAO{
 		}
 	}
 	
+	public SharedMap<String, Object> getDistMngByNum(int distNum) {
+		super.setTable("PG_MAM_DIST_MNG");
+		super.setColumns("*");
+		super.addWhere("num", distNum, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+	
+	public SharedMap<String, Object> getAgencyMngByNum(int agencyNum) {
+		super.setTable("PG_MAM_AGENCY_MNG");
+		super.setColumns("*");
+		super.addWhere("num", agencyNum, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+	
+	public SharedMap<String, Object> getSalesMngByNum(int salesNum) {
+		super.setTable("PG_MAM_SALES_MNG");
+		super.setColumns("*");
+		super.addWhere("num", salesNum, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+	
+	public SharedMap<String, Object> getMcht(String mchtId) {
+		super.setTable("PG_MCHT");
+		super.setColumns("*");
+		super.addWhere("mchtId", mchtId, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+	
 	/**
 	 * 가맹점 아이디로 가맹점 가상계좌 관리 테이블(PG_MCHT_MNG_VACT) 테이블 데이터 조회
 	 * @param mchtId : 가맹점 아이디
@@ -176,6 +228,19 @@ public class RealTimePayOutDAO extends DAO{
 		return inserted;
 	}
 	
+	public boolean insertTrxPayOut(SharedMap<String,Object> data){
+		super.setTable("PG_TRX_PAYOUT");
+		
+		for(String key : data.keySet()){
+			super.setRecord(key, data.get(key));
+		}
+		
+		boolean inserted =  super.insert();
+		
+		super.initRecord();
+		return inserted;
+	}
+	
 	/**
 	 * 실시간 정산 승인거래 원장 (PG_TRX_REALTIME_PAY) 테이블 전송여부와 전송일시 업데이트 
 	 * @param trxId : 거래번호
@@ -213,6 +278,26 @@ public class RealTimePayOutDAO extends DAO{
 	}
 	
 	/**
+	 * 실시간 출금 전송횟수 업데이트
+	 * @param trxId : 거래번호
+	 * @param payOutDay : 출금일자
+	 * @param payOutTime : 출금시간
+	 * @param resCd : 출금 결과코드
+	 * @param resMsg : 출금 결과메세지
+	 * @return
+	 */
+	public boolean countMinusUpdate(String trxId){
+		String q = "UPDATE PG_REALTIME_PAYOUT "
+				+ "    SET sendCnt=sendCnt-1"
+				+ "	 WHERE trxid = '"+trxId+"'";
+		
+		boolean updateed =  super.update(q);
+
+		super.initRecord();
+		return updateed;
+	}
+	
+	/**
 	 * 실시간 출금 결과 업데이트
 	 * @param trxId : 거래번호
 	 * @param payOutDay : 출금일자
@@ -232,6 +317,19 @@ public class RealTimePayOutDAO extends DAO{
 
 		super.initRecord();
 		return updateed;
+	}
+	
+	public boolean updateTrxPayOut(String trxId, SharedMap<String, Object> trxMap){
+		String q = "UPDATE PG_TRX_PAYOUT "
+		+ "    SET payOutDay='"+trxMap.getString("payOutDay")+"',payOutTime='"+trxMap.getString("payOutTime")+"',"
+		+ " stlDistDay='"+trxMap.getString("stlDistDay")+"',stlAgencyDay='"+trxMap.getString("stlAgencyDay")+"',stlSalesDay='"+trxMap.getString("stlSalesDay")+"',"
+		+ " bankCd='"+trxMap.getString("bankCd")+"',bankName='"+trxMap.getString("bankName")+"',account='"+trxMap.getString("account")+"',accntHolder='"+trxMap.getString("accntHolder")+"',sendCheck='"+trxMap.getString("sendCheck")+"'"
+		+ "	 WHERE trxId = '"+trxId+"'";
+		
+		boolean updated =  super.update(q);
+		
+		super.initRecord();
+		return updated;
 	}
 	
 	/**
@@ -383,6 +481,22 @@ public class RealTimePayOutDAO extends DAO{
 	}
 	
 	/**
+	 * 가상계좌 정산예정일자의 자동정산 인증수수료 조회
+	 * @return
+	 */
+	public List<SharedMap<String,Object>> getAutoVactSettleOrgFeeList(String stlDay, String stlType){
+		String q = "SELECT a.mchtId, SUM(fee) AS fee, c.bankCd, c.bankName, c.account, c.accntHolder"
+				+" FROM PG_VACT_AUTH a, PG_VACT_AUTH_DTL b, PG_MCHT_TAX c "
+				+"WHERE a.authId = b.authId and a.mchtId = c.mchtId and b.stlDay = '"+stlDay+"' AND b.stlType = '" + stlType + "' AND b.stlStatus != '정산완료'"
+				+"GROUP BY a.mchtId ";
+		
+		RecordSet rset = super.query(q);
+		super.initRecord();
+		
+		return rset.getRows();
+	}
+	
+	/**
 	 * 자동정산 데이터 (PG_SETTLE_AUTO) 테이블 INSERT
 	 * @param data
 	 * @return
@@ -407,7 +521,7 @@ public class RealTimePayOutDAO extends DAO{
 	public List<SharedMap<String,Object>> getAutoPayOutList(String stlDay, String stlType){
 		String q = "SELECT * "
 				+"	  FROM PG_SETTLE_AUTO "
-				+"   WHERE stlDay = '" + stlDay + "' and stlType = '" + stlType + "' and (resultCd is null or resultCd != '0000')"
+				+"   WHERE stlDay = '" + stlDay + "' and stlType = '" + stlType + "' and status = '지급대기' and (resultCd is null or resultCd != '0000')"
 				+"   order by regDate;";
 		
 		RecordSet rset = super.query(q);
@@ -626,6 +740,21 @@ public class RealTimePayOutDAO extends DAO{
 		}
 	}
 	
+	public SharedMap<String, Object> getTrxPayOut(String trxId){
+		super.setTable("PG_TRX_PAYOUT");
+		super.setColumns("*");
+		super.addWhere("trxId", trxId, eq);
+		
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+	
+	
 	/**
 	 * 가상계좌 정산예정일자의 당일정산 정산데이터 조회
 	 * @return
@@ -645,9 +774,9 @@ public class RealTimePayOutDAO extends DAO{
 				+" FROM VW_VACT_TRX  ";
 				
 				if("09".equals(hour)) {
-					q = q + "  WHERE trxDay < '" + stlDay + "' and stlDay = '"+stlDay+"' AND stlId = '' AND stlType = '" + stlType + "' AND settleTarget = 'Y'";	
+					q = q + "  WHERE trxDay < '" + stlDay + "' and stlDay = '"+stlDay+"' AND stlId = '' AND stlType = '" + stlType + "' AND settleTarget = 'Y' ";	
 				}else {
-					q = q + "  WHERE trxDay = '" + stlDay + "' and stlDay = '"+stlDay+"' AND stlId = '' AND stlType = '" + stlType + "' AND settleTarget = 'Y'";
+					q = q + "  WHERE trxDay = '" + stlDay + "' and stlDay = '"+stlDay+"' AND stlId = '' AND stlType = '" + stlType + "' AND settleTarget = 'Y' ";
 				}
 		
 				q = q + " ORDER BY mchtId) A  " 
@@ -658,5 +787,90 @@ public class RealTimePayOutDAO extends DAO{
 		super.initRecord();
 		
 		return rset.getRows();
+	}
+
+	/**
+	 * 자동정산 정산번호 조회
+	 * @param mchtId
+	 * @param stlDay
+	 * @param stlType
+	 * @return
+	 */
+	public String getStlId(String mchtId, String stlDay, String stlType) {
+		super.setTable("PG_SETTLE_AUTO");
+		super.setColumns("stlId");
+		super.addWhere("mchtId", mchtId);
+		super.addWhere("stlDay", stlDay);
+		super.addWhere("stlType", stlType);
+		super.addWhere("status", "지급대기");
+		super.addWhere("payType", "V");
+		
+		RecordSet rset = super.search();
+		super.initRecord();
+		if (rset.size() != 0) {
+			return rset.getRow(0).getString("stlId");
+		} else {
+			return "";
+		}
+	}
+	
+	/**
+	 * 자동정산 인증수수료 및 출금 예정금액 업데이트
+	 * @param stlId
+	 * @param fee
+	 * @param feeVat
+	 * @return
+	 */
+	public boolean updateAuthFee(String stlId, long fee, long feeVat){
+		String q = "UPDATE PG_SETTLE_AUTO"
+				+ "    SET authFee = '" + fee +"', authFeeVat = '" + feeVat +"',payOutAmount = payOutAmount - '" + (fee + feeVat) + "'"
+				+ "	 WHERE stlId = '" + stlId + "'";
+		
+		boolean updateed =  super.update(q);
+
+		super.initRecord();
+		return updateed;
+	}
+	
+	/**
+	 * 인증 테이블 정산번호 업데이트
+	 * @param stlId
+	 * @param mchtId
+	 * @param stlDay
+	 * @param stlType
+	 * @return
+	 */
+	public boolean updateAuthStlId(String stlId, String mchtId, String stlDay, String stlType){
+		String q = "UPDATE PG_VACT_AUTH a, PG_VACT_AUTH_DTL b"
+				+ "    SET b.stlId = '" + stlId +"'"
+				+ "	 WHERE a.mchtId = '" + mchtId + "' and b.stlDay = '" + stlDay + "' and b.stlType = '" + stlType + "'";
+		
+		boolean updateed =  super.update(q);
+
+		super.initRecord();
+		return updateed;
+	}
+	
+	/**
+	 * 인증테이블 정산상태 완료
+	 * @param stlId
+	 * @return
+	 */
+	public boolean updateAuthStlStatus(String stlId){
+		String q = "UPDATE PG_VACT_AUTH_DTL"
+				+ "    SET stlStatus = '정산완료'"
+				+ "	 WHERE stlId = '" + stlId + "'";
+		
+		boolean updateed =  super.update(q);
+
+		super.initRecord();
+		return updateed;
+	}
+	
+	public String getSettleDay(String today) {	
+		String q = "SELECT days FROM PG_CODE_HOLIDAY WHERE days >= '"+today+"' AND status ='no' limit 1";
+		RecordSet rset = super.query(q);
+		super.initRecord();
+		return rset.getRow(0).getString("days");
 	}
 }

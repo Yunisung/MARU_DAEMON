@@ -1,6 +1,11 @@
 package com.pgmate.dm.main;
 
 import java.io.FileInputStream;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +30,8 @@ public class DailySettlePayOut {
 	private SmsGw smsGw = null;
 	
 	private String firmServer = "pgwas2";
-	private int frimPort = 10026;
+	//private int frimPort = 10026; //케이뱅크 이체대행
+	private int frimPort = 10006; //우리은행 일반 펌
 	private int firmTimeOut = 35000;
 	
 	private String msgBody = "";
@@ -33,8 +39,6 @@ public class DailySettlePayOut {
 	private String stlType = "";
 	private String hour = "";
 
-	HashMap<String,String> idMap = new HashMap<String,String>();
-	
 	public static void main(String[] args){
 		new DailySettlePayOut(args);
 	}
@@ -45,6 +49,11 @@ public class DailySettlePayOut {
 		smsGw = new SmsGw();
 		
 		configSetting();
+		
+		stlType = "A+0";
+		dailySettlePayOut(args);
+		
+		stlType = "A+2";
 		dailySettlePayOut(args);
 		
 		logger.info("DailySettlePayOut End");
@@ -53,10 +62,10 @@ public class DailySettlePayOut {
 	
 	public void dailySettlePayOut(String[] args){
 		RealTimePayOutDAO dao = new RealTimePayOutDAO();
+		String type = "당일정산(영업일)";
 		
 		try {
 			stlDay = CommonUtil.getCurrentDate("yyyyMMdd");
-			stlType = "A+0";
 			
 			if(args.length > 0 && args[0] != null && !"".equals(args[0])) {
 				stlType = args[0];
@@ -65,16 +74,20 @@ public class DailySettlePayOut {
 				stlDay = args[1];
 			}
 			
+			if("A+2".equals(stlType)) {
+				type = "당일정산(365)";
+			}
+			
 			hour = CommonUtil.getCurrentDate("HH");
 			
-			logger.info("당일정산 출금 stlDay : " + stlDay + ", stlType : " + stlType + ", hour : " + hour);
+			logger.info(type + " 출금 stlDay : " + stlDay + ", stlType : " + stlType + ", hour : " + hour);
 			
 			List<SharedMap<String,Object>> getAutoPayOutList = dao.getAutoPayOutList(stlDay, stlType);
-			logger.info("당일정산 출금대상 건수 : {}", getAutoPayOutList.size());
+			logger.info(type + " 출금대상 건수 : {}", getAutoPayOutList.size());
 			
 			if(getAutoPayOutList.size() > 0) {
 				logger.info("==================================================");
-				logger.info("당일정산 출금 START");
+				logger.info(type + " 출금 START");
 				
 				for(SharedMap<String,Object> data : getAutoPayOutList){
 					boolean errFlag = false;
@@ -91,7 +104,16 @@ public class DailySettlePayOut {
 					if(data.getLong("payOutAmount") > 0) {
 						//당일정산 출금요청
 						//운영
-						FirmBean firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("stlId"), "", "AS");
+						FirmBean firmBean = new FirmBean(); 
+						
+						if(frimPort == 10006) {
+							//KWON_FIRM - 우리은행
+							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("020", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("stlId"), "", "AS");	
+						}else if(frimPort == 10026) {
+							//KWON_FIRM_KSNET - 케이뱅크
+							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("stlId"), "", "AS");
+						}
+						
 						//테스트
 						//FirmBean firmBean = new FirmBean();
 						//firmBean.resultCd = "0000";
@@ -101,13 +123,13 @@ public class DailySettlePayOut {
 						resMsg = firmBean.resultMsg;
 						
 						if(!resCd.equals("0000") ) {
-							msgBody = "당일정산 출금 실패. stlId : [" + data.getString("stlId") + "], mchtId : [" + data.getString("mchtId") + "][" + resMsg + "]";
+							msgBody = type + " 출금 실패. stlId : [" + data.getString("stlId") + "], mchtId : [" + data.getString("mchtId") + "][" + resMsg + "]";
 							logger.info(msgBody);
 							stlStatus = "지급실패";
 							errFlag = true;
 						}else {
 							sendCheck = "Y";
-							msgBody = "당일정산 출금 성공. stlId : [" + data.getString("stlId") + "], mchtId : [" + data.getString("mchtId") + "], payOutAmount : [" + data.getLong("payOutAmount") + "]";
+							msgBody = type + " 출금 성공. stlId : [" + data.getString("stlId") + "], mchtId : [" + data.getString("mchtId") + "], payOutAmount : [" + data.getLong("payOutAmount") + "]";
 							logger.info(msgBody);
 						}
 					} else if(data.getLong("payOutAmount") <= 0) {
@@ -121,20 +143,55 @@ public class DailySettlePayOut {
 						//자동정산출금 결과 저장
 						if(!dao.updateAutoPayOutRes(data.getString("stlId"), stlStatus, CommonUtil.getCurrentDate("yyyyMMdd"), CommonUtil.getCurrentDate("HHmmss"), mchtTaxMap.getString("bankCd"), 
 											    mchtTaxMap.getString("bankName"), dao.getAESEnc(mchtTaxMap.getString("account")), dao.getAESEnc(mchtTaxMap.getString("accntHolder")), resCd, resMsg, sendCheck)) {
-							msgBody = "당일정산 PG_SETTLE_AUTO UPDATE 실패. 확인요망 [" + data.getString("stlId") + "]";
+							msgBody = type + " PG_SETTLE_AUTO UPDATE 실패. 확인요망 [" + data.getString("stlId") + "]";
 							
 							logger.info(msgBody);
 							smsGw.sendMessage("0", "4", msgBody);
+						} else {
+							SharedMap<String, Object> trxPayOutMap = dao.getTrxPayOut(data.getString("stlId"));
+							SharedMap<String,Object> trxPayOutData = new SharedMap<String, Object>(); // 출금수수료 정산관련 거래 데이터
+							
+							String regDay = CommonUtil.getCurrentDate("yyyyMMdd");
+							String regTime = CommonUtil.getCurrentDate("HHmmss");
+							
+							trxPayOutData.put("payOutDay", regDay);
+							trxPayOutData.put("payOutTime", regTime);
+							
+							if(!CommonUtil.isNullOrSpace(trxPayOutMap.getString("stlDistType"))) {
+								trxPayOutData.put("stlDistDay", calcDay(trxPayOutMap.getString("stlDistType"), regDay));
+							} else {
+								trxPayOutData.put("stlDistDay", "");
+							}
+							if(!CommonUtil.isNullOrSpace(trxPayOutMap.getString("stlAgencyType"))) {
+								trxPayOutData.put("stlAgencyDay", calcDay(trxPayOutMap.getString("stlAgencyType"), regDay));
+							} else {
+								trxPayOutData.put("stlAgencyDay", "");
+							}
+							if(!CommonUtil.isNullOrSpace(trxPayOutMap.getString("stlSalesType"))) {
+								trxPayOutData.put("stlSalesDay", calcDay(trxPayOutMap.getString("stlSalesType"), regDay));
+							} else {
+								trxPayOutData.put("stlSalesDay", "");
+							}
+							trxPayOutData.put("sendCheck", "Y");
+							
+							trxPayOutData.put("bankCd", mchtTaxMap.getString("bankCd"));
+							trxPayOutData.put("bankName", mchtTaxMap.getString("bankName"));
+							trxPayOutData.put("account", dao.getAESEnc(mchtTaxMap.getString("account")));
+							trxPayOutData.put("accntHolder", dao.getAESEnc(mchtTaxMap.getString("accntHolder")));
+							
+							dao.updateTrxPayOut(data.getString("stlId"), trxPayOutData);
 						}
 						
 						if("C".equals(data.getString("payType"))){
 							//자동정산출금 결과 매입테이블 업데이트
 							if(!dao.updateDailyPayOutCap(data.getString("stlDay"), data.getString("stlType"), data.getString("mchtId"), CommonUtil.getCurrentDate("yyyyMMdd"),stlStatus, hour)) {
-								msgBody = "당일정산 PG_TRX_CAP_DTL UPDATE 실패. 확인요망 [" + data.getString("mchtId") + "]";
+								msgBody = type + " PG_TRX_CAP_DTL UPDATE 실패. 확인요망 [" + data.getString("mchtId") + "]";
 								
 								logger.info(msgBody);
 								smsGw.sendMessage("0", "4", msgBody);
 							}
+						}else {
+							logger.info("당일정산 인증상태 업데이트 : [{}][{}]", data.getString("stlId"), dao.updateAuthStlStatus(data.getString("stlId")));
 						}
 
 						if(errFlag) {
@@ -143,23 +200,43 @@ public class DailySettlePayOut {
 					}
 				}
 				
-				//매입데이터에 정산번호 업데이트
-				for(Map.Entry<String, String> stlData : idMap.entrySet()) {
-					dao.updateDailyStlIdCap(stlData.getKey(), stlData.getValue());
-					
-					msgBody = "당일정산 출금 매입내역 업데이트 - capId : [" + stlData.getKey() + "], stlId : [" + stlData.getValue() + "]";
-					logger.info(msgBody);
-				}
-				
-				logger.info("당일정산 출금 END");
+				logger.info(type + " 출금 END");
 				logger.info("==================================================");
 			}
 		} catch(Exception e) {
 			logger.error(e.getMessage(), e);
 			e.printStackTrace();
 			
-			msgBody = "당일정산 오류발생. 확인요망 [" + e.getMessage() + "]";
+			msgBody = type + " 오류발생. 확인요망 [" + e.getMessage() + "]";
 			smsGw.sendMessage("0", "4", msgBody);
+		}
+	}
+	
+	public String calcDay(String settleType,String today){
+		try {
+			if(settleType.equals("D+0") || settleType.equals("C+0")) {
+				return today;
+			}
+			int term = 1;
+			
+			if(settleType.startsWith("M")){
+				term = CommonUtil.parseInt(settleType.replaceAll("M[+]", ""));
+				String nextMonth = CommonUtil.getOpDate(GregorianCalendar.MONTH,1,today).substring(0,6);
+				return new RealTimePayOutDAO().getSettleDay(nextMonth+CommonUtil.zerofill(term,2));
+			}else if(settleType.startsWith("W")){
+				term = CommonUtil.parseInt(settleType.replaceAll("W[+]", ""));
+
+				LocalDate localDate = LocalDate.parse(today, DateTimeFormatter.ofPattern("yyyyMMdd"));
+				localDate = localDate.plusWeeks(1).with(DayOfWeek.MONDAY).with(TemporalAdjusters.nextOrSame(DayOfWeek.of(term)));
+
+				return new RealTimePayOutDAO().getSettleDay(localDate.format(DateTimeFormatter.ofPattern("yyyyMMdd")));
+			}else{
+				return "";
+			}
+		}catch(Exception e) {
+			logger.error("calcDay Error : [{}][{}]", e.getMessage(), e.getStackTrace());
+			
+			return "";
 		}
 	}
 	
@@ -172,7 +249,7 @@ public class DailySettlePayOut {
     		//운영
             String propFile = "/home/bkwinners/MARU/MARU_DAEMON/conf/firmconfig.properties"; 
     		//테스트
-    		//String propFile = "/home/MARU/MARU_DAEMON/conf/firmconfig.properties";
+    		//String propFile = "/home/KWON/KWON_DAEMON/conf/firmconfig.properties";
     		
             // 프로퍼티 객체 생성
             Properties props = new Properties();

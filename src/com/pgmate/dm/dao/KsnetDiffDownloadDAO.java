@@ -345,6 +345,7 @@ public class KsnetDiffDownloadDAO extends DAO{
 				if(map.getString("resultCd").equals("00")) {
 					SharedMap<String, Object> mchtMngMap = getMchtMngById(map.getString("mchtId"));
 					
+					//영업라인 차액정산 수수료율 세팅
 					double stlDiffAgencyRate = 0;
 					double stlDiffDistRate = 0;
 					double stlDiffSalesRate = 0;
@@ -368,13 +369,18 @@ public class KsnetDiffDownloadDAO extends DAO{
 						stlDiffVanCardType = "신용";
 					}
 					
+					//하위사업자 매출액
 					long amount = map.getLong("mchtSalesAmt");
+					//차액정산금액 ksnet에서 보내줌
 					long diffVanAmt = map.getLong("diffStlAmt");
+					//취소일때
 					if(!map.getString("trxType").equals("0")) {
 						amount = -map.getLong("mchtSalesAmt");
 						diffVanAmt = -map.getLong("diffStlAmt"); 
 					}
+					//에이전시 부과세 계산
 					long stlDiffAgencyFee = calcFeeVat(amount, stlDiffAgencyRate);
+					//대행사 부과세 계산
 					long stlDiffDistFee = calcFeeVat(amount, stlDiffDistRate);
 					
 					capDtlMap.put("stlDiffAgencyRate",stlDiffAgencyRate);
@@ -387,8 +393,11 @@ public class KsnetDiffDownloadDAO extends DAO{
 					// 에이전시 차액정산 최종 수수료 : 에이전시 차액정산 수수료 - 지사 차액정산 수수료
 					capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee")-capDtlMap.getLong("stlDiffSalesFee"));
 					
+					//차액정산금액
 					capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
+					//영중소 타입
 					capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+					//신용,체크카드 구분
 					capDtlMap.put("stlDiffVanCardType", stlDiffVanCardType);
 					capDtlMap.put("stlDiffStatus", "입금대기");
 					capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
@@ -441,7 +450,9 @@ public class KsnetDiffDownloadDAO extends DAO{
 						}
 					}
 					
+					//가맹점수수료 + 가맹점수수료부과세 - 대행사 수수료 - 에이전시 수수료 - 지사수수료 - 입금수수료
 					long benefit1 = map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-capDtlMap.getLong("stlSalesFee")-map.getLong("stlVanFee");
+					//차액정산입금예정액 - 대행사 부과세 - 에이전시 부과세
 					long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
 					
 					capDtlMap.put("benefit"		, benefit1 + benefit2);

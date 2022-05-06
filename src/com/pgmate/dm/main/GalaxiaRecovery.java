@@ -164,6 +164,8 @@ public class GalaxiaRecovery {
 									data.put("tmnId",rfd.getString("tmnId"));
 									
 									if(insertTrxRfd(rfd)){
+										// 취소 완료 후  pay테이블 status칼럼 승인 > 승인취소로 변경
+										updateTrxPay(rootMap.getString("trxId"));
 										data.put("exeStatus", "완료");
 										data.put("summary", "취소거래 등록완료");
 									}else{
@@ -437,6 +439,16 @@ public class GalaxiaRecovery {
 			return new Double(amount *10 /110).longValue();
 		}
 	}
+	public void updateTrxPay(String trxId) {
+		
+		DAO dao = new DAO();
+		dao.setTable("PG_TRX_PAY");
+		dao.setRecord("status", "승인취소");
+		dao.addWhere("trxId", trxId);
+		logger.info("set TRX_PAY : {}", dao.update());
+		dao.initRecord();
+	}
+	
 	
 	public List<SharedMap<String,Object>> getGalaxiaList(){
 		

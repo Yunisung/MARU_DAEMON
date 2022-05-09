@@ -108,65 +108,74 @@ public class GalaxiaRecovery {
 								data.put("summary", "승인거래 등록실패");
 							}
 						}else{
-							SharedMap<String,Object> rfd = new SharedMap<String,Object>();
-							SharedMap<String,Object> rootMap = getPayMap(data, tmnMap.getString("mchtId"));
-							logger.info("root status : [{}]",rootMap.getString("status"));
-							
-							if(rootMap == null || rootMap.size() > 0){
-								rfd.put("trxId"		, getTrxId());
-								rfd.put("mchtId"	, tmnMap.getString("mchtId"));
-								rfd.put("tmnId"		, data.getString("tmnId"));
-								rfd.put("trackId"	, getTrackId());
-								rfd.put("status", "완료");
+							if(getRfdList(data.get("vanTrxId").toString()) != null) {
+								//갤럭시아 단말기 :취소건 중복 오류 수정
+								data.put("exeStatus", "완료");
+								data.put("summary", "기취소 거래건");
+								data.put("trxId",getTrxId());
 								
-								long amount = rootMap.getLong("amount");
-								if(amount > 0){
-									amount = - amount;
-								}
+							} else {
+								SharedMap<String,Object> rfd = new SharedMap<String,Object>();
+								SharedMap<String,Object> rootMap = getPayMap(data, tmnMap.getString("mchtId"));
+								logger.info("root status : [{}]",rootMap.getString("status"));
 								
-								if(data.getLong("amount") == -rootMap.getLong("amount")){
-									rfd.put("rfdAll", "전액");
-								}else{
-									rfd.put("rfdAll", "부분");
-								}
-								rfd.put("rfdAmount"	, amount);
-								rfd.put("rfdVat"	, calcRootVat(amount));
-								rfd.put("cardId"	, rootMap.getString("cardId"));
-								rfd.put("bin"		, rootMap.getString("bin"));
-								rfd.put("last4"		, rootMap.getString("last4"));
-								rfd.put("issuer"	, rootMap.getString("issuer"));
-								rfd.put("acquirer"	, rootMap.getString("acquirer"));
-								rfd.put("rootTrnDay", rootMap.getString("reqDay"));
-								rfd.put("rootTrxId"	, rootMap.getString("trxId"));
-								rfd.put("rootTrackId", rootMap.getString("trackId"));
-								rfd.put("rootAmount", rootMap.getLong("amount"));
-								rfd.put("rootVat"	, calcRootVat(rootMap.getLong("amount")));
-								rfd.put("reqDay"	, data.getString("trxDay"));
-								rfd.put("reqTime"	, data.getString("trxTime"));
-								rfd.put("authCd"	, data.getString("authCd"));
-								rfd.put("resultCd"	, "0000");
-								rfd.put("resultMsg"	, "[정상]정상취소");
-								rfd.put("van"		, rootMap.getString("van"));				
-								rfd.put("vanId"		, rootMap.getString("vanId"));
-								rfd.put("vanTrxId"	, data.getString("vanTrxId"));
-								rfd.put("regDay"	, data.getString("trxDay"));
-								rfd.put("regTime"	, data.getString("trxTime"));
-								rfd.put("regDate"	, data.getString("trxDay")+data.getString("trxTime"));
-								
-								data.put("trxId",rfd.getString("trxId"));
-								data.put("tmnId",rfd.getString("tmnId"));
-								
-								if(insertTrxRfd(rfd)){
-									data.put("exeStatus", "완료");
-									data.put("summary", "취소거래 등록완료");
+								if(rootMap == null || rootMap.size() > 0){
+									rfd.put("trxId"		, getTrxId());
+									rfd.put("mchtId"	, tmnMap.getString("mchtId"));
+									rfd.put("tmnId"		, data.getString("tmnId"));
+									rfd.put("trackId"	, getTrackId());
+									rfd.put("status", "완료");
+									
+									long amount = rootMap.getLong("amount");
+									if(amount > 0){
+										amount = - amount;
+									}
+									
+									if(data.getLong("amount") == -rootMap.getLong("amount")){
+										rfd.put("rfdAll", "전액");
+									}else{
+										rfd.put("rfdAll", "부분");
+									}
+									rfd.put("rfdAmount"	, amount);
+									rfd.put("rfdVat"	, calcRootVat(amount));
+									rfd.put("cardId"	, rootMap.getString("cardId"));
+									rfd.put("bin"		, rootMap.getString("bin"));
+									rfd.put("last4"		, rootMap.getString("last4"));
+									rfd.put("issuer"	, rootMap.getString("issuer"));
+									rfd.put("acquirer"	, rootMap.getString("acquirer"));
+									rfd.put("rootTrnDay", rootMap.getString("reqDay"));
+									rfd.put("rootTrxId"	, rootMap.getString("trxId"));
+									rfd.put("rootTrackId", rootMap.getString("trackId"));
+									rfd.put("rootAmount", rootMap.getLong("amount"));
+									rfd.put("rootVat"	, calcRootVat(rootMap.getLong("amount")));
+									rfd.put("reqDay"	, data.getString("trxDay"));
+									rfd.put("reqTime"	, data.getString("trxTime"));
+									rfd.put("authCd"	, data.getString("authCd"));
+									rfd.put("resultCd"	, "0000");
+									rfd.put("resultMsg"	, "[정상]정상취소");
+									rfd.put("van"		, rootMap.getString("van"));				
+									rfd.put("vanId"		, rootMap.getString("vanId"));
+									rfd.put("vanTrxId"	, data.getString("vanTrxId"));
+									rfd.put("regDay"	, data.getString("trxDay"));
+									rfd.put("regTime"	, data.getString("trxTime"));
+									rfd.put("regDate"	, data.getString("trxDay")+data.getString("trxTime"));
+									
+									data.put("trxId",rfd.getString("trxId"));
+									data.put("tmnId",rfd.getString("tmnId"));
+									
+									if(insertTrxRfd(rfd)){
+										data.put("exeStatus", "완료");
+										data.put("summary", "취소거래 등록완료");
+									}else{
+										data.put("exeStatus", "실패");
+										data.put("summary", "취소거래 등록실패");
+									}
 								}else{
 									data.put("exeStatus", "실패");
-									data.put("summary", "취소거래 등록실패");
+									data.put("summary", "원거래를 찾을 수 없습니다.");
 								}
-							}else{
-								data.put("exeStatus", "실패");
-								data.put("summary", "원거래를 찾을 수 없습니다.");
 							}
+					
 						}
 					}
 					setList.add(data);
@@ -484,6 +493,16 @@ public class GalaxiaRecovery {
 		return inserted;
 	}
 	
+	
+	public List<SharedMap<String,Object>> getRfdList(String vanTrxId){
+			
+		DAO dao = new DAO();
+		dao.setTable("PG_TRX_RFD");
+		dao.setColumns("*");
+		dao.addWhere("vanTrxId",vanTrxId);
+		RecordSet rset = dao.search();
+		return rset.getRows();
+	}
 	
 	public static void main(String[] args) {
 		

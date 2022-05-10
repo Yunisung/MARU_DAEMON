@@ -108,7 +108,7 @@ public class GalaxiaRecovery {
 								data.put("summary", "승인거래 등록실패");
 							}
 						}else{
-							if(getRfdList(data.get("vanTrxId").toString()) != null) {
+							if(getRfdList(data.get("vanTrxId").toString()).size() > 0) {
 								//갤럭시아 단말기 :취소건 중복 오류 수정
 								data.put("exeStatus", "완료");
 								data.put("summary", "기취소 거래건");

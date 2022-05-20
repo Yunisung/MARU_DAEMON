@@ -34,8 +34,8 @@ public class KsnetDiffUploadDAO extends DAO{
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('2006500004','2006500007','2006500009','2006500013','2006500015') "
-				+ "AND A.mchtId !='ktest' "
+				+ "AND A.vanid IN ('2010000007','2010000008') "
+				//+ "AND A.mchtId !='ktest' "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' ";
 				
 				
@@ -59,7 +59,7 @@ public class KsnetDiffUploadDAO extends DAO{
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('2006500004','2006500007','2006500009','2006500013','2006500015') "
+				+ "AND A.vanid IN ('2010000007','2010000008') "
 				+ "AND A.mchtId != 'ktest' "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "

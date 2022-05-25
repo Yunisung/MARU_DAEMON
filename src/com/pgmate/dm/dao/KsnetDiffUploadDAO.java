@@ -34,9 +34,9 @@ public class KsnetDiffUploadDAO extends DAO{
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('2010000007','2010000008') "
-				//+ "AND A.mchtId !='ktest' "
-				+ "AND A.vanTrxId NOT LIKE 'TX%' ";
+				+ "AND A.vanid IN ('2010000007', '2010000008') "
+				// + "AND A.mchtId !='ktest' "
+				+ "AND A.vanTrxId NOT LIKE 'TX%' "; 
 				
 				
 		RecordSet rset = super.query(q);
@@ -152,7 +152,7 @@ public class KsnetDiffUploadDAO extends DAO{
 		super.setTable("PG_MCHT_DIFF_UPLOAD");
 		super.setColumns("*");
 		super.addWhere("recordType","A",eq);
-		super.addWhere("vanName","KSNET",eq);
+		//super.addWhere("vanName","KSNET",eq);
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRows();

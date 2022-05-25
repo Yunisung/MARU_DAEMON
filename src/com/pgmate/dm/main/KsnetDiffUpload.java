@@ -28,7 +28,7 @@ public class KsnetDiffUpload {
 //	private static String MCHT_PATH="D:\\dev\\test\\mcht\\";
 //	private static String SETTLE_PATH="D:\\dev\\test\\settle\\";
 	
-	private static String ENC_SHOP_PASS = "TSX8cRHaPu4R3i2VWjG/Pg==";
+	private static String ENC_SHOP_PASS = "ec4wxx1foTcnTLpjkFL23Q==";
 	private SmsGw smsGw = null;
 	private String day = "";
 	
@@ -77,7 +77,7 @@ public class KsnetDiffUpload {
 			bw.close();
 				
 			// KSNET 파일업로드
-			if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGSBM", "1006500000",ENC_SHOP_PASS, nowDate) < 0) {
+			if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGSBM", "2010000007",ENC_SHOP_PASS, nowDate) < 0) {
 				logger.info("DIFF MCHT UPLOAD FAIL!");
 			}else{
 				logger.info("DIFF MCHT UPLOAD SUCCESS!");
@@ -154,7 +154,7 @@ public class KsnetDiffUpload {
 			}
 			bw.close();
 				
-			if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGTMS", "1006500000",ENC_SHOP_PASS, nowDate) < 0) {
+			if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGTMS", "2010000007",ENC_SHOP_PASS, nowDate) < 0) {
 				logger.info("DIFF TRX UPLOAD FAIL!");
 			}else {
 				logger.info("DIFF TRX UPLOAD SUCCESS!");

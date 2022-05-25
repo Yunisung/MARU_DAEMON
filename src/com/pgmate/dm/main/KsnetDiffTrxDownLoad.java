@@ -25,10 +25,9 @@ public class KsnetDiffTrxDownLoad {
 	private static int PORT = 9800;	//KSNET 서버포트
 
 	private static String SETTLE_PATH="/home/data/diff/settle/";
-
 //	private static String SETTLE_PATH="C:\\dev\\test\\settle\\";
 	
-	private static String ENC_SHOP_PASS = "TSX8cRHaPu4R3i2VWjG/Pg==";
+	private static String ENC_SHOP_PASS = "ec4wxx1foTcnTLpjkFL23Q==";
 	
 	private SmsGw smsGw = null;
 	private String day = "";
@@ -57,7 +56,7 @@ public class KsnetDiffTrxDownLoad {
 				folder.mkdir();
 			}
 			logger.info("============= "+nowDate+"일자 차액정산 다운로드 시작 ===============");
-			if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGTMS", "0", "1006500000",ENC_SHOP_PASS, nowDate) > -1) {
+			if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGTMS", "0", "2010000007",ENC_SHOP_PASS, nowDate) > -1) {
 				List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
 				try {
 					File cvs = new File(fileName);

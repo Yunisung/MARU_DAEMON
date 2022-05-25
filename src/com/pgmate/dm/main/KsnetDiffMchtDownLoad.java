@@ -2,9 +2,7 @@ package com.pgmate.dm.main;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +25,9 @@ public class KsnetDiffMchtDownLoad {
 
 	private static String MCHT_PATH="/home/data/diff/mcht/";
 
-	private static String ENC_SHOP_PASS = "ec4wxx1foTcnTLpjkFL23Q==";
+//	private static String MCHT_PATH="C:\\dev\\test\\mcht\\";
+	
+	private static String ENC_SHOP_PASS = "TSX8cRHaPu4R3i2VWjG/Pg==";
 	
 	private SmsGw smsGw = null;
 	private String day = "";
@@ -51,16 +51,14 @@ public class KsnetDiffMchtDownLoad {
 				folder.mkdir();
 			}
 			
-			if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGSBM", "0", "2010000007",ENC_SHOP_PASS, nowDate) > -1) {
+			if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGSBM", "0", "1006500000",ENC_SHOP_PASS, nowDate) > -1) {
 				List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
 				
 				try {
 					
 					File cvs = new File(fileName);
-					FileInputStream is = new FileInputStream(cvs);
-					InputStreamReader isr = new InputStreamReader(is, "EUC-KR");
-					//FileReader fr = new FileReader(cvs);
-					BufferedReader br = new BufferedReader(isr);
+					FileReader fr = new FileReader(cvs);
+					BufferedReader br = new BufferedReader(fr);
 					String line = "";
 					
 					while((line = br.readLine()) != null) {

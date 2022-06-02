@@ -32,6 +32,9 @@ public class KsnetDiffUpload {
 	private SmsGw smsGw = null;
 	private String day = "";
 	
+	//22.06.02 vanid 분리용 배열 추가
+	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011"};
+	
 	public KsnetDiffUpload() {
 		makeDiffMcht();
 		makeDiffSettle();
@@ -98,80 +101,84 @@ public class KsnetDiffUpload {
 		day = nowDate.substring(0,4) + "년 " + nowDate.substring(4,6) + "월 " + nowDate.substring(6) + "일";
 		KsnetDiffUploadDAO dao = new KsnetDiffUploadDAO();
 		
-		List<SharedMap<String,Object>> payList = dao.getPayList(); 
-		List<SharedMap<String,Object>> rfdList = dao.getRfdList(); 
-		try {
-			String path = SETTLE_PATH+nowDate.substring(0,6);
-			String fileName = path+File.separator+nowDate+".ksnet.upload.txt";
-			File folder = new File(path);
-			if(!folder.exists()) {
-				folder.mkdir();
-			}
-			File file = new File(fileName);
-//				if(file.exists()) {
-//					file.delete();
-//				}
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file),"euc-kr"));
-			for(SharedMap<String, Object> map:payList) {
-				bw.write(map.getString("recordType").trim()+",");
-				bw.write(map.getString("systemType").trim()+",");
-				bw.write(map.getString("vanId").trim()+",");
-				bw.write(map.getString("trxType").trim()+",");
-				bw.write(map.getString("trxDay").trim()+",");
-				bw.write(map.getString("compNo").trim()+",");
-				bw.write(map.getString("mchtCompNo").trim()+",");
-				bw.write(map.getString("vanTrxId").trim()+",");
-				bw.write(map.getString("rfdTurn").trim()+",");
-				bw.write(map.getString("amount").trim()+",");
-				bw.write(map.getString("amount").trim()+",");
-				bw.write(map.getString("trxId").trim()+",");
-				bw.write(" ,");
-				bw.newLine();
-			}
-			for(SharedMap<String, Object> map:rfdList) {
+		for (String id : vanId) {
+			
+			List<SharedMap<String,Object>> payList = dao.getPayList(id); 
+			List<SharedMap<String,Object>> rfdList = dao.getRfdList(id); 
+			try {
+				String path = SETTLE_PATH+nowDate.substring(0,6);
+				String fileName = path+File.separator+nowDate+"("+id+")"+".ksnet.upload.txt";
+				File folder = new File(path);
+				if(!folder.exists()) {
+					folder.mkdir();
+				}
+				File file = new File(fileName);
+	//				if(file.exists()) {
+	//					file.delete();
+	//				}
+				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file),"euc-kr"));
+				for(SharedMap<String, Object> map:payList) {
+					bw.write(map.getString("recordType").trim()+",");
+					bw.write(map.getString("systemType").trim()+",");
+					bw.write(map.getString("vanId").trim()+",");
+					bw.write(map.getString("trxType").trim()+",");
+					bw.write(map.getString("trxDay").trim()+",");
+					bw.write(map.getString("compNo").trim()+",");
+					bw.write(map.getString("mchtCompNo").trim()+",");
+					bw.write(map.getString("vanTrxId").trim()+",");
+					bw.write(map.getString("rfdTurn").trim()+",");
+					bw.write(map.getString("amount").trim()+",");
+					bw.write(map.getString("amount").trim()+",");
+					bw.write(map.getString("trxId").trim()+",");
+					bw.write(" ,");
+					bw.newLine();
+				}
+				for(SharedMap<String, Object> map:rfdList) {
+					
+					// 부분취소 순번 추가
+					if(map.getString("trxType").equals("3")) {
+						int cnt = 0;
+						//cnt = dao.getRfdListCnt(map.getString("rootTrxId"), map.getString("trxDay") , map.getString("trxTime")); 
+						map.replace("rfdTurn", Integer.toString(cnt+1));
+					}
+						
+					bw.write(map.getString("recordType").trim()+",");
+					bw.write(map.getString("systemType").trim()+",");
+					bw.write(map.getString("vanId").trim()+",");
+					bw.write(map.getString("trxType").trim()+",");
+					bw.write(map.getString("trxDay").trim()+",");
+					bw.write(map.getString("compNo").trim()+",");
+					bw.write(map.getString("mchtCompNo").trim()+",");
+					bw.write(map.getString("vanTrxId").trim()+",");
+					bw.write(map.getString("rfdTurn").trim()+",");
+					bw.write(map.getString("amount").trim()+",");
+					bw.write(map.getString("amount").trim()+",");
+					bw.write(map.getString("trxId").trim()+",");
+					bw.write(" ,");
+					bw.newLine();
+				}
+				bw.close();
 				
-				// 부분취소 순번 추가
-				if(map.getString("trxType").equals("3")) {
-					int cnt = 0;
-					//cnt = dao.getRfdListCnt(map.getString("rootTrxId"), map.getString("trxDay") , map.getString("trxTime")); 
-					map.replace("rfdTurn", Integer.toString(cnt+1));
+				// KSNET 파일업로드
+				if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGTMS", id ,ENC_SHOP_PASS, nowDate) < 0) {
+					logger.info("DIFF TRX UPLOAD FAIL!");
+				}else {
+					logger.info("DIFF TRX UPLOAD SUCCESS!");
+					if(payList.size()>0) {
+						dao.insertTrxDiffUpload(payList, nowDate);
+					}
+					if(rfdList.size()>0) {
+						dao.insertTrxDiffUpload(rfdList, nowDate);
+					}
 				}
 					
-				bw.write(map.getString("recordType").trim()+",");
-				bw.write(map.getString("systemType").trim()+",");
-				bw.write(map.getString("vanId").trim()+",");
-				bw.write(map.getString("trxType").trim()+",");
-				bw.write(map.getString("trxDay").trim()+",");
-				bw.write(map.getString("compNo").trim()+",");
-				bw.write(map.getString("mchtCompNo").trim()+",");
-				bw.write(map.getString("vanTrxId").trim()+",");
-				bw.write(map.getString("rfdTurn").trim()+",");
-				bw.write(map.getString("amount").trim()+",");
-				bw.write(map.getString("amount").trim()+",");
-				bw.write(map.getString("trxId").trim()+",");
-				bw.write(" ,");
-				bw.newLine();
-			}
-			bw.close();
+			}catch (Exception e) {
+				String msgBody = day + " KSNET 차액정산 파일 송신 오류. 확인요망";
 				
-			if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGTMS", "2010000007",ENC_SHOP_PASS, nowDate) < 0) {
-				logger.info("DIFF TRX UPLOAD FAIL!");
-			}else {
-				logger.info("DIFF TRX UPLOAD SUCCESS!");
-				if(payList.size()>0) {
-					dao.insertTrxDiffUpload(payList, nowDate);
-				}
-				if(rfdList.size()>0) {
-					dao.insertTrxDiffUpload(rfdList, nowDate);
-				}
+				smsGw.sendMessage("0", "1", msgBody);
+	            
+	            logger.error(e.getMessage(), e);
 			}
-				
-		}catch (Exception e) {
-			String msgBody = day + " KSNET 차액정산 파일 송신 오류. 확인요망";
-			
-			smsGw.sendMessage("0", "1", msgBody);
-            
-            logger.error(e.getMessage(), e);
 		}
 	}
 	

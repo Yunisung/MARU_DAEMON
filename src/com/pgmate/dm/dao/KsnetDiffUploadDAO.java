@@ -25,7 +25,7 @@ public class KsnetDiffUploadDAO extends DAO{
 	public KsnetDiffUploadDAO() {
 	}
 	
-	public List<SharedMap<String,Object>> getPayList(){
+	public List<SharedMap<String,Object>> getPayList(String id){
 		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(B.identity) AS mchtCompNo, A.vanTrxId, A.amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '4198800046' AS compNo, '0' AS trxType, '0' AS rfdTurn "
 				+ "FROM PG_TRX_PAY A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId  "
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
@@ -34,8 +34,8 @@ public class KsnetDiffUploadDAO extends DAO{
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('2010000007', '2010000008') "
-				// + "AND A.mchtId !='ktest' "
+				+ "AND A.vanid IN ('" + id + "') "
+				+ "AND A.mchtId !='ktest' "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "; 
 				
 				
@@ -45,7 +45,7 @@ public class KsnetDiffUploadDAO extends DAO{
 		return rset.getRows();
 	}
 
-	public List<SharedMap<String,Object>> getRfdList(){
+	public List<SharedMap<String,Object>> getRfdList(String id){
 		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '4198800046' AS compNo,"
 				+ "A.rootTrxId, A.reqTime as trxTime, "
 				+ "case when A.rfdAll = '전액' then '1' " 
@@ -59,7 +59,7 @@ public class KsnetDiffUploadDAO extends DAO{
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('2010000007','2010000008') "
+				+ "AND A.vanid IN ('" + id + "')"
 				+ "AND A.mchtId != 'ktest' "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "

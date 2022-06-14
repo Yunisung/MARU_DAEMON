@@ -33,7 +33,7 @@ public class KsnetDiffMchtDownLoad {
 	private String day = "";
 	
 	//22.06.02 vanid 분리용 배열 추가
-	private String[] vanId = {"2010000007" , "2010000008"};
+//	private String[] vanId = {"2010000007" , "2010000008"};
 	
 	public KsnetDiffMchtDownLoad(String nowDate) {
 		downLoadDiffMcht(nowDate);
@@ -44,11 +44,12 @@ public class KsnetDiffMchtDownLoad {
 		smsGw = new SmsGw();
 		day = nowDate.substring(0,4) + "년 " + nowDate.substring(4,6) + "월 " + nowDate.substring(6) + "일";
 		
-		for (String id : vanId) {
+//		for (String id : vanId) {
 			
 			try {
 				String path = MCHT_PATH+nowDate.substring(0, 6);
-				String fileName = path+File.separator+nowDate+"("+id+")"+".ksnet.download.txt";
+//				String fileName = path+File.separator+nowDate+"("+id+")"+".ksnet.download.txt";
+				String fileName = path+File.separator+nowDate+".ksnet.download.txt";
 				KsnetDiffDownloadDAO dao = new KsnetDiffDownloadDAO();
 				
 				File folder = new File(path);
@@ -56,7 +57,8 @@ public class KsnetDiffMchtDownLoad {
 					folder.mkdir();
 				}
 				
-				if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGSBM", "0", id, ENC_SHOP_PASS, nowDate) > -1) {
+//				if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGSBM", "0", id, ENC_SHOP_PASS, nowDate) > -1) {
+				if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGSBM", "0", "2010000007", ENC_SHOP_PASS, nowDate) > -1) {
 					List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
 					
 					try {
@@ -122,7 +124,7 @@ public class KsnetDiffMchtDownLoad {
 				logger.error(e.getMessage(), e);
 			}
 		}
-	}
+//	}
 	
 	public static void main(String[] args) {
 		new KsnetDiffMchtDownLoad(args[0]);

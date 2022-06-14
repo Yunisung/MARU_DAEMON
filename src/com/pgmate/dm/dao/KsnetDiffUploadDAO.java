@@ -26,7 +26,7 @@ public class KsnetDiffUploadDAO extends DAO{
 	}
 	
 	public List<SharedMap<String,Object>> getPayList(String id){
-		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(B.identity) AS mchtCompNo, A.vanTrxId, A.amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '4198800046' AS compNo, '0' AS trxType, '0' AS rfdTurn "
+		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(B.identity) AS mchtCompNo, A.vanTrxId, A.amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo, '0' AS trxType, '0' AS rfdTurn "
 				+ "FROM PG_TRX_PAY A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId  "
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
@@ -46,7 +46,7 @@ public class KsnetDiffUploadDAO extends DAO{
 	}
 
 	public List<SharedMap<String,Object>> getRfdList(String id){
-		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '4198800046' AS compNo,"
+		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
 				+ "A.rootTrxId, A.reqTime as trxTime, "
 				+ "case when A.rfdAll = '전액' then '1' " 
 				+ "when A.rfdAll = '부분' then '3' else '1' end as trxType, "

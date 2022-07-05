@@ -113,8 +113,8 @@ public class KsnetDiffTrxDownLoad {
 						logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
 					}
 					
-					String msgBody = day + " KSNET 차액정산"+ "("+id+") " + formatter.format(list.size()) + "건 완료.";
-					smsGw.sendMessage("0", "3", msgBody);
+					//String msgBody = day + " KSNET 차액정산"+ "("+id+") " + formatter.format(list.size()) + "건 완료.";
+					//smsGw.sendMessage("0", "3", msgBody);
 				} else {
 					String msgBody = day + " KSNET 차액정산 다운로드 파일이 존재하지 않습니다." + "("+id+")";
 					smsGw.sendMessage("0", "3", msgBody);

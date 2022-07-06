@@ -65,7 +65,7 @@ public class Settle {
 			}
             	
 			// 월정산(영업대행)
-			if("06".equals(cmd.substring(6))){
+			if("07".equals(cmd.substring(6))){
 				monthExecute(cmd);
 				monthVactExecute(cmd); // 가상계좌
 

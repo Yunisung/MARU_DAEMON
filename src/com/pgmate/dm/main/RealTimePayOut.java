@@ -24,8 +24,8 @@ public class RealTimePayOut {
 	private SmsGw smsGw = null;
 	private String msgBody = "";
 	
-	private String firmServer = "pgwas2";
-	private int frimPort = 10026;
+	private String firmServer = "10.100.200.10";
+	private int frimPort = 10006;
 	private int firmTimeOut = 70000;
 	private int firmStartTime = 3000; //출금 시작 시간
 	private int firmEndTime = 233000; //출금 중지 시간 

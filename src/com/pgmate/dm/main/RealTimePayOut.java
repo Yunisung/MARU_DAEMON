@@ -177,7 +177,7 @@ public class RealTimePayOut {
 							
 							//실시간 출금요청
 							//운영
-							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("trxId"), "", "RS");
+							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("039", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("trxId"), "", "RS");
 							//테스트
 							//firmBean = new FirmBean();
 							//firmBean.resultCd = "9999";
@@ -201,7 +201,7 @@ public class RealTimePayOut {
 							
 							//출금 실패한 건들은 결과확인
 							//운영
-							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck("089", orgSeq);
+							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck("039", orgSeq);
 							//테스트
 							//firmBean = new FirmBean();
 							//firmBean.resultCd = "0000";

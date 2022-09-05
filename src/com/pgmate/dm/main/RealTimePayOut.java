@@ -185,6 +185,8 @@ public class RealTimePayOut {
 							
 							if(!firmBean.resultCd.equals("0000") ) {
 								msgBody = "실시간 출금 실패. trxId : [" + data.getString("trxId") + "], trackId : [" + data.getString("trackId") + "]";
+								String resultMsg = dao.getCodeDesc("ERR", firmBean.resultCd);
+								firmBean.resultMsg = resultMsg;
 								logger.info(msgBody);
 								errFlag = true;
 							}else {
@@ -208,6 +210,8 @@ public class RealTimePayOut {
 							//firmBean.resultMsg = "성공";
 							
 							if(!firmBean.resultCd.equals("0000") ) {
+								String resultMsg = dao.getCodeDesc("ERR", firmBean.resultCd);
+								firmBean.resultMsg = resultMsg;
 								msgBody = "결과확인 실패. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
 								logger.info(msgBody);
 								errFlag = true;

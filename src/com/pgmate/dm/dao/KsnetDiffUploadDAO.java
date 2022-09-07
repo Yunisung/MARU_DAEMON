@@ -30,13 +30,14 @@ public class KsnetDiffUploadDAO extends DAO{
 				+ "FROM PG_TRX_PAY A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId  "
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
-				+ "WHERE A.van like 'KSPAY%' "
+				+ "WHERE (A.van like 'KSPAY%' "
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 				+ "AND E.trxId IS NULL "
 				+ "AND A.vanid IN ('" + id + "') "
 				+ "AND A.mchtId !='ktest' "
-				+ "AND A.vanTrxId NOT LIKE 'TX%' "; 
+				+ "AND A.vanTrxId NOT LIKE 'TX%' ) "
+				+ "OR E.resultCd NOT IN ('CC', '00')";
 				
 				
 		RecordSet rset = super.query(q);

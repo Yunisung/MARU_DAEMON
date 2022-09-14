@@ -104,7 +104,8 @@ public class KsnetDiffUpload {
 		for (String id : vanId) {
 			
 			List<SharedMap<String,Object>> payList = dao.getPayList(id); 
-			List<SharedMap<String,Object>> rfdList = dao.getRfdList(id); 
+			List<SharedMap<String,Object>> rfdList = dao.getRfdList(id);
+			List<SharedMap<String,Object>> errList = dao.getErrList(id);
 			try {
 				String path = SETTLE_PATH+nowDate.substring(0,6);
 				String fileName = path+File.separator+nowDate+"("+id+")"+".ksnet.upload.txt";
@@ -142,6 +143,23 @@ public class KsnetDiffUpload {
 						map.replace("rfdTurn", Integer.toString(cnt+1));
 					}
 						
+					bw.write(map.getString("recordType").trim()+",");
+					bw.write(map.getString("systemType").trim()+",");
+					bw.write(map.getString("vanId").trim()+",");
+					bw.write(map.getString("trxType").trim()+",");
+					bw.write(map.getString("trxDay").trim()+",");
+					bw.write(map.getString("compNo").trim()+",");
+					bw.write(map.getString("mchtCompNo").trim()+",");
+					bw.write(map.getString("vanTrxId").trim()+",");
+					bw.write(map.getString("rfdTurn").trim()+",");
+					bw.write(map.getString("amount").trim()+",");
+					bw.write(map.getString("amount").trim()+",");
+					bw.write(map.getString("trxId").trim()+",");
+					bw.write(" ,");
+					bw.newLine();
+				}
+				// 22.09.04 차액정산 오류코드 받은 거래건 다시 업로드
+				for(SharedMap<String, Object> map:errList) {
 					bw.write(map.getString("recordType").trim()+",");
 					bw.write(map.getString("systemType").trim()+",");
 					bw.write(map.getString("vanId").trim()+",");

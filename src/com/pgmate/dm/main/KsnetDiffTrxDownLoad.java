@@ -109,6 +109,11 @@ public class KsnetDiffTrxDownLoad {
 					}catch (Exception e) {
 						logger.error(e.getMessage());
 					}
+					List<SharedMap<String, Object>> errList = dao.getErrList();
+					logger.info("errList size : {}", errList.size());
+					if(errList != null) {
+						logger.info("updateTrxCap errList [{}]", dao.updateErrTrxCap(errList, nowDate));
+					}
 					if(dao.updateTrxDiff(list) > 0) {
 						logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
 					}

@@ -3,6 +3,7 @@ package com.pgmate.dm.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
 
@@ -176,7 +177,20 @@ public class KsnetDiffDownloadDAO extends DAO{
 		}
 		return inserted;
 	}
-
+	
+	public List<SharedMap<String, Object>> getErrList() {
+		String q = "SELECT A.mchtId, A.amount, A.cardType, B.* "
+				+ "FROM PG_TRX_CAP A , PG_TRX_CAP_DTL B "
+				+ "WHERE A.trxId IN ("
+				+ "SELECT trxId FROM PG_TRX_DIFF WHERE resultCd IN ('12')) "
+				+ "AND A.capId = B.capId";
+		
+		RecordSet rset = super.query(q);
+		super.initRecord();
+		
+		return rset.getRows(); 
+	}
+	
 	public String getMchtId(SharedMap<String, Object> map) {
 		super.setTable("PG_MCHT_DIFF_UPLOAD");
 		super.setColumns("mchtId");
@@ -515,6 +529,103 @@ public class KsnetDiffDownloadDAO extends DAO{
 		}catch (Exception e) {
 			logger.debug(e.getMessage());
 		}
+		return inserted;
+	}
+	
+	public int updateErrTrxCap(List<SharedMap<String, Object>> errList, String nowDate) {
+		
+		String query = "UPDATE PG_TRX_CAP_DTL SET stlDistFee =?, stlDistRate=?, stlAgencyFee =?, stlAgencyRate =?, stlSalesFee =?,stlSalesRate =?,"
+				+" stlDiffAgencyRate =?, stlDiffAgencyFee =?, stlDiffDistRate =?, stlDiffDistFee =?, stlDiffSalesRate =?, stlDiffSalesFee =?, stlDiffVanAmt =?,"
+				+" stlDiffStatus = ?, stlDiffVanType= ?, stlDiffVanDay =?, stlDiffResultMsg = ?, benefit = ? WHERE capId = ?;";
+		
+		int inserted = 0;
+		DBManager db = null;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		
+		try {
+			db = DBFactory.getInstance();
+			conn = db.getConnection();
+			pstmt = conn.prepareStatement(query);
+			
+			int batchSize = 100;
+			int count = 0;
+		
+			for(SharedMap<String, Object> map:errList) {
+				SharedMap<String, Object> capDtlMap = new SharedMap<String, Object>();
+				SharedMap<String, Object> mchtMngMap = getMchtMngById(map.getString("mchtId"));
+				
+				long amount = map.getLong("amount");
+				
+				capDtlMap.put("capId", map.getString("capId"));
+				logger.info("err capId : {}", map.getString("capId"));
+				
+				// 영업라인 정산 금액 설정
+				capDtlMap.put("stlAgencyRate", mchtMngMap.getDouble("rate")-mchtMngMap.getDouble("agencyRate"));
+				capDtlMap.put("stlAgencyFee", calcFeeVat(amount, capDtlMap.getDouble("stlAgencyRate")));
+				capDtlMap.put("stlSalesRate", mchtMngMap.getDouble("salesRate"));
+				capDtlMap.put("stlSalesFee"	, calcFee(capDtlMap.getLong("stlAgencyFee"), capDtlMap.getDouble("stlSalesRate")));
+				capDtlMap.put("stlDistRate"	, mchtMngMap.getDouble("agencyRate")-mchtMngMap.getDouble("distRate"));
+				if(capDtlMap.getDouble("stlDistRate") < 0){
+					capDtlMap.put("stlDistFee"	, 0);
+				}else{
+					capDtlMap.put("stlDistFee"	, calcFeeVat(amount, capDtlMap.getDouble("stlDistRate")));
+				}
+				// 에이전시 최종 수수료 : 에이전시 수수료 - 지사 수수료
+				capDtlMap.put("stlAgencyFee", capDtlMap.getLong("stlAgencyFee")-capDtlMap.getLong("stlSalesFee"));
+				
+				capDtlMap.put("stlDiffVanDay", nowDate);
+					
+				// 차액정산 수수료는 0으로 한다
+				capDtlMap.put("stlDiffAgencyRate",0);
+				capDtlMap.put("stlDiffAgencyFee",0);
+				capDtlMap.put("stlDiffDistRate",0);
+				capDtlMap.put("stlDiffDistFee",0);
+				capDtlMap.put("stlDiffSalesRate",0);
+				capDtlMap.put("stlDiffSalesFee",0);
+				
+				capDtlMap.put("stlDiffVanAmt"	, 0);
+				capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+				capDtlMap.put("stlDiffStatus", "입금대기");
+				capDtlMap.put("benefit"		, map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee"));
+			
+				int i = 1;
+				
+				pstmt.setLong(i++, capDtlMap.getLong("stlDistFee"));
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlDistRate"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlAgencyFee"));
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlAgencyRate"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlSalesFee"));
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlSalesRate"));
+				
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlDiffAgencyRate"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlDiffAgencyFee"));
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlDiffDistRate"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlDiffDistFee"));
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlDiffSalesRate"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlDiffSalesFee"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlDiffVanAmt"));
+				pstmt.setString(i++, capDtlMap.getString("stlDiffStatus"));
+				pstmt.setString(i++, capDtlMap.getString("stlDiffVanType"));
+				pstmt.setString(i++, capDtlMap.getString("stlDiffVanDay"));
+				pstmt.setString(i++, capDtlMap.getString("stlDiffResultMsg"));
+				pstmt.setLong(i++, capDtlMap.getLong("benefit"));
+				pstmt.setString(i++, capDtlMap.getString("capId"));
+				
+				pstmt.addBatch();
+			
+				if (++count % batchSize == 0) {
+					inserted += pstmt.executeBatch().length;
+				}
+			}
+			
+			inserted += pstmt.executeBatch().length;
+			conn.commit();
+			
+		} catch(Exception e) {
+			logger.debug(e.getMessage());
+		}
+		
 		return inserted;
 	}
 	

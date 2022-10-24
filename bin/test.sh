@@ -1,1 +1,1 @@
-echo DAEMON_TEST
+echo "DAEMON_TEST" >> /home/bkwinners/DAEMON_TEST.txt

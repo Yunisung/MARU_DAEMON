@@ -1,0 +1,1 @@
+echo DAEMON_TEST

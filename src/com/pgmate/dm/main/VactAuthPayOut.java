@@ -82,6 +82,10 @@ public class VactAuthPayOut {
                     settleData.put("startDay", stlDay);
                     settleData.put("endDay", stlDay);
 
+                    settleData.put("authFee", data.getLong("fee"));
+                    settleData.put("authFeeVat", calcVat(data.getLong("fee")));
+                    settleData.put("totalAuthFee", data.getLong("fee") + calcVat(data.getLong("fee")));
+
                     settleData.put("payAmt", 0);
                     settleData.put("payFee", 0);
                     settleData.put("payVat", 0);
@@ -91,11 +95,6 @@ public class VactAuthPayOut {
                     settleData.put("rfdFee", 0);
                     settleData.put("rfdVat", 0);
                     settleData.put("rfdCnt", 0);
-
-                    settleData.put("bankFee", 0);
-                    settleData.put("authFee", data.getLong("fee"));
-                    settleData.put("authFeeVat", calcVat(data.getLong("fee")));
-                    settleData.put("totalAuthFee", data.getLong("fee") + calcVat(data.getLong("fee")));
 
                     settleData.put("stlAmount", 0);
                     settleData.put("stlRate", mchtMngVactMap.getDouble("rate"));

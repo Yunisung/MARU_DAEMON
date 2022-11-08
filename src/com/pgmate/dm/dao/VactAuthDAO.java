@@ -64,6 +64,28 @@ public class VactAuthDAO extends DAO {
         return updateed;
     }
 
+    public boolean updateAuthDtl(String stlId){
+        String q = "UPDATE PG_VACT_AUTH_DTL"
+                + "    SET stlStatus = '정산완료' "
+                + "	 WHERE stlId = '" + stlId + "'";
+
+        boolean updateed =  super.update(q);
+
+        super.initRecord();
+        return updateed;
+    }
+
+    public boolean updateChargeSettleAuto(String stlId) {
+        String q = "UPDATE PG_CHARGE_SETTLE_AUTO"
+                + "    SET stlStatus = '지급완료' "
+                + "	 WHERE stlId = '" + stlId + "'";
+
+        boolean updateed =  super.update(q);
+
+        super.initRecord();
+        return updateed;
+    }
+
     /**
      * 인증 테이블 정산번호 업데이트
      * @param stlId
@@ -109,6 +131,34 @@ public class VactAuthDAO extends DAO {
         return "S" + getFunction("FN_NEXTVAL2", "SETTLE");
     }
 
+    public synchronized static String getVactId(){
+        String returnVal = "";
+        String query 	 = "SELECT FN_NEXTVAL2('VACT') as val";
+
+        DBManager db 			= null;
+        PreparedStatement pstmt = null;
+        Connection 	conn		= null;
+        ResultSet rset			= null;
+
+        try {
+            db 			= DBFactory.getInstance();
+            conn		= db.getConnection();
+            pstmt		= conn.prepareStatement(query);
+            rset		= pstmt.executeQuery();
+
+            while(rset.next()){
+                returnVal = "V"+rset.getString("val");
+            }
+            conn.commit();
+        }catch(Exception e){
+            e.printStackTrace();
+            logger.error("getVactId ERROR : {}, query : {}", e.getMessage(), query);
+        }finally {
+            db.close(conn, pstmt, rset);
+        }
+        return returnVal;
+    }
+
     /**
      * 자동정산 데이터 (PG_SETTLE_AUTO) 테이블 INSERT
      * @param data
@@ -125,6 +175,51 @@ public class VactAuthDAO extends DAO {
 
         super.initRecord();
         return inserted;
+    }
+
+
+    /**
+     * 가상계좌 인증 정산 데이터 (PG_CHARGE_SETTLE) 테이블 INSERT
+     * @param data
+     * @return
+     */
+    public boolean insertChargeSettle(SharedMap<String,Object> data){
+        super.setTable("PG_CHARGE_SETTLE");
+
+        for(String key : data.keySet()){
+            super.setRecord(key, data.get(key));
+        }
+
+        boolean inserted =  super.insert();
+
+        super.initRecord();
+        return inserted;
+    }
+
+    /**
+     * 충전 자동정산 출금 데이터에서 출금완료하지 않은 대상건들 조회
+     * @return
+     */
+    public List<SharedMap<String,Object>> getVactAuthPayOutList(String stlDay, String stlType){
+        String q = "SELECT * "
+                +"	  FROM PG_CHARGE_SETTLE_AUTO "
+                +"   WHERE stlDay = '" + stlDay + "' and stlType = '" + stlType + "' and status = '지급대기'"
+                +"   order by regDate;";
+
+        RecordSet rset = super.query(q);
+        super.initRecord();
+
+        return rset.getRows();
+    }
+
+    public SharedMap<String, Object> getMchtBalance(String mchtId) {
+        super.setTable("PG_MCHT_BALANCE");
+        super.setColumns("*");
+        super.addWhere("mchtId",mchtId ,eq);
+        super.setOrderBy("");
+        RecordSet rset = super.search();
+        super.initRecord();
+        return rset.getRowFirst();
     }
 
     public static String getFunction(String function, String value) {

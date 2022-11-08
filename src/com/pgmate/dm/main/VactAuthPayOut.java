@@ -31,6 +31,7 @@ public class VactAuthPayOut {
         smsGw = new SmsGw();
 
         vactAuthFee();
+        vactAuthPayOut();
 
         logger.info("VactAuthPayOut End");
         logger.info("==============================");
@@ -124,6 +125,86 @@ public class VactAuthPayOut {
         }
     }
 
+    public void vactAuthPayOut() {
+        //PG_CHARGE_SETTLE_AUTO에 있는걸 정산완료 처리한다.
+        stlType = "C+0";
+        stlDay = CommonUtil.getCurrentDate("yyyMMdd");
+
+
+
+        VactAuthDAO dao = new VactAuthDAO();
+        List<SharedMap<String, Object>> getVactAuthPayOutList = dao.getVactAuthPayOutList(stlDay, stlType);
+
+        logger.info( "통합인증 수수료 정산 대상 건수 : {}", getVactAuthPayOutList.size());
+
+        if(getVactAuthPayOutList.size() > 0) {
+            logger.info("=================================================");
+            logger.info("{} 통합인증 수수료 정산 시작", stlDay);
+            logger.info("=================================================");
+
+            for(SharedMap<String, Object> data : getVactAuthPayOutList) {
+                boolean errFlag = false;
+                String stlStatus = "지급완료";
+
+                if(data.getLong("totalAuthFee") > 0) {
+                    //1. 해당금액을 PG_CHARGE_SETTLE에 출금으로 추가하기
+                    //2. PG_VACT_AUTH_DTL에 정산완료 처리
+                    //3. PG_CHARGE_SETTLE_AUTO에 지급완료 처리
+
+                    SharedMap<String, Object> mchtBalance = dao.getMchtBalance(data.getString("mchtId"));
+
+                    long balance = mchtBalance.getLong("balance") - data.getLong("totalAuthFee");
+
+                    //PG_CHARGE_SETTLE 데이터 만들기
+                    SharedMap<String, Object> trxMap = new SharedMap<>();
+                    trxMap.put("trxId", dao.getVactId());
+                    trxMap.put("mchtId", data.getString("mchtId"));
+                    trxMap.put("trxType", "출금");
+                    trxMap.put("trxUnit", "인증수수료");
+
+                    String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
+                    trxMap.put("trxDay", regDate.substring(0, 8));
+                    trxMap.put("trxTime", regDate.substring(8));
+                    trxMap.put("amount", data.getLong("totalAuthFee"));
+                    trxMap.put("fee", "0");
+                    trxMap.put("feeVat", "0");
+                    trxMap.put("bankFee", "0");
+
+                    trxMap.put("netAmount", data.getLong("totalAuthFee"));
+                    trxMap.put("balance", balance);
+                    trxMap.put("trackId", data.getString("stlId"));
+
+                    trxMap.put("summary", "가상계좌 인증 수수료 대금");
+                    trxMap.put("regId", "SYSTEM");
+                    trxMap.put("regDay", regDate.substring(0, 8));
+
+                    if(dao.insertChargeSettle(trxMap)) {
+                        //2. PG_VACT_AUTH_DTL에 정산완료 처리
+                        //3. PG_CHARGE_SETTLE_AUTO에 지급완료 처리
+                        if(dao.updateAuthDtl(data.getString("stlId"))) {
+                            if(!dao.updateChargeSettleAuto(data.getString("stlId"))) {
+                                msgBody = "PG_CHARGE_SETTLE_AUTO 지급완료처리 실패. 확인요망 [" + stlDay + "][" + data.getString("stlId") + "]";
+                            }
+                        } else {
+                            msgBody = "PG_VACT_AUTH_DTL 정산완료처리 실패. 확인요망 [" + stlDay + "][" + data.getString("stlId") + "]";
+                        }
+                    } else {
+                        msgBody = "PG_CHARGE_SETTLE VACT INSERT 실패. 확인요망 [" + stlDay + "][" + data.getString("mchtId") + "]";
+                    }
+
+                    if(!"".equals(msgBody)) {
+                        logger.info(msgBody);
+                        smsGw.sendMessage("0", "4", msgBody);
+                    }
+
+                    logger.info("==================================================");
+
+                }
+            }
+        }
+
+
+    }
 
 
     public long calcVat(long fee){

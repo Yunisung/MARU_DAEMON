@@ -54,7 +54,7 @@ public class VactAuthDAO extends DAO {
     }
 
     public boolean updateAuthFee(String stlId, long fee, long feeVat){
-        String q = "UPDATE PG_CHAREGE_SETTLE_AUTO"
+        String q = "UPDATE PG_CHARGE_SETTLE_AUTO"
                 + "    SET authFee = '" + fee +"', authFeeVat = '" + feeVat +"',totalAuthFee = totalAuthFee + '" + (fee + feeVat) + "'"
                 + "	 WHERE stlId = '" + stlId + "'";
 
@@ -77,7 +77,7 @@ public class VactAuthDAO extends DAO {
 
     public boolean updateChargeSettleAuto(String stlId) {
         String q = "UPDATE PG_CHARGE_SETTLE_AUTO"
-                + "    SET stlStatus = '지급완료' "
+                + "    SET status = '지급완료' "
                 + "	 WHERE stlId = '" + stlId + "'";
 
         boolean updateed =  super.update(q);
@@ -132,7 +132,7 @@ public class VactAuthDAO extends DAO {
     }
 
     public synchronized static String getVactId(){
-        return "V" + getFunction("FN_NETXVAL2", "VACT");
+        return "V" + getFunction("FN_NEXTVAL2", "VACT");
     }
 
     /**

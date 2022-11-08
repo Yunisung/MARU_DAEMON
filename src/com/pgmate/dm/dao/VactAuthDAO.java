@@ -132,31 +132,7 @@ public class VactAuthDAO extends DAO {
     }
 
     public synchronized static String getVactId(){
-        String returnVal = "";
-        String query 	 = "SELECT FN_NEXTVAL2('VACT') as val";
-
-        DBManager db 			= null;
-        PreparedStatement pstmt = null;
-        Connection 	conn		= null;
-        ResultSet rset			= null;
-
-        try {
-            db 			= DBFactory.getInstance();
-            conn		= db.getConnection();
-            pstmt		= conn.prepareStatement(query);
-            rset		= pstmt.executeQuery();
-
-            while(rset.next()){
-                returnVal = "V"+rset.getString("val");
-            }
-            conn.commit();
-        }catch(Exception e){
-            e.printStackTrace();
-            logger.error("getVactId ERROR : {}, query : {}", e.getMessage(), query);
-        }finally {
-            db.close(conn, pstmt, rset);
-        }
-        return returnVal;
+        return "V" + getFunction("FN_NETXVAL2", "VACT");
     }
 
     /**

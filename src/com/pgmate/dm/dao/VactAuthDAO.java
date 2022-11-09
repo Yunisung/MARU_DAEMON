@@ -4,6 +4,7 @@ import com.pgmate.lib.dao.DAO;
 import com.pgmate.lib.dao.RecordSet;
 import com.pgmate.lib.util.db.DBFactory;
 import com.pgmate.lib.util.db.DBManager;
+import com.pgmate.lib.util.lang.CommonUtil;
 import com.pgmate.lib.util.map.SharedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -196,6 +197,166 @@ public class VactAuthDAO extends DAO {
         RecordSet rset = super.search();
         super.initRecord();
         return rset.getRowFirst();
+    }
+
+    /**
+     * 해지할 가상계좌목록 조회
+     * @return
+     */
+    public List<SharedMap<String, Object>> getTerminateAccount() {
+        String q = "SELECT * "
+                +"	  FROM PG_VACT_DTL "
+                +"   WHERE status = '입금횟수초과' and depositCnt=depositLimitCnt"
+                +"   order by regDate;";
+
+        RecordSet rset = super.query(q);
+        super.initRecord();
+
+        return rset.getRows();
+    }
+
+    /**
+     * 출금계좌정보 조회
+     * @param account
+     * @return
+     */
+    public SharedMap<String, Object> getVactReg(String account) {
+        super.setTable("PG_VACT_REG");
+        super.setColumns("*");
+        super.addWhere("account", account, eq);
+        RecordSet rset = super.search();
+        super.initRecord();
+        if(rset.size() > 0){
+            return rset.getRow(0);
+        }else{
+            return new SharedMap<String,Object>();
+        }
+
+    }
+
+    /**
+     * 가상계좌 출금계좌 이력 테이블 저장 (HT_VACT_REG)
+     * @param mchtId
+     * @param bankCd
+     * @param account
+     * @param trxType
+     * @param withdrawBankCd
+     * @param withdrawAccount
+     * @param holderName
+     * @param trackId
+     * @param udf1
+     * @param udf2
+     * @param resultCd
+     * @param resultMsg
+     * @return
+     */
+    public boolean insertHtVactReg(String mchtId, String bankCd, String account, String trxType, String withdrawBankCd, String withdrawAccount,
+                                   String holderName,String trackId, String udf1, String udf2, String resultCd, String resultMsg){
+        boolean insert = false;
+
+        try {
+            String encAccnt = getAESEnc(withdrawAccount);
+
+            super.setTable("HT_VACT_REG");
+            super.setRecord("mchtId", mchtId);
+            super.setRecord("bankCd", bankCd);
+            super.setRecord("account", account);
+            super.setRecord("trxType", trxType);
+            super.setRecord("withdrawBankCd", withdrawBankCd);
+            super.setRecord("withdrawAccount", encAccnt);
+            super.setRecord("holderName", holderName);
+            super.setRecord("trackId", trackId);
+            super.setRecord("udf1", udf1);
+            super.setRecord("udf2", udf2);
+            super.setRecord("resultCd", resultCd);
+            super.setRecord("resultMsg", resultMsg);
+            super.setRecord("regTime", CommonUtil.getCurrentDate("HHmmss"));
+            super.setRecord("regDay", CommonUtil.getCurrentDate("yyyyMMdd"));
+
+            insert = super.insert();
+            logger.info("set insertHtVactReg insert : [{}][{}][{}][{}]", mchtId,account,trxType,insert);
+
+            super.initRecord();
+        }catch(Exception ex) {
+            ex.printStackTrace();
+            //logger.error("insertHtVactReg Exception : {}", ex.getMessage());
+            logger.error("insertHtVactReg Exception : {}", ex);
+        }
+
+        return insert;
+    }
+
+    /**
+     * HT_VACT_DTL테이블에 저장
+     * @param issueId	가상계좌발급번호
+     * @return
+     */
+    public boolean insertHtVactDtl(String issueId, String resultCd, String resultMsg){
+        SharedMap<String,Object> map = getVactDtl(issueId);
+        super.setTable("HT_VACT_DTL");
+
+        super.setRecord("issueId", 			map.getString("issueId"));							// 가상계좌발급번호
+        super.setRecord("account", 			map.getString("account"));							// 계좌번호
+        super.setRecord("vactType", 		map.getString("vactType"));						// 발행용도 임시,영구,월렛
+        super.setRecord("status", 			map.getString("status"));							// 계좌상태  할당,사용만료,기한만료
+        super.setRecord("mchtId", 			map.getString("mchtId"));							// 가맹점아이디
+        super.setRecord("holderName", 		map.getString("holderName"));						// IR방식의 예금주명 기본값없으면 PG_MCHT_MNG_VACT.holderName 사용
+        super.setRecord("amount", 			CommonUtil.parseLong(map.getString("amount")));	// 입금 예상 금액 0 : 제한없음 , 그외는 금액 일치 시
+        super.setRecord("oper", 			map.getString("oper"));							// 0 이외의 금액에 대해서 eq, gt 보다클때,ge 크거나같을때,  lt 작을때,le 작거나 같을때
+        super.setRecord("trackId", 			map.getString("trackId"));							// 임시,영구의 경우 가맹점 주문번호, 월렛의 경우 터미널ID
+        super.setRecord("depositCnt", 		map.getInt("depositCnt"));							// 입금횟수
+        super.setRecord("depositLimitCnt", 	map.getInt("depositLimitCnt"));					// 입금제한횟수
+        super.setRecord("expireAt", 		map.getString("expireAt"));						// 만료예상시간
+        super.setRecord("expireDate", 		map.getTimestamp("expireDate"));					// 만료일자
+        super.setRecord("udf1",				map.getString("udf1"));							// 가맹점 사용 필드1
+        super.setRecord("udf2", 			map.getString("udf2"));							// 가맹점 사용 필드2
+        super.setRecord("reason", 			map.getString("reason"));							// 변경사유
+        super.setRecord("resultCd", 		resultCd);												// 응답코드
+        super.setRecord("resultMsg", 		resultMsg);												// 응답메세지
+        super.setRecord("regId", 		"SYSTEM");											// 등록자아이디
+        super.setRecord("regDay", 			CommonUtil.getCurrentDate("yyyyMMdd"));			// 등록일
+
+        boolean insert = super.insert();
+        logger.info("set HT_VACT_DTL insert : {}", insert);
+
+        super.initRecord();
+        return insert;
+    }
+
+    public SharedMap<String,Object> getVactDtl(String issueId) {
+        super.setTable("PG_VACT_DTL");
+        super.addWhere("issueId", issueId, eq);
+
+        super.setLimit(1);
+
+        RecordSet rset = super.search();
+        super.initRecord();
+        return rset.getRowFirst();
+    }
+
+    public boolean deleteVactDtl(String issueId){
+        super.setTable("PG_VACT_DTL");
+        super.addWhere("issueId", issueId);
+        boolean deleted = super.delete();
+        super.initRecord();
+
+        return deleted;
+    }
+
+    public boolean deleteVactReg(String account, String withdrawBankCd, String withdrawAccount, String holderName) {
+        String encAccnt = getAESEnc(withdrawAccount);
+
+        super.setTable("PG_VACT_REG");
+        super.addWhere("account", account);
+        super.addWhere("withdrawBankCd", withdrawBankCd);
+        super.addWhere("withdrawAccount", encAccnt);
+        super.addWhere("holderName", holderName);
+
+        boolean deleted = super.delete();
+        super.initRecord();
+        logger.info("set deleteVactReg delete : [{}][{}][{}][{}][{}]", account, withdrawBankCd, withdrawAccount, holderName, deleted);
+
+        return deleted;
     }
 
     public static String getFunction(String function, String value) {

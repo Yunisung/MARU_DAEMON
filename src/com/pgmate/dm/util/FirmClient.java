@@ -21,8 +21,8 @@ import com.pgmate.lib.util.lang.CommonUtil;
 public class FirmClient {
 
 	private static Logger logger = LoggerFactory.getLogger(com.pgmate.dm.util.FirmClient.class );
-	private static String host 	= "pgwas2";
-	private static int port 	= 10026;
+	private static String host 	= "pgwas3";
+	private static int port 	= 10006;
 	private static int timeout  = 35000;
 	
 	public FirmClient(String firmServer, int frimPort, int firmTimeOut) {
@@ -30,7 +30,27 @@ public class FirmClient {
 		port = frimPort;
 		timeout = firmTimeOut;
 	}
-	
+
+	public FirmBean vactUnReg(String vitualBankCd, String virtualAccount, String bankCd, String account, String holderName) {
+		FirmBean firmBean = new FirmBean();
+
+		firmBean.bankCd     = vitualBankCd;
+		firmBean.msgType    = "0900400";
+		firmBean.userId	    = "SYSTEM";
+		firmBean.data.put("virtualAccount", virtualAccount);
+		firmBean.data.put("withdrawBankCd", bankCd);
+		firmBean.data.put("withdrawAccount", account);
+		firmBean.data.put("trxType", 2);
+		firmBean.data.put("customerName", holderName);
+
+		firmBean = comm(firmBean);
+
+		logger.info("vactUnReg 응답 : [{}][{}]", firmBean.resultCd, firmBean.resultMsg);
+		logger.info("vactUnReg data : [{}]", GsonUtil.toJson(firmBean.data));
+
+		return firmBean;
+	}
+
 	/**
 	 * 은행통한 예금주조회
 	 * @param bankCd

@@ -65,7 +65,7 @@ public class Settle {
 			}
             	
 			// 월정산(영업대행)
-			if("07".equals(cmd.substring(6))){
+			/*if("07".equals(cmd.substring(6))){
 				monthExecute(cmd);
 				monthVactExecute(cmd); // 가상계좌
 
@@ -74,9 +74,21 @@ public class Settle {
 				}else {
 					msgBody = day + " 월정산 생성오류. 확인요망.";
 				}
-				
+
 				smsGw.sendMessage("0", "3", msgBody);
+			}*/
+
+			//월정산 테스트
+			monthExecute(cmd);
+			monthVactExecute(cmd); // 가상계좌
+
+			if(monthErr == 0) {
+				msgBody = "[" + day + "] 월정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";
+			}else {
+				msgBody = day + " 월정산 생성오류. 확인요망.";
 			}
+
+			smsGw.sendMessage("0", "3", msgBody);
 		}else {
 			logger.info("입력받은 날짜가 올바르지 않습니다. = {}",cmd);
 		}

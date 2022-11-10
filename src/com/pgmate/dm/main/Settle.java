@@ -40,6 +40,7 @@ public class Settle {
 	private String day = "";
 	
 	public Settle(String cmd) {
+		cmd = "20221226";
 		logger.info("cmd : {} ",cmd);
 		
 		if(Pattern.matches("^[0-9]{8}$", cmd)){

@@ -117,7 +117,7 @@ public class VactAccountTerminate {
     }
 
     public FirmBean connectFirm(String vitualAccount, String bankCd, String account, String holderName) {
-        String firmServer = "pgwas3";
+        String firmServer = "10.100.200.10";
         int firmPort = 10006;
         int firmTimeOut = 60000;
 

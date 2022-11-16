@@ -83,11 +83,13 @@ public class VactAccountTerminate {
                             bankCd,account,holderName, "", "", "", firmBean.resultCd, firmBean.resultMsg);
 
                     if(dao.deleteVactReg(vitualAccount, bankCd, account, holderName)) {
+                        //PYS : 상태 바꾸기전에 입금횟수초과 상태 DB에 남기기
+                        dao.insertHtVactDtl(data.getString("issueId"), firmBean.resultCd, firmBean.resultMsg);
+
                         //vact_dtl 상태='대기', 나머지 기본값으로 변경
                         if(dao.updateVactDtl(data.getString("issueId"))) {
-//                      if(dao.deleteVactDtl(data.getString("issueId"))) {
                             logger.info("=================================================");
-                            logger.info("입금횟수초과 가상계좌 프로세스완료: {} ", data.getString("issueId"));
+                            logger.info("입금횟수초과 가상계좌 대기상태로 변경: {} ", data.getString("issueId"));
                             logger.info("=================================================");
 
                             //HT_VACT_DTL에 INSERT

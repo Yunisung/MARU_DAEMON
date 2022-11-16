@@ -88,7 +88,9 @@ public class VactAccountTerminate {
                 dao.insertHtVactDtl(data.getString("issueId"), firmBean.resultCd, firmBean.resultMsg);
 
                 if(firmBean.resultCd.equals("0000")) {
-                    if(dao.deleteVactDtl(data.getString("issueId"))) {
+                    //vact_dtl 상태='대기', 나머지 기본값으로 변경
+                    if(dao.updateVactDtl(data.getString("issueId"))) {
+//                    if(dao.deleteVactDtl(data.getString("issueId"))) {
                         if(dao.deleteVactReg(vitualAccount, bankCd, account, holderName)) {
                             logger.info("=================================================");
                             logger.info("입금횟수초과 가상계좌 프로세스완료: {} ", data.getString("issueId"));
@@ -98,8 +100,8 @@ public class VactAccountTerminate {
                             msgBody = "PG_VACT_REG 삭제 실패 : [ " + data.getString("issueId") + " ]";
                         }
                     } else {
-                        logger.info("PG_VACT_DTL 삭제 실패 : {}", data.getString("issueId"));
-                        msgBody = "PG_VACT_DTL 삭제 실패 : [ " + data.getString("issueId") + " ]";
+                        logger.info("PG_VACT_DTL 상태 변경 실패 : {}", data.getString("issueId"));
+                        msgBody = "PG_VACT_DTL 상태 변경 실패 : [ " + data.getString("issueId") + " ]";
                     }
                 } else {
                     logger.info("=================================================");

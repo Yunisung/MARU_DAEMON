@@ -98,7 +98,7 @@ public class VactAuthDAO extends DAO {
     public boolean updateAuthStlId(String stlId, String mchtId, String stlDay, String stlType){
         String q = "UPDATE PG_VACT_AUTH a, PG_VACT_AUTH_DTL b"
                 + "    SET b.stlId = '" + stlId +"'"
-                + "	 WHERE a.mchtId = '" + mchtId + "' and b.stlDay = '" + stlDay + "' and b.stlType = '" + stlType + "'";
+                + "	 WHERE a.authId=b.authId and a.mchtId = '" + mchtId + "' and b.stlDay = '" + stlDay + "' and b.stlType = '" + stlType + "'";
 
         boolean updateed =  super.update(q);
 

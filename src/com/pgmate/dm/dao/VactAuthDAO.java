@@ -368,7 +368,6 @@ public class VactAuthDAO extends DAO {
         super.setRecord("oper", "ge");
         super.setRecord("trackId", "");
         super.setRecord("depositCnt", 0);
-        super.setRecord("expireAt", CommonUtil.getOpDate(Calendar.YEAR, 1, CommonUtil.getCurrentDate("yyyyMMdd"))+"00");
         super.setRecord("udf1", "");
         super.setRecord("udf2", "");
         super.setRecord("regDay", 	CommonUtil.getCurrentDate("yyyyMMdd"));

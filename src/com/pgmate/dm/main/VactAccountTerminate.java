@@ -74,18 +74,14 @@ public class VactAccountTerminate {
 
                 FirmBean firmBean = connectFirm(vitualAccount, bankCd, account, holderName);
 
-                //HT_VACT_REG에 INSERT
-                dao.insertHtVactReg(
-                        regData.getString("mchtId"),
-                        regData.getString("bankCd"),
-                        regData.getString("account"),
-                        "2",
-                        bankCd,
-                        account,
-                        holderName, "", "", "", firmBean.resultCd, firmBean.resultMsg);
+
 
 
                 if(firmBean.resultCd.equals("0000")) {
+                    //HT_VACT_REG에 INSERT
+                    dao.insertHtVactReg(regData.getString("mchtId"),regData.getString("bankCd"),regData.getString("account"),"2",
+                            bankCd,account,holderName, "", "", "", firmBean.resultCd, firmBean.resultMsg);
+
                     if(dao.deleteVactReg(vitualAccount, bankCd, account, holderName)) {
                         //vact_dtl 상태='대기', 나머지 기본값으로 변경
                         if(dao.updateVactDtl(data.getString("issueId"))) {

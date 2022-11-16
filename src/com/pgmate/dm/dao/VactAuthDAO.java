@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -362,11 +363,12 @@ public class VactAuthDAO extends DAO {
     public boolean updateVactDtl(String issueId) {
         super.setTable("PG_VACT_DTL");
 
-        super.setRecord("`status`", "대기");
+        super.setRecord("status", "대기");
         super.setRecord("amount", 0);
         super.setRecord("oper", "ge");
         super.setRecord("trackId", "");
         super.setRecord("depositCnt", 0);
+        super.setRecord("expireAt", CommonUtil.getOpDate(Calendar.YEAR, 1, CommonUtil.getCurrentDate("yyyyMMdd"))+"00");
         super.setRecord("udf1", "");
         super.setRecord("udf2", "");
         super.setRecord("regDay", 	CommonUtil.getCurrentDate("yyyyMMdd"));

@@ -360,13 +360,14 @@ public class VactAuthDAO extends DAO {
         return deleted;
     }
 
-    public boolean updateVactDtl(String issueId) {
+    public boolean updateVactDtl(String issueId, String holderName) {
         super.setTable("PG_VACT_DTL");
 
         super.setRecord("status", "대기");
         super.setRecord("amount", 0);
         super.setRecord("oper", "ge");
         super.setRecord("trackId", "");
+        super.setRecord("holderName", holderName);
         super.setRecord("depositCnt", 0);
         super.setRecord("udf1", "");
         super.setRecord("udf2", "");

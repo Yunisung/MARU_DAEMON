@@ -207,7 +207,7 @@ public class VactAuthDAO extends DAO {
     public List<SharedMap<String, Object>> getTerminateAccount() {
         String q = "SELECT * "
                 +"	  FROM PG_VACT_DTL "
-                +"   WHERE status = '입금횟수초과' and depositCnt=depositLimitCnt"
+                +"   WHERE status = '입금횟수초과' OR status='사용자만료' "
                 +"   order by regDate;";
 
         RecordSet rset = super.query(q);

@@ -5,6 +5,7 @@ import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Properties;
 
+import com.pgmate.dm.dao.FirmFailCheckDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +95,10 @@ public class ChargeSettlePayOut {
 						//출금요청
 						//운영
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
+
+						//PYS : 펌 결과메세지가 깨질수 있어서 한번더 DB에서 불러옴
+						firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
+
 						//테스트
 //						firmBean = new FirmBean();
 //						firmBean.resultCd = "XXXX";
@@ -147,6 +152,10 @@ public class ChargeSettlePayOut {
 						//출금 실패한 건들은 결과확인
 						//운영
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck("089", orgSeq);
+
+						//PYS : 펌 결과메세지가 깨질수 있어서 한번더 DB에서 불러옴
+						firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
+
 						//테스트
 //						firmBean = new FirmBean();
 //						firmBean.resultCd = "0000";

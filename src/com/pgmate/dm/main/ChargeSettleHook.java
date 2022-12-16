@@ -38,7 +38,7 @@ public class ChargeSettleHook extends Thread {
 	public ChargeSettleHook(String hookAddr,SharedMap<String,Object> sharedMap,ChargeSettlePayOutDAO dao,String retry) {
 		this.hookAddr = hookAddr;
 		this.sharedMap 	= sharedMap;
-		this.dao = new ChargeSettlePayOutDAO();	
+		this.dao = new ChargeSettlePayOutDAO();
 		this.retry = retry;
 	}
 	
@@ -111,6 +111,7 @@ public class ChargeSettleHook extends Thread {
 			conn.disconnect();
 			logger.info("ChargeSettle Noti THREAD RESPONSE : "+CommonUtil.cut(ntsMap.getString("resData"),100)+"]");
 			logger.info("ChargeSettle Noti Elasped Time : [{}]",(System.currentTimeMillis()-time)/1000);
+			logger.info("ChargeSettle payLoad : [{}]",ntsMap.getString("payLoad"));
 			if("retry".equals(retry)){
 				dao.updateChargeSettleNoti(ntsMap);
 			}else{

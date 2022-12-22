@@ -61,6 +61,10 @@ public class VactAccountTerminate {
             logger.info("=================================================");
 
             for(SharedMap<String, Object> data : accountList) {
+                logger.info("=================================================");
+                logger.info("만료예정 가상계좌 : {}", data.getString("account"));
+                logger.info("=================================================");
+
                 SharedMap<String, Object> regData = dao.getVactReg(data.getString("account"));
 
                 String vitualAccount = regData.getString("account");
@@ -72,9 +76,30 @@ public class VactAccountTerminate {
                 logger.info("입금횟수초과 가상계좌 조회, 펌뱅킹 전송 : {} {} {} {}", vitualAccount, bankCd, account, holderName);
                 logger.info("=================================================");
 
+                //221222_PYS: 해지 처리한것중 대기상태로 안바뀐것들 다시 대기상태로 변경
+                //PG_VACT_REG에는 삭제되있어서 PG_VACT_DTL에서 mchtId를 가져오게 처리
+                if(CommonUtil.isNullOrSpace(vitualAccount) && CommonUtil.isNullOrSpace(bankCd) && CommonUtil.isNullOrSpace(account) && CommonUtil.isNullOrSpace(holderName)) {
+                    //PYS : 상태 바꾸기전에 입금횟수초과 상태 DB에 남기기
+                    dao.insertHtVactDtl(data.getString("issueId"), "0000", "가상계좌해지 오류처리");
+                    //PYS : 입금횟수초기화시 예금주명 초기화
+                    String mchtName = dao.getMchtMngVactByMchtId(data.getString("mchtId")).getString("holderName");
+                    //vact_dtl 상태='대기', 나머지 기본값으로 변경
+                    if(dao.updateVactDtl(data.getString("issueId"), mchtName)) {
+                        logger.info("=================================================");
+                        logger.info("입금횟수초과 가상계좌 대기상태로 변경: {} ", data.getString("issueId"));
+                        logger.info("=================================================");
+
+                        //HT_VACT_DTL에 INSERT
+                        dao.insertHtVactDtl(data.getString("issueId"), "0000", "가상계좌해지 오류처리");
+                    } else {
+                        logger.info("PG_VACT_DTL 상태 변경 실패 : {}", data.getString("issueId"));
+                        msgBody = "PG_VACT_DTL 상태 변경 실패 : [ " + data.getString("issueId") + " ]";
+                    }
+
+                    continue;
+                }
+
                 FirmBean firmBean = connectFirm(vitualAccount, bankCd, account, holderName);
-
-
 
 
                 if(firmBean.resultCd.equals("0000")) {
@@ -82,25 +107,33 @@ public class VactAccountTerminate {
                     dao.insertHtVactReg(regData.getString("mchtId"),regData.getString("bankCd"),regData.getString("account"),"2",
                             bankCd,account,holderName, "", "", "", firmBean.resultCd, firmBean.resultMsg);
 
-                    if(dao.deleteVactReg(vitualAccount, bankCd, account, holderName)) {
-                        //PYS : 상태 바꾸기전에 입금횟수초과 상태 DB에 남기기
-                        dao.insertHtVactDtl(data.getString("issueId"), firmBean.resultCd, firmBean.resultMsg);
-                        //PYS : 입금횟수초기화시 예금주명 초기화
-                        String mchtName = dao.getMchtMngVactByMchtId(regData.getString("mchtId")).getString("holderName");
-                        //vact_dtl 상태='대기', 나머지 기본값으로 변경
-                        if(dao.updateVactDtl(data.getString("issueId"), mchtName)) {
-                            logger.info("=================================================");
-                            logger.info("입금횟수초과 가상계좌 대기상태로 변경: {} ", data.getString("issueId"));
-                            logger.info("=================================================");
+                    //221222_PYS : 가상계좌 해지 로직변경
 
-                            //HT_VACT_DTL에 INSERT
-                            dao.insertHtVactDtl(data.getString("issueId"), firmBean.resultCd, firmBean.resultMsg);
-                        } else {
-                            logger.info("PG_VACT_DTL 상태 변경 실패 : {}", data.getString("issueId"));
-                            msgBody = "PG_VACT_DTL 상태 변경 실패 : [ " + data.getString("issueId") + " ]";
-                        }
+                    //PYS : 상태 바꾸기전에 입금횟수초과 상태 DB에 남기기
+                    dao.insertHtVactDtl(data.getString("issueId"), firmBean.resultCd, firmBean.resultMsg);
+
+                    //PYS : 입금횟수초기화시 예금주명 초기화
+                    String mchtName = dao.getMchtMngVactByMchtId(regData.getString("mchtId")).getString("holderName");
+                    //vact_dtl 상태='대기', 나머지 기본값으로 변경
+                    if(dao.updateVactDtl(data.getString("issueId"), mchtName)) {
+                        logger.info("=================================================");
+                        logger.info("입금횟수초과 가상계좌 대기상태로 변경: {} ", data.getString("issueId"));
+                        logger.info("=================================================");
+
+                        //HT_VACT_DTL에 INSERT
+                        dao.insertHtVactDtl(data.getString("issueId"), firmBean.resultCd, firmBean.resultMsg);
                     } else {
-                        logger.info("PG_VACT_REG 삭제 실패 : {}", data.getString("issueId"));
+                        logger.info("PG_VACT_DTL 상태 변경 실패 : {}", data.getString("issueId"));
+                        msgBody = "PG_VACT_DTL 상태 변경 실패 : [ " + data.getString("issueId") + " ]";
+                    }
+
+                    //PYS : PG_VACT_REG테이블 삭제처리
+                    if(dao.deleteVactReg(vitualAccount, bankCd, account, holderName)) {
+                        logger.info("=================================================");
+                        logger.info("PG_VACT_REG 삭제완료 : {} {} ", data.getString("issueId"), vitualAccount);
+                        logger.info("=================================================");
+                    } else {
+                        logger.info("PG_VACT_REG 삭제 실패 : {} {}", data.getString("issueId"), vitualAccount);
                         msgBody = "PG_VACT_REG 삭제 실패 : [ " + data.getString("issueId") + " ]";
                     }
                 } else {

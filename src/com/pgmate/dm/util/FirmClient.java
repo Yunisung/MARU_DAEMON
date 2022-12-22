@@ -251,7 +251,7 @@ public class FirmClient {
 			bout.flush();
 			byte[] res = bout.toByteArray();
 			bout.close();
-			resJson = new String(res,"MS949");
+			resJson = new String(res,"UTF-8");
 			if(!CommonUtil.isNullOrSpace(resJson)) {
 				firmBean = (FirmBean)GsonUtil.fromJson(resJson, FirmBean.class);
 			}else {

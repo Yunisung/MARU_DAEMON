@@ -304,6 +304,15 @@ public class ChargeSettlePayOutDAO extends DAO{
 		return rset.getRowFirst();
 	}
 
+	public List<SharedMap<String, Object>> getChargeSettleErr(String trxId) {
+		super.setTable("PG_CHARGE_SETTLE_ERR");
+		super.setColumns("*");
+		super.addWhere("trxId",trxId,eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		return rset.getRows();
+	}
+
 	public SharedMap<String, Object> getMchtChargeMng(String mchtId) {
 		super.setTable("PG_MCHT_CHARGE_MNG");
 		super.setColumns("*");

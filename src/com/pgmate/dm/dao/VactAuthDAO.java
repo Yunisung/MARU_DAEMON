@@ -204,11 +204,12 @@ public class VactAuthDAO extends DAO {
      * 해지할 가상계좌목록 조회
      * @return
      */
-    public List<SharedMap<String, Object>> getTerminateAccount() {
+    public List<SharedMap<String, Object>> getTerminateAccount(int limit) {
         String q = " SELECT A.issueId, B.* " +
                     " FROM PG_VACT_DTL A INNER JOIN PG_VACT_REG B " +
                     " ON A.account=B.account " +
-                    " WHERE A.status='사용자만료' OR A.status='입금횟수초과' ORDER BY A.account ASC LIMIT 10";
+                    " WHERE A.status='사용자만료' OR A.status='입금횟수초과' ORDER BY A.account ASC " +
+                    " LIMIT " + limit;
 
         RecordSet rset = super.query(q);
         super.initRecord();

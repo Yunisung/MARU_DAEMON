@@ -53,7 +53,7 @@ public class VactAccountTerminate {
     public void searchVactAccount() {
 
         VactAuthDAO dao = new VactAuthDAO();
-        List<SharedMap<String, Object>> accountList = dao.getTerminateAccount();
+        List<SharedMap<String, Object>> accountList = dao.getTerminateAccount(10);
 
         if(accountList.size() > 0) {
             logger.info("=================================================");

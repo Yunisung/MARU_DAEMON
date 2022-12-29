@@ -154,7 +154,10 @@ public class ChargeSettlePayOut {
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck("089", orgSeq);
 
 						//PYS : 펌 결과메세지가 깨질수 있어서 한번더 DB에서 불러옴
+						logger.info("=== 결과메세지 변화체크 ===");
+						logger.info(firmBean.resultMsg);
 						firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
+						logger.info(firmBean.resultMsg);
 
 						//테스트
 //						firmBean = new FirmBean();

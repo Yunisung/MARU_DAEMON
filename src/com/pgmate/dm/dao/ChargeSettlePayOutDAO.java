@@ -361,12 +361,12 @@ public class ChargeSettlePayOutDAO extends DAO{
 			pstmt.setString(3, ntsMap.getString("mchtId"));
 			pstmt.setString(4, ntsMap.getString("trackId"));
 			pstmt.setString(5, ntsMap.getString("hookAddr"));
-			pstmt.setString(6, ntsMap.getString("retry"));
+			pstmt.setInt(6, ntsMap.getInt("retry"));
 			pstmt.setString(7, ntsMap.getString("status"));
 			pstmt.setString(8, ntsMap.getString("code"));
 			pstmt.setString(9, ntsMap.getString("payLoad"));
 			pstmt.setString(10, ntsMap.getString("resData"));
-			pstmt.setString(11, ntsMap.getString("sentDate"));
+			pstmt.setTimestamp(11, ntsMap.getTimestamp("sentDate"));
 			pstmt.setString(12, ntsMap.getString("regDay"));
 			pstmt.setString(13, ntsMap.getString("regTime"));
 			pstmt.executeQuery();

@@ -323,7 +323,7 @@ public class ChargeSettlePayOutDAO extends DAO{
 	}
 
 	public void insertChargeSettleNoti(SharedMap<String, Object> ntsMap) {
-		super.setTable("PG_CHARGE_SETTLE_NOTI");
+		/*super.setTable("PG_CHARGE_SETTLE_NOTI");
 
 		super.setRecord("trxId", ntsMap.getString("trxId"));
 		super.setRecord("trxType", ntsMap.getString("trxType"));
@@ -341,7 +341,48 @@ public class ChargeSettlePayOutDAO extends DAO{
 		
 		logger.info("set PG_CHARGE_SETTLE_NOTI : {}", super.insert());
 
-		super.initRecord();
+		super.initRecord();*/
+
+		String query = " INSERT INTO PG_CHARGE_SETTLE_NOTI (trxId, trxType, mchtId, trackId, hookAddr, retry, status, code, payLoad, resData, sentDate, regDay, regTime) " +
+				" VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+
+		RecordSet rset = new RecordSet();
+		DBManager db = null;
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet resultSet = null;
+
+		try {
+			db = DBFactory.getInstance();
+			conn = db.getConnection();
+			pstmt = conn.prepareStatement(query);
+			pstmt.setString(1, ntsMap.getString("trxId"));
+			pstmt.setString(2, ntsMap.getString("trxType"));
+			pstmt.setString(3, ntsMap.getString("mchtId"));
+			pstmt.setString(4, ntsMap.getString("trackId"));
+			pstmt.setString(5, ntsMap.getString("hookAddr"));
+			pstmt.setString(6, ntsMap.getString("retry"));
+			pstmt.setString(7, ntsMap.getString("status"));
+			pstmt.setString(8, ntsMap.getString("code"));
+			pstmt.setString(9, ntsMap.getString("payLoad"));
+			pstmt.setString(10, ntsMap.getString("resData"));
+			pstmt.setString(11, ntsMap.getString("sentDate"));
+			pstmt.setString(12, ntsMap.getString("regDay"));
+			pstmt.setString(13, ntsMap.getString("regTime"));
+			pstmt.executeQuery();
+
+			resultSet = pstmt.getResultSet();
+
+			if(resultSet != null) {
+				rset = new RecordSet(resultSet);
+			}
+
+		} catch (Exception e) {
+			logger.debug("sel error : {}, query : {}", e.getMessage(), query);
+		} finally {
+			db.close(conn, pstmt, resultSet);
+		}
+
 	}
 
 	public List<SharedMap<String, Object>> getRetryNotiList() {

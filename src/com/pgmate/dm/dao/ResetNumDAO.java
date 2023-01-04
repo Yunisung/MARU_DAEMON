@@ -12,7 +12,7 @@ public class ResetNumDAO extends DAO{
 	public void updateNumber() {
 		logger.info("reset number !!! " );
 		
-		super.update("UPDATE PG_SEQ SET curVal=1 WHERE NAME='FIRM'");
+		super.update("UPDATE PG_SEQ SET curVal=1 WHERE NAME='BANK'");
 		super.initRecord();
 	}
 }

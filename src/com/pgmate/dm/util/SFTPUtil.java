@@ -1,0 +1,137 @@
+package com.pgmate.dm.util;
+
+import com.jcraft.jsch.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
+import java.util.Vector;
+
+public class SFTPUtil {
+    private static Logger logger = LoggerFactory.getLogger(SFTPUtil.class);
+    private Session session = null;
+    private Channel channel = null;
+    private ChannelSftp channelSftp = null;
+
+    /**
+     * 서버 연결에 필요한 값들을 가져와 초기화
+     *
+     * @param host 서버 주소
+     * @param userId 아이디
+     * @param userPw 패스워드
+     * @param port 포트번호
+     */
+    public void init(String host, String userId, String userPw, int port) {
+        JSch jsch = new JSch();
+
+        logger.info("===== CONNECTING START =====");
+        try {
+            session = jsch.getSession(userId, host, port);
+            session.setPassword(userPw);
+
+            java.util.Properties config = new java.util.Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+
+            logger.info("CONNECTED TO ===> {}", host);
+            channel = session.openChannel("sftp");
+            channel.connect();
+        } catch (JSchException e) {
+            logger.info("CONNECTED FAIL");
+            e.printStackTrace();
+        }
+
+        channelSftp = (ChannelSftp) channel;
+    }
+
+    /**
+     * 디렉토리( or 파일) 존재 여부
+     *
+     * @param path 디렉토리 (or 파일)
+     * @return
+     */
+    public boolean exists(String path) {
+        Vector res = null;
+        try {
+            res = channelSftp.ls(path);
+        } catch (SftpException e) {
+            if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+                return false;
+            }
+        }
+        return res != null && !res.isEmpty();
+    }
+
+    /**
+     * 파일 업로드
+     *
+     * @param dir 저장할 디렉토리
+     * @param file 저장할 파일
+     * @return 업로드 여부
+     */
+    public boolean upload(String dir, File file) {
+        logger.info("dir ::: {}", dir);
+        boolean isUpload = false;
+        SftpATTRS sftpATTRS;
+        FileInputStream in = null;
+
+        try {
+            in = new FileInputStream(file);
+            channelSftp.cd(dir);
+            channelSftp.put(in, file.getName());
+
+            if(this.exists(dir + "/" + file.getName())) {
+                isUpload = true;
+            }
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return isUpload;
+    }
+
+    public void download(String dir, String downloadFile, String path) {
+        InputStream in = null;
+        FileOutputStream out = null;
+
+        try {
+            channelSftp.cd(dir);
+            in = channelSftp.get(downloadFile);
+        } catch (SftpException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            out = new FileOutputStream(new File(path));
+            int i;
+
+            while ((i = in.read()) != -1) {
+                out.write(i);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                out.close();
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 연결 종료
+     */
+    public void disconnection() {
+        channelSftp.quit();
+        session.disconnect();
+    }
+}

@@ -1,6 +1,7 @@
 package com.pgmate.dm.main;
 
 import com.pgmate.dm.dao.ChargeSettlePayOutDAO;
+import com.pgmate.lib.util.lang.CommonUtil;
 import com.pgmate.lib.util.map.SharedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +33,16 @@ public class ChargeSettleRecovery {
                 //실패건 PG_CHARGE_SETTLE 테이블에서 삭제
                 dao.deleteChargeSettle(trxId);
 
+                // 출금 실패결과 noti 발송
+                String mchtId = chargeData.getString("mchtId");
+                SharedMap<String, Object> chargeMngMap = dao.getMchtChargeMng(mchtId);
+                if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+                    String payLoad = setPayLoad(chargeData, "출금실패", "9999", "가맹점 잔액 복구완료");
+                    chargeData.put("payLoad", payLoad);
+                    chargeData.put("trxType", "출금");
+                    new ChargeSettleHook(chargeMngMap.getString("hookAddr"), chargeData, dao, "0").start();
+                }
+
                 logger.info("============================");
                 logger.info("충전정산 복구완료");
                 logger.info("가맹점 ID : {}", chargeData.getString("mchtId"));
@@ -51,5 +62,21 @@ public class ChargeSettleRecovery {
         }
 
 
+    }
+
+    public String setPayLoad(SharedMap<String, Object> sharedMap, String status, String resultCd, String resultMsg){
+        SharedMap<String, String> payLoadMap = new SharedMap<String, String>();
+
+        payLoadMap.put("mchtId",sharedMap.getString("mchtId"));
+        payLoadMap.put("trxId",sharedMap.getString("trxId"));
+        payLoadMap.put("trxDay",sharedMap.getString("trxDay"));
+        payLoadMap.put("trxTime",sharedMap.getString("trxTime"));
+        payLoadMap.put("status",status);
+        payLoadMap.put("trackId",sharedMap.getString("trackId"));
+        payLoadMap.put("resultCd",resultCd);
+        payLoadMap.put("resultMsg",resultMsg);
+        payLoadMap.put("amount",sharedMap.getString("amount"));
+        String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
+        return payLoad;
     }
 }

@@ -2,10 +2,15 @@ package com.pgmate.dm.dao;
 
 import com.pgmate.lib.dao.DAO;
 import com.pgmate.lib.dao.RecordSet;
+import com.pgmate.lib.util.db.DBFactory;
+import com.pgmate.lib.util.db.DBManager;
 import com.pgmate.lib.util.map.SharedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 
 public class TotalAuthDAO extends DAO {
@@ -25,7 +30,7 @@ public class TotalAuthDAO extends DAO {
         return rset.getRows();
     }
 
-    public synchronized static String getSettleId() {
+    public synchronized String getSettleId() {
         return "S" + getFunction("FN_NEXTVAL2", "SETTLE");
     }
 
@@ -114,21 +119,32 @@ public class TotalAuthDAO extends DAO {
         return updateed;
     }
 
-    public String getStlId(String mchtId, String stlDay, String stlType) {
-        super.setTable("PG_CHARGE_SETTLE_AUTO");
-        super.setColumns("stlId");
-        super.addWhere("mchtId", mchtId);
-        super.addWhere("stlDay", stlDay);
-        super.addWhere("stlType", stlType);
-        super.addWhere("status", "지급대기");
-        super.addWhere("payType", "V");
+    public String getFunction(String function, String value) {
+        String returnVal = "";
+        String query = "SELECT " + function + "(?) as val";
 
-        RecordSet rset = super.search();
-        super.initRecord();
-        if (rset.size() != 0) {
-            return rset.getRow(0).getString("stlId");
-        } else {
-            return "";
+        DBManager db = null;
+        PreparedStatement pstmt = null;
+        Connection conn = null;
+        ResultSet rset = null;
+
+        try {
+
+            db = DBFactory.getInstance();
+            conn = db.getConnection();
+            pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, value);
+            rset = pstmt.executeQuery();
+
+            while (rset.next()) {
+                returnVal = rset.getString(1);
+            }
+            conn.commit();
+        } catch (Exception t) {
+            logger.debug("sql error : {}, query : {}", t.getMessage(), query);
+        } finally {
+            db.close(conn, pstmt, rset);
         }
+        return returnVal;
     }
 }

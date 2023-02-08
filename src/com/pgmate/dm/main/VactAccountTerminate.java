@@ -91,7 +91,7 @@ public class VactAccountTerminate {
                     //PYS : 입금횟수초기화시 예금주명 초기화
                     String mchtName = dao.getMchtMngVactByMchtId(data.getString("mchtId")).getString("holderName");
                     //vact_dtl 상태='대기', 나머지 기본값으로 변경
-                    if(dao.updateVactDtl(data.getString("issueId"), mchtName)) {
+                    if(dao.updateVactDtlReady(data.getString("issueId"), mchtName)) {
                         logger.info("=================================================");
                         logger.info("입금횟수초과 가상계좌 대기상태로 변경: {} ", data.getString("issueId"));
                         logger.info("=================================================");

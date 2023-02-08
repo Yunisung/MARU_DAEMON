@@ -305,6 +305,7 @@ public class VactAuthDAO extends DAO {
         super.setRecord("holderName", 		map.getString("holderName"));						// IR방식의 예금주명 기본값없으면 PG_MCHT_MNG_VACT.holderName 사용
         super.setRecord("amount", 			CommonUtil.parseLong(map.getString("amount")));	// 입금 예상 금액 0 : 제한없음 , 그외는 금액 일치 시
         super.setRecord("oper", 			map.getString("oper"));							// 0 이외의 금액에 대해서 eq, gt 보다클때,ge 크거나같을때,  lt 작을때,le 작거나 같을때
+        super.setRecord("transferKey", 	map.getString("transferKey"));
         super.setRecord("trackId", 			map.getString("trackId"));							// 임시,영구의 경우 가맹점 주문번호, 월렛의 경우 터미널ID
         super.setRecord("depositCnt", 		map.getInt("depositCnt"));							// 입금횟수
         super.setRecord("depositLimitCnt", 	map.getInt("depositLimitCnt"));					// 입금제한횟수
@@ -361,7 +362,7 @@ public class VactAuthDAO extends DAO {
         return deleted;
     }
 
-    public boolean updateVactDtl(String issueId, String holderName) {
+    public boolean updateVactDtlReady(String issueId, String holderName) {
         super.setTable("PG_VACT_DTL");
 
         super.setRecord("status", "대기");
@@ -370,6 +371,7 @@ public class VactAuthDAO extends DAO {
         super.setRecord("trackId", "");
         super.setRecord("holderName", holderName);
         super.setRecord("depositCnt", 0);
+        super.setRecord("transferKey", "");
         super.setRecord("udf1", "");
         super.setRecord("udf2", "");
         super.setRecord("regDay", 	CommonUtil.getCurrentDate("yyyyMMdd"));

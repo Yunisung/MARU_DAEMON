@@ -31,7 +31,7 @@ public class VactAuthPayOut {
         smsGw = new SmsGw();
 
         vactAuthFee();
-        vactAuthPayOut();
+//        vactAuthPayOut();
 
         logger.info("VactAuthPayOut End");
         logger.info("==============================");

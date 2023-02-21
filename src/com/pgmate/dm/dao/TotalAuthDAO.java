@@ -18,10 +18,10 @@ public class TotalAuthDAO extends DAO {
 
     public TotalAuthDAO() { super.setDebug(false);}
 
-    public List<SharedMap<String, Object>> getTotalAuthFeeList(String stlDay) {
+    public List<SharedMap<String, Object>> getTotalAuthFeeList(String stlDay, String stlType) {
         String q = "SELECT mchtId, stlType, SUM(authFee) AS authFee, SUM(authFeeVat) AS authFeeVat "
                 +" FROM PG_TOTAL_AUTH "
-                +" WHERE  stlDay = '"+stlDay+"' AND stlStatus != '정산완료' "
+                +" WHERE  stlDay = '"+stlDay+ "' and stlType = '" + stlType +  "' AND stlStatus != '정산완료' "
                 +" GROUP BY mchtId, stlType";
 
         RecordSet rset = super.query(q);

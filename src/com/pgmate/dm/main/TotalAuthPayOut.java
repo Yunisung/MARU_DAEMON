@@ -40,8 +40,9 @@ public class TotalAuthPayOut {
 
     public void totalAuthSettleExcute() {
         TotalAuthDAO dao = new TotalAuthDAO();
+        String stlType = "B+1";
 
-        List<SharedMap<String, Object>> getTotalAuthFeeList = dao.getTotalAuthFeeList(stlDay);
+        List<SharedMap<String, Object>> getTotalAuthFeeList = dao.getTotalAuthFeeList(stlDay, stlType);
 
         if(getTotalAuthFeeList.size() > 0) {
 
@@ -51,7 +52,6 @@ public class TotalAuthPayOut {
                 String stlId = dao.getSettleId();
 
                 String mchtId = data.getString("mchtId");
-                String stlType = data.getString("stlType");
 
                 settleData.put("stlId", stlId);
                 settleData.put("mchtId", mchtId);

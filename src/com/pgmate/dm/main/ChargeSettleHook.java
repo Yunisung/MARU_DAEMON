@@ -107,6 +107,7 @@ public class ChargeSettleHook extends Thread {
 			logger.info("ChargeSettle Noti URL REQUEST ERROR =["+e.getMessage()+"]");
 			ntsMap.put("status","전송실패");
 			ntsMap.put("sentDate", CommonUtil.getCurrentTimestamp());
+			ntsMap.put("code", 9999);
 		}finally {
 			conn.disconnect();
 			logger.info("ChargeSettle Noti THREAD RESPONSE : "+CommonUtil.cut(ntsMap.getString("resData"),100)+"]");

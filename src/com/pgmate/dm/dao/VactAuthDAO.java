@@ -377,7 +377,6 @@ public class VactAuthDAO extends DAO {
         super.setRecord("udf1", "");
         super.setRecord("udf2", "");
         super.setRecord("expireAt", expire);
-        super.setRecord("expireDate", null);
         super.setRecord("regDay", 	CommonUtil.getCurrentDate("yyyyMMdd"));
         super.addWhere("issueId", 	issueId);
         boolean update = super.update();

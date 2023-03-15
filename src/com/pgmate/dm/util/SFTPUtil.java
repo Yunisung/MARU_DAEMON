@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.util.Vector;
 
 public class SFTPUtil {
@@ -55,6 +56,7 @@ public class SFTPUtil {
         Vector res = null;
         try {
             res = channelSftp.ls(path);
+            logger.info("===== GALAXIA FILE EXIST TRUE =====");
         } catch (SftpException e) {
             if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 return false;
@@ -71,20 +73,21 @@ public class SFTPUtil {
      * @return 업로드 여부
      */
     public boolean upload(String dir, File file) {
-        logger.info("dir ::: {}", dir);
+        logger.info("SFTP FILE UPLOAD PATH =====> {}", dir);
         boolean isUpload = false;
         SftpATTRS sftpATTRS;
         FileInputStream in = null;
 
         try {
+//            String fileName = URLEncoder.encode(file.getName(), "EUC-KR");
             in = new FileInputStream(file);
             channelSftp.cd(dir);
             channelSftp.put(in, file.getName());
+//            channelSftp.put(in, fileName);
 
             if(this.exists(dir + "/" + file.getName())) {
                 isUpload = true;
             }
-
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         } finally {

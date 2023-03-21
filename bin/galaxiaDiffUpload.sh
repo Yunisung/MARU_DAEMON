@@ -11,7 +11,7 @@ CP=`echo $CP | cut -c2-`
 
 # JVM_ARGS for VM
 ##########################
-JVM_ARGS="-DMARU_WEBHOOK -DCP_CONF=../conf -Dlogback.configurationFile=../conf/logback.xml -Dfile.encoding=UTF-8"
+JVM_ARGS="-DMARU_GALAXIA_DIFF_UPLOAD -DCP_CONF=../conf -Dlogback.configurationFile=../conf/logback.xml -Dfile.encoding=UTF-8"
 JVM_ARGS="$JVM_ARGS -Xss512k -Xms64m -Xmx128m"
 JVM_ARGS="$JVM_ARGS -cp $CP:../classes"
 

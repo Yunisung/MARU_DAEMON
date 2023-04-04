@@ -33,7 +33,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW(), '%Y%m%d') "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW(), '%Y%m%d') END "
 //				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('2010000007') "
+				+ "AND A.vanid IN ('M2253623', 'M2253625') "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "LIMIT 2";
 				
@@ -59,7 +59,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
 				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 //				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('2010000010')"
+				+ "AND A.vanid IN ('M2253623', 'M2253625')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "
 				+ "AND A.regDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') ";

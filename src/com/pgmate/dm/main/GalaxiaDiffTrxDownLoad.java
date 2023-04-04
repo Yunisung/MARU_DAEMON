@@ -27,10 +27,11 @@ public class GalaxiaDiffTrxDownLoad {
     private static String userPw = "1!qnrnrdnlsjtm0732";
 
     //BK 서버 업로드 파일 저장 경로
-    private static String SETTLE_PATH="D:\\galaxia\\diffSettle\\";
+    private static String SETTLE_PATH="/home/bkwinners/diff/settle_galaxia/";
+//    private static String SETTLE_PATH="D:\\galaxia\\diffSettle\\";
 
-    private static String GALAXIA_DOWNLOAD_PATH="/test/";	//테스트 폴더
-//	private static String GALAXIA_DOWNLOAD_PATH="/receive";	//운영 폴더
+//    private static String GALAXIA_DOWNLOAD_PATH="/test/";	//테스트 폴더
+	private static String GALAXIA_DOWNLOAD_PATH="/receive";	//운영 폴더
 
     private List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
 

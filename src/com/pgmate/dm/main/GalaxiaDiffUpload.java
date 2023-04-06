@@ -171,6 +171,7 @@ public class GalaxiaDiffUpload {
 
 			dataCnt++;
 		}
+		logger.info("GALAXIA DIFFMCHT {} DATA", dataCnt);
 	}
 
 	/**
@@ -210,7 +211,7 @@ public class GalaxiaDiffUpload {
 		sftpUtil.init(HOST, userId, userPw, PORT);
 
 		String fileName = SETTLE_PATH + File.separator + userId + "_REQUEST." + nowDate;
-		logger.info("DIFF MCHT UPLOAD FILE NAME ===> {}", fileName);
+		logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", fileName);
 
 		GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
 		BufferedWriter bw = null;
@@ -224,15 +225,16 @@ public class GalaxiaDiffUpload {
 			List<SharedMap<String, Object>> payList = dao.getPayList();
 			List<SharedMap<String, Object>> rfdList = dao.getRfdList();
 
-			if(payList.size() > 0 || rfdList.size() >0) {
-				logger.info("GALAXIA DIFFMCHT DATA SETTING START");
-				headerDiffSetting(bw);
-				dataDiffSetting(bw, payList, rfdList);
-				totalDiffSetting(bw);
-				logger.info("GALAXIA DIFFMCHT DATA SETTING END");
+			logger.info("GALAXIA DIFFSETTLE DATA SETTING START");
+			headerDiffSetting(bw);
 
-				bw.close();
+			if(payList.size() > 0 || rfdList.size() >0) {
+				dataDiffSetting(bw, payList, rfdList);
 			}
+
+			totalDiffSetting(bw);
+			bw.close();
+			logger.info("GALAXIA DIFFSETTLE DATA SETTING END");
 
 			//GALAXIA 파일 업로드
 			if(sftpUtil.upload(GALAXIA_UPLOAD_PATH, uploadFile)){

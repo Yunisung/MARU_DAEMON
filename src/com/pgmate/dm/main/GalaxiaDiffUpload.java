@@ -227,11 +227,9 @@ public class GalaxiaDiffUpload {
 
 			logger.info("GALAXIA DIFFSETTLE DATA SETTING START");
 			headerDiffSetting(bw);
-
 			if(payList.size() > 0 || rfdList.size() >0) {
 				dataDiffSetting(bw, payList, rfdList);
 			}
-
 			totalDiffSetting(bw);
 			bw.close();
 			logger.info("GALAXIA DIFFSETTLE DATA SETTING END");
@@ -321,7 +319,7 @@ public class GalaxiaDiffUpload {
 			bodyData.append(CommonUtil.zerofill(map.getString("compNo"), 10));	//중간하위사업자번호
 			bodyData.append(CommonUtil.zerofill(map.getString("mchtCompNo"), 10));	//최종하위사업자번호
 			bodyData.append(CommonUtil.byteFiller(map.getString("vanTrxId"), 20));	//PG거래번호
-			bodyData.append(CommonUtil.zerofill(rfdCnt, 2));	//거래 순번
+			bodyData.append(CommonUtil.zerofill("02", 2));	//거래 순번
 			bodyData.append(CommonUtil.byteFiller(map.getString("trxId"), 64));	//가맹점 주문번호
 			bodyData.append(CommonUtil.zerofill(map.getString("amount"), 15));	//하위사업자 매출액
 			bodyData.append(CommonUtil.zerofill(map.getString("amount"), 15));	//원거래 매입금액

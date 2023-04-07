@@ -30,12 +30,13 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
 				+ "WHERE A.van like 'GALAXIA%' "
-				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW(), '%Y%m%d') "
-				+ "ELSE A.reqDay <= DATE_FORMAT(NOW(), '%Y%m%d') END "
-//				+ "AND E.trxId IS NULL "
+//				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW(), '%Y%m%d') "
+//				+ "ELSE A.reqDay <= DATE_FORMAT(NOW(), '%Y%m%d') END "
+//				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
+				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+				+ "AND E.trxId IS NULL "
 				+ "AND A.vanid IN ('M2253623', 'M2253625') "
-				+ "AND A.vanTrxId NOT LIKE 'TX%' "
-				+ "LIMIT 2";
+				+ "AND A.vanTrxId NOT LIKE 'TX%' ";
 				
 				
 		RecordSet rset = super.query(q);
@@ -56,9 +57,11 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
 				//------------------------ GALAXIA 맞게 수정 필요
 				+ "WHERE A.van like 'GALAXIA%' "
-				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
-				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
-//				+ "AND E.trxId IS NULL "
+//				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
+//				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
+//				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
+				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+				+ "AND E.trxId IS NULL "
 				+ "AND A.vanid IN ('M2253623', 'M2253625')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "

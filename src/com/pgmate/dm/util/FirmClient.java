@@ -31,17 +31,27 @@ public class FirmClient {
 		timeout = firmTimeOut;
 	}
 
-	public FirmBean vactUnReg(String vitualBankCd, String virtualAccount, String bankCd, String account, String holderName) {
+	public FirmBean vactUnReg(String vactBankCd, String companyCd, String virtualAccount, String bankCd, String account, String holderName, String regType, String identity) {
 		FirmBean firmBean = new FirmBean();
 
-		firmBean.bankCd     = vitualBankCd;
+		firmBean.bankCd     = vactBankCd;
 		firmBean.msgType    = "0900400";
 		firmBean.userId	    = "SYSTEM";
+
+		firmBean.data.put("companyCd", companyCd);
 		firmBean.data.put("virtualAccount", virtualAccount);
 		firmBean.data.put("withdrawBankCd", bankCd);
 		firmBean.data.put("withdrawAccount", account);
-		firmBean.data.put("trxType", 2);
+
+		if(vactBankCd.equals("089")) {
+			firmBean.data.put("trxType", "2");
+		}else if(vactBankCd.equals("039")) {
+			firmBean.data.put("trxType", "3");
+		}
+
 		firmBean.data.put("customerName", holderName);
+		firmBean.data.put("regType", regType);
+		firmBean.data.put("identity", identity);
 
 		firmBean = comm(firmBean);
 
@@ -206,6 +216,18 @@ public class FirmClient {
 		
 		firmBean.data.put("orgSeqNo",orgSeqNo);
 	
+		firmBean = comm(firmBean);
+		logger.info("응답:{},{}",firmBean.resultCd,firmBean.resultMsg);
+		logger.info("data : {}",GsonUtil.toJson(firmBean.data));
+		return firmBean;
+	}
+
+	public FirmBean reTransfer(String trxId) {
+		FirmBean firmBean = new FirmBean();
+		firmBean.msgType 	= "0600102";
+		firmBean.userId		= "SYSTEM";
+		firmBean.data.put("trxId",trxId);
+
 		firmBean = comm(firmBean);
 		logger.info("응답:{},{}",firmBean.resultCd,firmBean.resultMsg);
 		logger.info("data : {}",GsonUtil.toJson(firmBean.data));

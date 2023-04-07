@@ -45,9 +45,6 @@ public class GalaxiaDiffUpload {
 //	private static String GALAXIA_UPLOAD_PATH="/test";		//테스트 폴더
 	private static String GALAXIA_UPLOAD_PATH="/request";	//운영 폴더
 
-	private static String BK_DOWNLOAD_PATH="D:\\galaxia\\download\\";
-//	private static String GALAXIA_DOWNLOAD_PATH="/test";	//테스트 폴더
-	private static String GALAXIA_DOWNLOAD_PATH="/receive";	//운영 폴더
 
 	private SmsGw smsGw = null;
 	private String nowDate = "";
@@ -69,22 +66,30 @@ public class GalaxiaDiffUpload {
 	public void makeDiffMcht() {
 		logger.info("========== GALAXIA 하위사업자 등록 START ==========");
 
+		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
+
+		String uploadPath = MCHT_PATH + nowDate.substring(0, 6);
+		String fileName = userId + "_REQUEST_INFO." + nowDate;
+
 		GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
 
-		final SFTPUtil sftpUtil = new SFTPUtil();
+		File folder = new File(uploadPath);
+		if(!folder.exists()) {
+			folder.mkdir();
+		}
 
-		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
+		final SFTPUtil sftpUtil = new SFTPUtil();
 
 		//SFTP 서버 접속
 		sftpUtil.init(HOST, userId, userPw, PORT);
 
 		//파일명 생성
-		String fileName = MCHT_PATH + File.separator + userId + "_REQUEST_INFO." + nowDate;
+		uploadPath += File.separator + fileName;
 
-		logger.info("DIFF MCHT UPLOAD FILE NAME ===> {}", fileName);
+		logger.info("DIFF MCHT UPLOAD FILE NAME ===> {}", uploadPath);
 
 		//파일 객체 생성
-		File uploadFile = new File(fileName);
+		File uploadFile = new File(uploadPath);
 
 		try{
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
@@ -206,18 +211,27 @@ public class GalaxiaDiffUpload {
 
 		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
 
+		String uploadPath = SETTLE_PATH + nowDate;
+		String fileName = userId + "_REQUEST." + nowDate;
+
+		File folder = new File(uploadPath);
+		if(!folder.exists()) {
+			folder.mkdir();
+		}
+
 		final SFTPUtil sftpUtil = new SFTPUtil();
+
 		//SFTP 서버 접속
 		sftpUtil.init(HOST, userId, userPw, PORT);
 
-		String fileName = SETTLE_PATH + File.separator + userId + "_REQUEST." + nowDate;
-		logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", fileName);
+		uploadPath += File.separator + fileName;
+		logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPath);
 
 		GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
 		BufferedWriter bw = null;
 
 		//파일 객체 생성
-		File uploadFile = new File(fileName);
+		File uploadFile = new File(uploadPath);
 
 		try {
 			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));

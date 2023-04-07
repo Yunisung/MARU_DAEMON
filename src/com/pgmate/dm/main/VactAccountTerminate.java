@@ -66,6 +66,7 @@ public class VactAccountTerminate {
                 logger.info("=================================================");
 
                 String vactBankCd = data.getString("bankCd");
+                String companyCd = data.getString("companyCd");
                 String vitualAccount = data.getString("account");
                 String bankCd = data.getString("withdrawBankCd");
                 String account = dao.getAESDec(data.getString("withdrawAccount"));
@@ -78,7 +79,7 @@ public class VactAccountTerminate {
                 logger.info("=================================================");
 
 
-                FirmBean firmBean = connectFirm(vactBankCd, vitualAccount, bankCd, account, holderName, regType, identity);
+                FirmBean firmBean = connectFirm(vactBankCd, companyCd, vitualAccount, bankCd, account, holderName, regType, identity);
 
 
                 if(firmBean.resultCd.equals("0000")) {
@@ -130,12 +131,12 @@ public class VactAccountTerminate {
 
     }
 
-    public FirmBean connectFirm(String vactBankCd,String vitualAccount, String bankCd, String account, String holderName, String regType, String identity) {
+    public FirmBean connectFirm(String vactBankCd,String companyCd, String vitualAccount, String bankCd, String account, String holderName, String regType, String identity) {
         String firmServer = "10.100.200.10";
         int firmPort = 10006;
         int firmTimeOut = 60000;
 
-        FirmBean firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).vactUnReg(vactBankCd, vitualAccount, bankCd, account, holderName, regType, identity);
+        FirmBean firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).vactUnReg(vactBankCd, companyCd, vitualAccount, bankCd, account, holderName, regType, identity);
 
         logger.info("입금횟수 초과 펌뱅킹 결과 : {} {} ", firmBean.resultCd, firmBean.resultMsg);
 

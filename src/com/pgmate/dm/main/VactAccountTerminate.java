@@ -65,17 +65,20 @@ public class VactAccountTerminate {
                 logger.info("만료예정 가상계좌 : {}", data.getString("account"));
                 logger.info("=================================================");
 
+                String vactBankCd = data.getString("bankCd");
                 String vitualAccount = data.getString("account");
                 String bankCd = data.getString("withdrawBankCd");
                 String account = dao.getAESDec(data.getString("withdrawAccount"));
                 String holderName = data.getString("holderName");
+                String regType = data.getString("regType");
+                String identity = dao.getAESDec(data.getString("identity"));
 
                 logger.info("=================================================");
                 logger.info("입금횟수초과 가상계좌 조회, 펌뱅킹 전송 : {} {} {} {}", vitualAccount, bankCd, account, holderName);
                 logger.info("=================================================");
 
 
-                FirmBean firmBean = connectFirm(vitualAccount, bankCd, account, holderName);
+                FirmBean firmBean = connectFirm(vactBankCd, vitualAccount, bankCd, account, holderName, regType, identity);
 
 
                 if(firmBean.resultCd.equals("0000")) {
@@ -127,12 +130,12 @@ public class VactAccountTerminate {
 
     }
 
-    public FirmBean connectFirm(String vitualAccount, String bankCd, String account, String holderName) {
+    public FirmBean connectFirm(String vactBankCd,String vitualAccount, String bankCd, String account, String holderName, String regType, String identity) {
         String firmServer = "10.100.200.10";
         int firmPort = 10006;
         int firmTimeOut = 60000;
 
-        FirmBean firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).vactUnReg("089", vitualAccount, bankCd, account, holderName);
+        FirmBean firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).vactUnReg(vactBankCd, vitualAccount, bankCd, account, holderName, regType, identity);
 
         logger.info("입금횟수 초과 펌뱅킹 결과 : {} {} ", firmBean.resultCd, firmBean.resultMsg);
 

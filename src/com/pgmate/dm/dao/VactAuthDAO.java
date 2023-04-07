@@ -205,9 +205,9 @@ public class VactAuthDAO extends DAO {
      * @return
      */
     public List<SharedMap<String, Object>> getTerminateAccount(int limit) {
-        String q = " SELECT A.issueId, B.* " +
-                    " FROM PG_VACT_DTL A INNER JOIN PG_VACT_REG B " +
-                    " ON A.account=B.account " +
+        String q = " SELECT A.issueId, B.*, C.regType, C.identity " +
+                    " FROM PG_VACT_DTL A INNER JOIN PG_VACT_REG B INNER JOIN PG_VACT_AUTH C" +
+                    " ON A.account=B.account AND A.account = C.vactAccount " +
                     " WHERE A.status='사용자만료' OR A.status='입금횟수초과' ORDER BY A.account ASC " +
                     " LIMIT " + limit;
 

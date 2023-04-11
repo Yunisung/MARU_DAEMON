@@ -45,13 +45,15 @@ public class FirmClient {
 
 		if(vactBankCd.equals("089")) {
 			firmBean.data.put("trxType", "2");
+			firmBean.data.put("customerName", holderName);
 		}else if(vactBankCd.equals("039")) {
 			firmBean.data.put("trxType", "3");
+			firmBean.data.put("regType", regType);
+			firmBean.data.put("identity", identity);
 		}
 
-		firmBean.data.put("customerName", holderName);
-		firmBean.data.put("regType", regType);
-		firmBean.data.put("identity", identity);
+
+
 
 		firmBean = comm(firmBean);
 
@@ -222,8 +224,9 @@ public class FirmClient {
 		return firmBean;
 	}
 
-	public FirmBean reTransfer(String trxId) {
+	public FirmBean reTransfer(String vactBankCd, String trxId) {
 		FirmBean firmBean = new FirmBean();
+		firmBean.bankCd 	= vactBankCd;
 		firmBean.msgType 	= "0600102";
 		firmBean.userId		= "SYSTEM";
 		firmBean.data.put("trxId",trxId);
@@ -273,7 +276,7 @@ public class FirmClient {
 			bout.flush();
 			byte[] res = bout.toByteArray();
 			bout.close();
-			resJson = new String(res,"UTF-8");
+			resJson = new String(res,"MS949");
 			if(!CommonUtil.isNullOrSpace(resJson)) {
 				firmBean = (FirmBean)GsonUtil.fromJson(resJson, FirmBean.class);
 			}else {

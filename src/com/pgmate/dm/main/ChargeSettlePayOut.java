@@ -101,7 +101,14 @@ public class ChargeSettlePayOut {
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
 
 						//PYS : 펌 결과메세지가 깨질수 있어서 한번더 DB에서 불러옴
-						firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
+						logger.info("결과메세지 체크 : {}", firmBean.resultMsg);
+						//PYS : 결과메세지 제대로 나오면 아래 로직은 삭제하는걸로.
+						if(firmBean.resultCd.startsWith("KS")) {
+							firmBean.resultMsg = FirmFailCheckDAO.getResultMsg("ERR", firmBean.resultCd);
+						} else {
+							firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.bankCd, firmBean.resultCd);
+						}
+
 
 						//테스트
 //						firmBean = new FirmBean();
@@ -158,8 +165,14 @@ public class ChargeSettlePayOut {
 						//PYS : 가상계좌은행 입력하게 변경
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
 
-						//PYS : 펌 결과메세지가 깨질수 있어서 한번더 DB에서 불러옴
-						firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
+						logger.info("결과메세지 체크 : {}", firmBean.resultMsg);
+						//PYS : 결과메세지 제대로 나오면 아래 로직은 삭제하는걸로.
+						if(firmBean.resultCd.startsWith("KS")) {
+							firmBean.resultMsg = FirmFailCheckDAO.getResultMsg("ERR", firmBean.resultCd);
+						} else {
+							firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.bankCd, firmBean.resultCd);
+						}
+
 
 						//테스트
 //						firmBean = new FirmBean();
@@ -169,8 +182,14 @@ public class ChargeSettlePayOut {
 						//230405_PYS : 거래없음일때 출금 재시도 로직 추가
 						if(firmBean.resultCd.equals("KS10")) {
 							logger.info("충전정산 출금 재시도 : [{}]", data.getString("trxId"));
-							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).reTransfer(data.getString("trxId"));
-							firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
+							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).reTransfer(vactBankCd, data.getString("trxId"));
+							logger.info("결과메세지 체크 : {}", firmBean.resultMsg);
+							//PYS : 결과메세지 제대로 나오면 아래 로직은 삭제하는걸로.
+							if(firmBean.resultCd.startsWith("KS")) {
+								firmBean.resultMsg = FirmFailCheckDAO.getResultMsg("ERR", firmBean.resultCd);
+							} else {
+								firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.bankCd, firmBean.resultCd);
+							}
 
 							//위에 있는 출금로직 복붙
 							idx = String.valueOf(firmBean.idx);

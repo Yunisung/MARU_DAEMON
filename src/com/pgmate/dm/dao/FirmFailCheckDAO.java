@@ -45,11 +45,11 @@ public class FirmFailCheckDAO extends DAO{
 		return rset.getRows();
 	}
 
-	public static String getResultMsg(String code){
+	public static String getResultMsg(String bankCd, String code){
 		if(code.equals("XXXX")){
 			return "통신장애";
 		}
-		String query = " SELECT message FROM PG_FIRM_CODE WHERE `code` = ?";
+		String query = " SELECT message FROM PG_FIRM_CODE WHERE `code` = ? AND `bankCd` = ?";
 
 		DBManager db 			= null;
 		PreparedStatement pstmt	= null;
@@ -62,6 +62,8 @@ public class FirmFailCheckDAO extends DAO{
 			conn	= db.getConnection();
 			pstmt	= conn.prepareStatement(query);
 			pstmt.setString(1,code);
+			pstmt.setString(2,bankCd);
+
 			rset 	= pstmt.executeQuery();
 
 			while(rset.next()){

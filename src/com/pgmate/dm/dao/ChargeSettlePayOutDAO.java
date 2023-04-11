@@ -30,10 +30,11 @@ public class ChargeSettlePayOutDAO extends DAO{
 	 * @return
 	 */
 	public List<SharedMap<String,Object>> getChargeSettleFirmList(){
-		String q = "SELECT *, FN_AES_DEC(account) as decAccount "
-				+"	FROM PG_CHARGE_SETTLE_FIRM "
-				+"  WHERE status != '완료' and status != '전송' and retry < 3 "
-				+"  order by regDate";
+		String q = "SELECT A.*, FN_AES_DEC(A.account) as decAccount, B.vactBankCd "
+				+"	FROM PG_CHARGE_SETTLE_FIRM A INNER JOIN PG_MCHT_MNG_VACT B"
+				+"  ON A.mchtId = B.mchtId"
+				+"  WHERE A.status != '완료' and A.status != '전송' and A.retry < 3 "
+				+"  order by A.regDate";
 		
 		RecordSet rset = super.query(q);
 		super.initRecord();

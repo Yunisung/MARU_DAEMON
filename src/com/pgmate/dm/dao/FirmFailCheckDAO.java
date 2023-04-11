@@ -73,6 +73,10 @@ public class FirmFailCheckDAO extends DAO{
 			db.close(conn,pstmt,rset);
 		}
 
+		if(CommonUtil.isNullOrSpace(result)) {
+			result = "알수없는에러";
+		}
+
 		return result;
 	}
 }

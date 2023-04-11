@@ -81,7 +81,9 @@ public class ChargeSettlePayOut {
 					String idx = "";
 					msgBody = "";
 					compNm = "";
-					
+					//PYS : 어느 은행에서 돈을 이체할것인가
+					String vactBankCd = data.getString("vactBankCd");
+
 					SharedMap<String, Object> chargeMngMap = dao.getMchtChargeMng(data.getString("mchtId"));
 					
 					if("0".equals(data.getString("retry"))){
@@ -94,7 +96,9 @@ public class ChargeSettlePayOut {
 						//최초 1회 출금요청
 						//출금요청
 						//운영
-						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
+
+						//PYS : 가상계좌은행 입력하게 변경
+						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
 
 						//PYS : 펌 결과메세지가 깨질수 있어서 한번더 DB에서 불러옴
 						firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
@@ -151,36 +155,83 @@ public class ChargeSettlePayOut {
 						
 						//출금 실패한 건들은 결과확인
 						//운영
-						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck("089", orgSeq);
+						//PYS : 가상계좌은행 입력하게 변경
+						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
 
 						//PYS : 펌 결과메세지가 깨질수 있어서 한번더 DB에서 불러옴
-						logger.info("=== 결과메세지 변화체크 ===");
-						logger.info(firmBean.resultMsg);
 						firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
-						logger.info(firmBean.resultMsg);
 
 						//테스트
 //						firmBean = new FirmBean();
 //						firmBean.resultCd = "0000";
 //						firmBean.resultMsg = "처리완료";
-						
-						if(!firmBean.resultCd.equals("0000") ) {
-							msgBody = "충전정산 결과확인 실패. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
-							logger.info(msgBody);
-							errFlag = true;
+
+						//230405_PYS : 거래없음일때 출금 재시도 로직 추가
+						if(firmBean.resultCd.equals("KS10")) {
+							logger.info("충전정산 출금 재시도 : [{}]", data.getString("trxId"));
+							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).reTransfer(data.getString("trxId"));
+							firmBean.resultMsg = FirmFailCheckDAO.getResultMsg(firmBean.resultCd);
+
+							//위에 있는 출금로직 복붙
+							idx = String.valueOf(firmBean.idx);
+
+							if("".equals(idx) || "0".equals(idx)) {
+								idx = dao.getIdx(data.getString("trxId"));
+
+								logger.info("idx 재검색 : [{}][{}]", data.getString("trxId"), idx);
+							}
+
+							if(!firmBean.resultCd.equals("0000") ) {
+								msgBody = "충전정산 재시도 출금 실패. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+								logger.info(msgBody);
+								errFlag = true;
+							}else {
+								status = "완료";
+								msgBody = "충전정산 재시도 출금 성공. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+								logger.info(msgBody);
+
+								// 출금 완료 결과 noti 발송
+								if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+									String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
+									data.put("payLoad", payLoad);
+									data.put("trxType", "출금");
+									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+								}
+							}
+
+							if(!dao.updateRefIdUpdate(data.getString("trxId"), idx)) {
+								msgBody = "PG_CHARGE_SETTLE UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
+
+								logger.info(msgBody);
+							}
+
+							if(!dao.updateRefIdUpdate2(data.getString("trxId"), idx)) {
+								msgBody = "PG_CHARGE_SETTLE_FIRM UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
+
+								logger.info(msgBody);
+							}
 						}else {
-							status = "완료";
-							msgBody = "충전정산 결과확인 성공. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
-							logger.info(msgBody);
-							
-							// 출금완료 결과 noti 발송
-							if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
-								String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
-								data.put("payLoad", payLoad);
-								data.put("trxType", "출금");
-								new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+							//PYS : KS10이 아닐땐 기존 로직실행
+							if(!firmBean.resultCd.equals("0000") ) {
+								msgBody = "충전정산 결과확인 실패. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
+								logger.info(msgBody);
+								errFlag = true;
+							}else {
+								status = "완료";
+								msgBody = "충전정산 결과확인 성공. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
+								logger.info(msgBody);
+
+								// 출금완료 결과 noti 발송
+								if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+									String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
+									data.put("payLoad", payLoad);
+									data.put("trxType", "출금");
+									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+								}
 							}
 						}
+
+
 					}
 					
 					//실시간출금 결과 저장

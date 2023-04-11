@@ -67,9 +67,9 @@ public class Settle {
 				monthVactExecute(cmd); // 가상계좌
 
 				if(monthErr == 0) {
-					msgBody = "[" + day + "] 월정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";
+					msgBody = "[" + day + "] 월 가상계좌 정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";
 				}else {
-					msgBody = day + " 월정산 생성오류. 확인요망.";
+					msgBody = day + " 월 가상계좌 정산 생성오류. 확인요망.";
 				}
 				
 //				smsGw.sendMessage("0", "3", msgBody);
@@ -78,9 +78,9 @@ public class Settle {
 				monthExecute(cmd);	// 영업라인
 
 				if(monthErr == 0) {
-					msgBody = "[" + day + "] 월정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";
+					msgBody = "[" + day + "] 월 영업라인 정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";
 				}else {
-					msgBody = day + " 월정산 생성오류. 확인요망.";
+					msgBody = day + " 월 영업라인 정산 생성오류. 확인요망.";
 				}
 			}
 		}else {

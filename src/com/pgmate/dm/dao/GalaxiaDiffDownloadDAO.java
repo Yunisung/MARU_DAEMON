@@ -311,7 +311,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 			} else {
 
 			}
-			super.setTable("PG_MCHT_DIFF_UPLOAD");
+			super.setTable("PG_MCHT_DIFF");
 			super.setColumns("*");
 			super.addWhere("vanTrxId", vanTrxId, eq);
 			RecordSet rset = super.search();

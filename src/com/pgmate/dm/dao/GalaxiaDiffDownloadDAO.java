@@ -305,13 +305,13 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 		if(vanTrxId == null){
 			return new SharedMap<String,Object>();
 		} else {
-			String key = "PG_TRX_DIFF" + vanTrxId;
+			String key = "PG_TRX_PAY" + vanTrxId;
 			if (Cache.map.containsKey(key)) {
 				return Cache.map.getUnchecked(key);
 			} else {
 
 			}
-			super.setTable("PG_MCHT_DIFF");
+			super.setTable("PG_TRX_PAY");
 			super.setColumns("*");
 			super.addWhere("vanTrxId", vanTrxId, eq);
 			RecordSet rset = super.search();

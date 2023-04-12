@@ -82,6 +82,9 @@ public class GalaxiaDiffTrxDownLoad {
                         parssingTotal(line);
                     }
                 }
+                if(dao.updateTrxDiff(list) > 0) {
+                    logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
+                }
                 br.close();
 
             } catch (Exception e) {
@@ -128,7 +131,7 @@ public class GalaxiaDiffTrxDownLoad {
             case "3":mchtType = "중소3";break;
             case "4":mchtType = "일반";break;
         }
-        String diffStlAmt = CommonUtil.toString(resBuf, 178, 15).trim();
+        Long diffStlAmt = Long.valueOf(CommonUtil.toString(resBuf, 178, 15).trim());
         String resultCd = CommonUtil.toString(resBuf, 193, 2).trim();
         String mchtFiller = CommonUtil.toString(resBuf, 195, 5).trim();
 
@@ -139,17 +142,19 @@ public class GalaxiaDiffTrxDownLoad {
         map.put("resultCd", resultCd);
         map.put("mchtType", mchtType);
         map.put("mchtCode", mchtCode);
-        map.put("cardType", payMap.getString("vanTrxId"));
-        map.put("diffstlAmt", diffStlAmt);
+        String cardType = payMap.getString("cardType");
+        switch (cardType) {
+            case "신용" : map.put("cardType","0");break;
+            case "체크" : map.put("cardType","1");break;
+        }
+        map.put("diffStlAmt", diffStlAmt);
         String diffStlDay = dao.getSettleDay(CommonUtil.getCurrentDate("yyyyMMdd"));
         map.put("diffStlDay", diffStlDay);
         map.put("downDay", nowDate);
 
         list.add(map);
 
-        if(dao.updateTrxDiff(list) > 0) {
-            logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
-        }
+
     }
 
     private void parssingTotal(String data) {

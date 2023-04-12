@@ -12,7 +12,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class GalaxiaDiffTrxDownLoad {
@@ -148,7 +152,7 @@ public class GalaxiaDiffTrxDownLoad {
             case "체크" : map.put("cardType","1");break;
         }
         map.put("diffStlAmt", diffStlAmt);
-        String diffStlDay = dao.getSettleDay(CommonUtil.getCurrentDate("yyyyMMdd"));
+        String diffStlDay = dao.getSettleDay(getNextDay(CommonUtil.getCurrentDate("yyyyMMdd")));
         map.put("diffStlDay", diffStlDay);
         map.put("downDay", nowDate);
 
@@ -165,6 +169,26 @@ public class GalaxiaDiffTrxDownLoad {
         String totAmt = CommonUtil.toString(resBuf, 9, 18).trim();
         String totDiffAmt = CommonUtil.toString(resBuf, 27, 15).trim();
         String filler = CommonUtil.toString(resBuf, 42, 158).trim();
+    }
+
+    private String getNextDay(String nowDate) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+
+            //다음 날짜 구하기
+            Date date = sdf.parse(nowDate);
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+
+            calendar.add(Calendar.DATE, 1);
+
+            return sdf.format(calendar.getTime());
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("GALAXIA 차액정산 다운로드 차액예정일자 ERROR");
+            return nowDate;
+        }
     }
 
     public static void main(String[] args) {

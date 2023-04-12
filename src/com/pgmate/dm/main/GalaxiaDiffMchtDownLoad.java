@@ -58,7 +58,7 @@ public class GalaxiaDiffMchtDownLoad {
 
         sftpUtil.init(HOST, userId, userPw, PORT);
 
-        if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + fileName)) {
+        if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + File.separator + fileName)) {
             logger.info("GALAXIA 하위사업자 결과 파일 EXIST");
 
             downloadPath += File.separator + nowDate + ".galaxia.download";

@@ -141,7 +141,7 @@ public class GalaxiaDiffTrxDownLoad {
 
         SharedMap<String, Object> payMap = dao.getDiffUploadData(vanTrxId);
         SharedMap<String, Object> map = new SharedMap<String, Object>();
-        map.put("recordType", recordType);
+        map.put("recordType", "R");
         map.put("trxId", trxId);
         map.put("resultCd", resultCd);
         map.put("mchtType", mchtType);

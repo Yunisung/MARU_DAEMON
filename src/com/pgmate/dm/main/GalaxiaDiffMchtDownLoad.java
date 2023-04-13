@@ -89,7 +89,7 @@ public class GalaxiaDiffMchtDownLoad {
                 logger.error("DOWNLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
             }
         } else {
-            logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
+            logger.info("GALAXIA 하위사업자 결과 파일 NOT EXIST");
         }
 
     }

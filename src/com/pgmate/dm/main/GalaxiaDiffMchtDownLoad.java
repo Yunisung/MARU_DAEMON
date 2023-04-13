@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GalaxiaDiffMchtDownLoad {
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private static Logger logger = LoggerFactory.getLogger( GalaxiaDiffMchtDownLoad.class );
 
     //GALAXIA SFTP SERVER
     private static String HOST = "119.207.70.214";
@@ -58,7 +58,7 @@ public class GalaxiaDiffMchtDownLoad {
 
         sftpUtil.init(HOST, userId, userPw, PORT);
 
-        logger.info("하위사업자 결과 파일 경로 확인 : {}", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
+        logger.info("===== GALAXIA 하위사업자 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
         if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + File.separator + fileName)) {
             logger.info("GALAXIA 하위사업자 결과 파일 EXIST");
 
@@ -171,6 +171,7 @@ public class GalaxiaDiffMchtDownLoad {
     }
 
     private void parssingTotal(String data) {
+        logger.info("MCHT DIFF TAIL LINE DATA : {}", data);
         byte[] resBuf = data.getBytes(StandardCharsets.UTF_8);
 
         String recordType = CommonUtil.toString(resBuf, 0, 2).trim();

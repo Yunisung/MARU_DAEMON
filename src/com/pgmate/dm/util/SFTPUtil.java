@@ -59,10 +59,18 @@ public class SFTPUtil {
             logger.info("===== GALAXIA FILE EXIST TRUE =====");
         } catch (SftpException e) {
             if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
+                logger.info("===== GALAXIA FILE EXIST FALSE =====");
                 return false;
             }
         }
-        return res != null && !res.isEmpty();
+
+        if(res != null && !res.isEmpty()){
+            logger.info("===== GALAXIA FILE IS NOT NULL =====");
+            return true;
+        }
+
+        logger.info("===== GALAXIA FILE IS NULL =====");
+        return false;
     }
 
     /**
@@ -120,6 +128,7 @@ public class SFTPUtil {
                 out.write(i);
             }
         } catch (IOException e) {
+            logger.info("===== SFTP FILE DOWNLOAD FAIL =====");
             e.printStackTrace();
         } finally {
             try {

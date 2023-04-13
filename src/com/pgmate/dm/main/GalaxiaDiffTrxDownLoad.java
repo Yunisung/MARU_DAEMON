@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 public class GalaxiaDiffTrxDownLoad {
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private static Logger logger = LoggerFactory.getLogger( GalaxiaDiffTrxDownLoad.class );
 
     //GALAXIA SFTP SERVER
     private static String HOST = "119.207.70.214";
@@ -62,8 +62,8 @@ public class GalaxiaDiffTrxDownLoad {
 
         sftpUtil.init(HOST, userId, userPw, PORT);
 
-        logger.info("차액정산 결과 파일 경로 확인 : {}", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
-        if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + File.separator + fileName)) {
+        logger.info("===== GALAXIA 차액정산 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
+        if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + "/" + fileName)) {
             logger.info("GALAXIA 차액정산 결과 파일 EXIST");
 
             downloadPath += File.separator + nowDate + ".galaxia.download";
@@ -102,6 +102,7 @@ public class GalaxiaDiffTrxDownLoad {
     }
 
     private void parssingHeader(String data) {
+        logger.info("TRX DIFF HEADER LINE DATA : {}", data);
         byte[] resBuf = data.getBytes(StandardCharsets.UTF_8);
 
         String recordType = CommonUtil.toString(resBuf, 0, 2).trim();
@@ -111,7 +112,7 @@ public class GalaxiaDiffTrxDownLoad {
     }
 
     private void parssingData(String data) {
-
+        logger.info("TRX DIFF BODY LINE DATA : {}", data);
         GalaxiaDiffDownloadDAO dao = new GalaxiaDiffDownloadDAO();
         String nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
         byte[] resBuf = data.getBytes(StandardCharsets.UTF_8);
@@ -158,11 +159,10 @@ public class GalaxiaDiffTrxDownLoad {
         map.put("downDay", nowDate);
 
         list.add(map);
-
-
     }
 
     private void parssingTotal(String data) {
+        logger.info("TRX DIFF TAIL LINE DATA : {}", data);
         byte[] resBuf = data.getBytes(StandardCharsets.UTF_8);
 
         String recordType = CommonUtil.toString(resBuf, 0, 2).trim();
@@ -193,6 +193,6 @@ public class GalaxiaDiffTrxDownLoad {
     }
 
     public static void main(String[] args) {
-        new GalaxiaDiffTrxDownLoad("20230411");
+        new GalaxiaDiffTrxDownLoad("20230412");
     }
 }

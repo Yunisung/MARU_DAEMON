@@ -20,8 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class GalaxiaDiffUpload {
-
-	private static Logger logger = LoggerFactory.getLogger( GalaxiaDiffUpload.class );
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	//JM VMWARE SFTP SERVER
 //	private static String HOST = "192.168.95.139";

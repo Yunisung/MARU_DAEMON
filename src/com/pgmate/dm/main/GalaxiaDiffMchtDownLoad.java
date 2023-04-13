@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GalaxiaDiffMchtDownLoad {
-    private static Logger logger = LoggerFactory.getLogger( GalaxiaDiffMchtDownLoad.class );
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     //GALAXIA SFTP SERVER
     private static String HOST = "119.207.70.214";

@@ -58,6 +58,7 @@ public class GalaxiaDiffMchtDownLoad {
 
         sftpUtil.init(HOST, userId, userPw, PORT);
 
+        logger.info("하위사업자 결과 파일 경로 확인 : {}", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
         if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + File.separator + fileName)) {
             logger.info("GALAXIA 하위사업자 결과 파일 EXIST");
 
@@ -166,7 +167,7 @@ public class GalaxiaDiffMchtDownLoad {
 
         dataCnt++;
 
-        dao.insertMchtDiffDownLoad(list);
+//        dao.insertMchtDiffDownLoad(list);
     }
 
     private void parssingTotal(String data) {

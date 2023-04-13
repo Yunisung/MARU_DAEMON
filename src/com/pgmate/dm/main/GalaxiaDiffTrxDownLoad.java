@@ -62,6 +62,7 @@ public class GalaxiaDiffTrxDownLoad {
 
         sftpUtil.init(HOST, userId, userPw, PORT);
 
+        logger.info("차액정산 결과 파일 경로 확인 : {}", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
         if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + File.separator + fileName)) {
             logger.info("GALAXIA 차액정산 결과 파일 EXIST");
 
@@ -86,9 +87,9 @@ public class GalaxiaDiffTrxDownLoad {
                         parssingTotal(line);
                     }
                 }
-                if(dao.updateTrxDiff(list) > 0) {
-                    logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
-                }
+//                if(dao.updateTrxDiff(list) > 0) {
+//                    logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
+//                }
                 br.close();
 
             } catch (Exception e) {

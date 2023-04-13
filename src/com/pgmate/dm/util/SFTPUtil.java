@@ -101,6 +101,7 @@ public class SFTPUtil {
     }
 
     public void download(String dir, String downloadFile, String path) {
+        logger.info("SFTP FILE DOWNLOAD PATH : {}", path);
         InputStream in = null;
         FileOutputStream out = null;
 

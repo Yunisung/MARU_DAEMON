@@ -183,7 +183,7 @@ public class GalaxiaDiffMchtDownLoad {
 
     public static void main(String[] args) {
 //		new KsnetDiffMchtDownLoad(args[0]);
-		new GalaxiaDiffMchtDownLoad("20230127");
+		new GalaxiaDiffMchtDownLoad("20230412");
     }
 
 }

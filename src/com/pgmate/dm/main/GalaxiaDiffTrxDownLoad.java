@@ -193,6 +193,6 @@ public class GalaxiaDiffTrxDownLoad {
     }
 
     public static void main(String[] args) {
-        new GalaxiaDiffTrxDownLoad(args[0]);
+        new GalaxiaDiffTrxDownLoad("20230411");
     }
 }

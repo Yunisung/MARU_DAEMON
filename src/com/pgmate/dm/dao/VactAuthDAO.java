@@ -310,7 +310,9 @@ public class VactAuthDAO extends DAO {
         super.setRecord("depositCnt", 		map.getInt("depositCnt"));							// 입금횟수
         super.setRecord("depositLimitCnt", 	map.getInt("depositLimitCnt"));					// 입금제한횟수
         super.setRecord("expireAt", 		map.getString("expireAt"));						// 만료예상시간
-        super.setRecord("expireDate", 		map.getTimestamp("expireDate"));					// 만료일자
+        if(!map.isNullOrSpace("expireDate")) {
+            super.setRecord("expireDate", map.getTimestamp("expireDate"));					// 만료일자
+        }
         super.setRecord("udf1",				map.getString("udf1"));							// 가맹점 사용 필드1
         super.setRecord("udf2", 			map.getString("udf2"));							// 가맹점 사용 필드2
         super.setRecord("reason", 			map.getString("reason"));							// 변경사유

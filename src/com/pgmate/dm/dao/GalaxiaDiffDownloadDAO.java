@@ -510,7 +510,10 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 			inserted += pstmt.executeBatch().length;
 			conn.commit();
 		}catch (Exception e) {
-			logger.debug(e.getMessage());
+			logger.error("update batch PG_TRX_CAP_DTL error : {}", CommonUtil.getExceptionMessage(e));
+		} finally {
+			db.close(pstmt);
+			db.close(conn);
 		}
 		return inserted;
 	}

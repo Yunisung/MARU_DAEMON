@@ -84,7 +84,7 @@ public class VactAccountTerminate {
 
                 if(firmBean.resultCd.equals("0000")) {
                     //HT_VACT_REG에 INSERT
-                    dao.insertHtVactReg(data.getString("mchtId"),data.getString("bankCd"),data.getString("account"),"2",
+                    dao.insertHtVactReg(data.getString("mchtId"), vactBankCd, vitualAccount,"2", regType, identity,
                             bankCd,account,holderName, "", "", "", firmBean.resultCd, firmBean.resultMsg);
 
                     //221222_PYS : 가상계좌 해지 로직변경

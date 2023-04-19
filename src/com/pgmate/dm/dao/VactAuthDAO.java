@@ -252,7 +252,7 @@ public class VactAuthDAO extends DAO {
      * @param resultMsg
      * @return
      */
-    public boolean insertHtVactReg(String mchtId, String bankCd, String account, String trxType, String withdrawBankCd, String withdrawAccount,
+    public boolean insertHtVactReg(String mchtId, String bankCd, String account, String trxType, String regType, String identity, String withdrawBankCd, String withdrawAccount,
                                    String holderName,String trackId, String udf1, String udf2, String resultCd, String resultMsg){
         boolean insert = false;
 
@@ -264,6 +264,8 @@ public class VactAuthDAO extends DAO {
             super.setRecord("bankCd", bankCd);
             super.setRecord("account", account);
             super.setRecord("trxType", trxType);
+            super.setRecord("regType", regType);
+            super.setRecord("identity", identity);
             super.setRecord("withdrawBankCd", withdrawBankCd);
             super.setRecord("withdrawAccount", encAccnt);
             super.setRecord("holderName", holderName);

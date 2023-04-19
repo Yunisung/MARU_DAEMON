@@ -258,14 +258,14 @@ public class VactAuthDAO extends DAO {
 
         try {
             String encAccnt = getAESEnc(withdrawAccount);
-
+            String encIden = getAESEnc(identity);
             super.setTable("HT_VACT_REG");
             super.setRecord("mchtId", mchtId);
             super.setRecord("bankCd", bankCd);
             super.setRecord("account", account);
             super.setRecord("trxType", trxType);
             super.setRecord("regType", regType);
-            super.setRecord("identity", identity);
+            super.setRecord("identity", encIden);
             super.setRecord("withdrawBankCd", withdrawBankCd);
             super.setRecord("withdrawAccount", encAccnt);
             super.setRecord("holderName", holderName);

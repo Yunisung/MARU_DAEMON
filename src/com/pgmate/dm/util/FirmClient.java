@@ -254,7 +254,7 @@ public class FirmClient {
 			socket.setSoTimeout(timeout);
 			
 			output = socket.getOutputStream();
-			output.write(reqJson.getBytes());
+			output.write(reqJson.getBytes(Charset.forName("EUC-KR")));
 			output.flush();
 			
 			input = socket.getInputStream();

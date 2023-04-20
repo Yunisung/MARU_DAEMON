@@ -42,10 +42,10 @@ public class FirmClient {
 		firmBean.data.put("virtualAccount", virtualAccount);
 		firmBean.data.put("withdrawBankCd", bankCd);
 		firmBean.data.put("withdrawAccount", account);
+		firmBean.data.put("customerName", holderName);
 
 		if(vactBankCd.equals("089")) {
 			firmBean.data.put("trxType", "2");
-			firmBean.data.put("customerName", holderName);
 		}else if(vactBankCd.equals("039")) {
 			firmBean.data.put("trxType", "3");
 			firmBean.data.put("regType", regType);

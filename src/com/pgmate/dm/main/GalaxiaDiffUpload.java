@@ -62,7 +62,7 @@ public class GalaxiaDiffUpload {
 	/**
 	 * 하위사업자 등록
 	 */
-	public void makeDiffMcht() {
+	public void makeDiffMcht() throws IOException {
 		logger.info("========== GALAXIA 하위사업자 등록 START ==========");
 
 		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
@@ -73,7 +73,7 @@ public class GalaxiaDiffUpload {
 		GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
 
 		File folder = new File(uploadPath);
-		if(!folder.exists()) {
+		if (!folder.exists()) {
 			folder.mkdir();
 		}
 
@@ -90,8 +90,10 @@ public class GalaxiaDiffUpload {
 		//파일 객체 생성
 		File uploadFile = new File(uploadPath);
 
-		try{
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
+		BufferedWriter bw = null;
+
+		try {
+			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
 
 			List<SharedMap<String, Object>> mchtList = dao.getMchtList();
 
@@ -104,9 +106,9 @@ public class GalaxiaDiffUpload {
 			logger.info("GALAXIA DIFFMCHT DATA SETTING END");
 
 			//GALAXIA 파일 업로드
-			if(sftpUtil.upload(GALAXIA_UPLOAD_PATH, uploadFile)){
+			if (sftpUtil.upload(GALAXIA_UPLOAD_PATH, uploadFile)) {
 				logger.info("===== GALAXIA DIFFMCHT UPLOAD SUCCESSS =====");
-				if(mchtList.size() > 0) {
+				if (mchtList.size() > 0) {
 					dao.updateDiffMcht(mchtList);
 				}
 			} else {
@@ -114,10 +116,11 @@ public class GalaxiaDiffUpload {
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+		} finally {
+			if (bw != null) {
+				bw.close();
+			}
 		}
-
-//		sftpUtil.download(GALAXIA_UPLOAD_PATH, "가맹점AID_RECEIVE_INFO.20230104", DOWNLOAD_PATH+"\\DOWNLOADFILE");
-//		File downloadFile = new File(DOWNLOAD_PATH+"\\DOWNLOADFILE");
 
 		sftpUtil.disconnection();
 
@@ -267,6 +270,10 @@ public class GalaxiaDiffUpload {
 				bw.close();
 			}
 		}
+
+		sftpUtil.disconnection();
+
+		logger.info("===== GALAXIA DIFFSETTLE UPLOAD END =====");
 	}
 
 	/**

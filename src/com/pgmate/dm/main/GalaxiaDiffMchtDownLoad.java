@@ -93,6 +93,9 @@ public class GalaxiaDiffMchtDownLoad {
             logger.info("GALAXIA 하위사업자 결과 파일 NOT EXIST");
         }
 
+        sftpUtil.disconnection();
+
+        logger.info("===== GALAXIA 하위사업자 결과 등록 END =====");
     }
 
     private void parssingHeader(String data) {

@@ -99,6 +99,10 @@ public class GalaxiaDiffTrxDownLoad {
         } else {
             logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
         }
+
+        sftpUtil.disconnection();
+
+        logger.info("===== GALAXIA 차액정산 결과 등록 END =====");
     }
 
     private void parssingHeader(String data) {

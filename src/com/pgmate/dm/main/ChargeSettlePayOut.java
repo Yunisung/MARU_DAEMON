@@ -378,11 +378,10 @@ public class ChargeSettlePayOut {
      */
     public String setPayLoad(SharedMap<String, Object> sharedMap, String status, String resultCd, String resultMsg){
 		SharedMap<String, String> payLoadMap = new SharedMap<String, String>();
-		
 		payLoadMap.put("mchtId",sharedMap.getString("mchtId"));
 		payLoadMap.put("trxId",sharedMap.getString("trxId"));
-		payLoadMap.put("trxDay",sharedMap.getString("trxDay"));
-		payLoadMap.put("trxTime",sharedMap.getString("trxTime"));
+		payLoadMap.put("trxDay",CommonUtil.getCurrentDate("yyyyMMdd"));
+		payLoadMap.put("trxTime",CommonUtil.getCurrentDate("HHmmss"));
 		payLoadMap.put("status",status);
 		payLoadMap.put("trackId",sharedMap.getString("trackId"));
 		payLoadMap.put("resultCd",resultCd);

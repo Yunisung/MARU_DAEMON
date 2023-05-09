@@ -1,6 +1,7 @@
 package com.pgmate.dm.main;
 
 import com.pgmate.dm.bean.FirmBean;
+import com.pgmate.dm.dao.VactAccountDAO;
 import com.pgmate.dm.dao.VactAuthDAO;
 import com.pgmate.dm.util.FirmClient;
 import com.pgmate.dm.util.SmsGw;
@@ -102,6 +103,18 @@ public class VactAccountTerminate {
 
                         //HT_VACT_DTL에 INSERT
                         dao.insertHtVactDtl(data.getString("issueId"), firmBean.resultCd, firmBean.resultMsg);
+
+                        //230504_PYS : 해지된거 노티전송
+                        String hookAddr = dao.getMchtMngVactByMchtId(data.getString("mchtId")).getString("statusHookAddr");
+                        SharedMap<String, Object> statusMap = new SharedMap<>();
+                        statusMap.put("trxId", VactAccountDAO.getNotiId());
+                        statusMap.put("mchtId", data.getString("mchtId"));
+                        statusMap.put("vactAccount", data.getString("account"));
+                        statusMap.put("vactStatus", "대기");
+                        statusMap.put("holderName", dao.getMchtMngVactByMchtId(data.getString("mchtId")).getString("holderName"));
+
+                        new VactAccountStatusHook(hookAddr, statusMap, "0").start();
+
                     } else {
                         logger.info("PG_VACT_DTL 상태 변경 실패 : {}", data.getString("issueId"));
                         msgBody = "PG_VACT_DTL 상태 변경 실패 : [ " + data.getString("issueId") + " ]";

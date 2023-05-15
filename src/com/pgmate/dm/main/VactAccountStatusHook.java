@@ -43,7 +43,7 @@ public class VactAccountStatusHook extends Thread {
         ntsMap.put("mchtId"		, sharedMap.getString("mchtId"));
         ntsMap.put("vactAccount"	, sharedMap.getString("vactAccount"));
         ntsMap.put("vactStatus"	    , sharedMap.getString("vactStatus"));
-        ntsMap.put("holderName"	, sharedMap.getString("mchtId"));
+        ntsMap.put("holderName"	, sharedMap.getString("holderName"));
         ntsMap.put("trxDay"     , CommonUtil.getCurrentDate("yyyyMMdd"));
         ntsMap.put("trxTime"    , CommonUtil.getCurrentDate("HHmmss"));
         ntsMap.put("payLoad"	, setPayLoad(ntsMap));
@@ -121,6 +121,7 @@ public class VactAccountStatusHook extends Thread {
         payLoadMap.put("trxDay",CommonUtil.getCurrentDate("yyyyMMdd"));
         payLoadMap.put("trxTime",CommonUtil.getCurrentDate("HHmmss"));
         String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
+
         return payLoad;
     }
 

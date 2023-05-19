@@ -329,7 +329,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 
 		List<SharedMap<String, Object>> list = getTrxCap(nowDate);
 		String query = "UPDATE PG_TRX_CAP_DTL SET stlDistFee =?, stlDistRate=?, stlAgencyFee =?, stlAgencyRate =?, stlSalesFee =?,stlSalesRate =?, stlDiffAgencyRate =?, stlDiffAgencyFee =?, stlDiffDistRate =?, stlDiffDistFee =?, stlDiffSalesRate =?, stlDiffSalesFee =?, stlDiffVanAmt =?,"
-				+ " stlDiffStatus = ?, stlDiffVanType= ?, stlDiffVanCardType= ?, stlDiffVanDay =?, stlDiffResultMsg = ?, benefit = ? WHERE capId = ?;"; 
+				+ " stlDiffStatus = ?, stlDiffVanType= ?, stlDiffVanCardType= ?, stlDiffVanDay =?, stlDiffResultMsg = ?, benefit = ?, stlDiffRate = ?, stlDiffAmt = ? WHERE capId = ?;";
 				
 		int inserted = 0;
 		DBManager db = null;
@@ -352,10 +352,13 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 				
 				if(map.getString("resultCd").equals("00")) {
 					SharedMap<String, Object> mchtMngMap = getMchtMngById(map.getString("mchtId"));
-					
+					SharedMap<String,Object> orgFeeMap = getOrgFee(map.getString("van"));
+
 					double stlDiffAgencyRate = 0;
 					double stlDiffDistRate = 0;
 					double stlDiffSalesRate = 0;
+					double diffRate = 0;
+
 					if(map.getString("cardType").equals("1")) {
 						switch(map.getString("mchtType")) {
 							case "영세":stlDiffAgencyRate = mchtMngMap.getDouble("diff0CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff0CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff0CheckSalesRate");break;
@@ -364,6 +367,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 							case "중소3":stlDiffAgencyRate = mchtMngMap.getDouble("diff3CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3CheckSalesRate");break;
 							default :stlDiffAgencyRate = 0;stlDiffDistRate = 0;break;
 						}
+						diffRate = orgFeeMap.getDouble("diff1CheckRate");
 						stlDiffVanCardType = "체크";
 					}else {
 						switch(map.getString("mchtType")) {
@@ -373,6 +377,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 							case "중소3":stlDiffAgencyRate = mchtMngMap.getDouble("diff3AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3SalesRate");break;
 							default :stlDiffAgencyRate = 0;stlDiffDistRate = 0;break;
 						}
+						diffRate = orgFeeMap.getDouble("diff1Rate");
 						stlDiffVanCardType = "신용";
 					}
 					
@@ -394,7 +399,11 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 					
 					// 에이전시 차액정산 최종 수수료 : 에이전시 차액정산 수수료 - 지사 차액정산 수수료
 					capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee")-capDtlMap.getLong("stlDiffSalesFee"));
-					
+
+					// 본사차액정산금 계산
+					capDtlMap.put("stlDiffRate"	, diffRate);
+					capDtlMap.put("stlDiffAmt"	, calcFeeVat(map.getLong("amount"),diffRate));
+
 					capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
 					capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
 					capDtlMap.put("stlDiffVanCardType", stlDiffVanCardType);
@@ -499,6 +508,8 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 				pstmt.setString(i++, capDtlMap.getString("stlDiffVanDay"));
 				pstmt.setString(i++, capDtlMap.getString("stlDiffResultMsg"));
 				pstmt.setLong(i++, capDtlMap.getLong("benefit"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlDiffRate"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlDiffAmt"));
 				pstmt.setString(i++, capDtlMap.getString("capId"));
 				
 				pstmt.addBatch();

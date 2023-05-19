@@ -368,19 +368,19 @@ public class KsnetDiffDownloadDAO extends DAO{
 
 					if(map.getString("cardType").equals("1")) {
 						switch(map.getString("mchtType")) {
-							case "영세":diffRate = orgFeeMap.getDouble("diff0CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff0CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff0CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff0CheckSalesRate");break;
-							case "중소1":diffRate = orgFeeMap.getDouble("diff1CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff1CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff1CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff1CheckSalesRate");break;
-							case "중소2":diffRate = orgFeeMap.getDouble("diff2CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff2CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff2CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff2CheckSalesRate");break;
-							case "중소3":diffRate = orgFeeMap.getDouble("diff3CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff3CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3CheckSalesRate");break;
+							case "영세":diffRate = orgFeeMap.getDouble("diff1CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff0CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff0CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff0CheckSalesRate");break;
+							case "중소1":diffRate = orgFeeMap.getDouble("diff2CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff1CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff1CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff1CheckSalesRate");break;
+							case "중소2":diffRate = orgFeeMap.getDouble("diff3CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff2CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff2CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff2CheckSalesRate");break;
+							case "중소3":diffRate = orgFeeMap.getDouble("diff4CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff3CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3CheckSalesRate");break;
 							default :stlDiffAgencyRate = 0;stlDiffDistRate = 0;break;
 						}
 						stlDiffVanCardType = "체크";
 					}else {
 						switch(map.getString("mchtType")) {
-							case "영세":diffRate = orgFeeMap.getDouble("diff0Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff0AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff0DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff0SalesRate");break;
-							case "중소1":diffRate = orgFeeMap.getDouble("diff0Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff1AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff1DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff1SalesRate");break;
-							case "중소2":diffRate = orgFeeMap.getDouble("diff0Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff2AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff2DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff2SalesRate");break;
-							case "중소3":diffRate = orgFeeMap.getDouble("diff0Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff3AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3SalesRate");break;
+							case "영세":diffRate = orgFeeMap.getDouble("diff1Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff0AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff0DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff0SalesRate");break;
+							case "중소1":diffRate = orgFeeMap.getDouble("diff2Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff1AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff1DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff1SalesRate");break;
+							case "중소2":diffRate = orgFeeMap.getDouble("diff3Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff2AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff2DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff2SalesRate");break;
+							case "중소3":diffRate = orgFeeMap.getDouble("diff4Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff3AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3SalesRate");break;
 							default :stlDiffAgencyRate = 0;stlDiffDistRate = 0;break;
 						}
 						stlDiffVanCardType = "신용";

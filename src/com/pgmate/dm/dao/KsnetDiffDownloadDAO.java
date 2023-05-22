@@ -335,8 +335,8 @@ public class KsnetDiffDownloadDAO extends DAO{
 
 		List<SharedMap<String, Object>> list = getTrxCap(nowDate);
 		String query = "UPDATE PG_TRX_CAP_DTL SET stlDistFee =?, stlDistRate=?, stlAgencyFee =?, stlAgencyRate =?, stlSalesFee =?,stlSalesRate =?, stlDiffAgencyRate =?, stlDiffAgencyFee =?, stlDiffDistRate =?, stlDiffDistFee =?, stlDiffSalesRate =?, stlDiffSalesFee =?, stlDiffVanAmt =?,"
-				+ " stlDiffStatus = ?, stlDiffVanType= ?, stlDiffVanCardType= ?, stlDiffVanDay =?, stlDiffResultMsg = ?, benefit = ? WHERE capId = ?;"; 
-				
+				+ " stlDiffStatus = ?, stlDiffVanType= ?, stlDiffVanCardType= ?, stlDiffVanDay =?, stlDiffResultMsg = ?, benefit = ?, stlDiffRate = ?, stlDiffAmt = ? WHERE capId = ?;";
+
 		int inserted = 0;
 		DBManager db = null;
 		Connection conn = null;
@@ -523,6 +523,8 @@ public class KsnetDiffDownloadDAO extends DAO{
 				pstmt.setString(i++, capDtlMap.getString("stlDiffVanDay"));
 				pstmt.setString(i++, capDtlMap.getString("stlDiffResultMsg"));
 				pstmt.setLong(i++, capDtlMap.getLong("benefit"));
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlDiffRate"));
+				pstmt.setLong(i++, capDtlMap.getLong("stlDiffAmt"));
 				pstmt.setString(i++, capDtlMap.getString("capId"));
 				
 				pstmt.addBatch();

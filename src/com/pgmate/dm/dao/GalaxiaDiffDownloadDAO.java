@@ -506,7 +506,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 				pstmt.setString(i++, capDtlMap.getString("stlDiffVanDay"));
 				pstmt.setString(i++, capDtlMap.getString("stlDiffResultMsg"));
 				pstmt.setLong(i++, capDtlMap.getLong("benefit"));
-				pstmt.setLong(i++, capDtlMap.getLong("stlDiffRate"));
+				pstmt.setDouble(i++, capDtlMap.getDouble("stlDiffRate"));
 				pstmt.setLong(i++, capDtlMap.getLong("stlDiffAmt"));
 				pstmt.setString(i++, capDtlMap.getString("capId"));
 				

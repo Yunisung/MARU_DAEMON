@@ -10,17 +10,17 @@ public class GalaxiaDiffDownloadDAOTest {
 
     private static Logger logger = LoggerFactory.getLogger(GalaxiaDiffDownloadDAOTest.class);
 
-    private GalaxiaDiffDownloadDAO dao;
+    private KsnetDiffDownloadDAO dao;
 
     @Before
     public void init() {
-        dao = new GalaxiaDiffDownloadDAO();
+        dao = new KsnetDiffDownloadDAO();
         dao.setDebug(true);
     }
 
     @Test
     public void 차액정산_다운로드_테스트() {
-        String nowDate = "20220731";
+        String nowDate = "20220708";
         int result = dao.updateTrxCap(nowDate);
         Assert.assertTrue(result > 0);
     }

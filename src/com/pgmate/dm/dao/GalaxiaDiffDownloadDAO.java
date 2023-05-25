@@ -194,7 +194,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 		String query = "SELECT A.*, B.capId, C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlAgencyFee,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
 				+ "INNER JOIN PG_TRX_CAP B ON A.trxId = B.trxId "
 				+ "INNER JOIN PG_TRX_CAP_DTL C ON B.capId = C.capId "
-				+ "LEFT JOIN PG_CODE D on A.resultCd = D.code and D.alias = 'DIFF' "
+				+ "LEFT JOIN PG_CODE D on A.resultCd = D.code and D.alias = 'DIFF_GAL' "
 				+ "WHERE A.downDay = '"+nowDate+"'";
 		RecordSet rset = super.query(query);
 		super.initRecord();

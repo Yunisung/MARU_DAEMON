@@ -141,7 +141,19 @@ public class GalaxiaDiffTrxDownLoad {
             case "3":mchtType = "중소3";break;
             case "4":mchtType = "일반";break;
         }
-        Long diffStlAmt = Long.valueOf(CommonUtil.toString(resBuf, 178, 15).trim());
+
+        String stlDiffStlAmt = CommonUtil.toString(resBuf, 178, 15).trim();
+        Long diffStlAmt = 0L;
+
+        //차액정산금이 양수 일 때 그대로 반영
+        if(!stlDiffStlAmt.contains("-")) {
+            diffStlAmt = Long.valueOf(stlDiffStlAmt);
+        //차액정산금이 음수 일 때 '-' 부호 앞의 '0'들 제거 후 반영
+        } else {
+            stlDiffStlAmt = stlDiffStlAmt.substring(stlDiffStlAmt.indexOf("-"));
+            diffStlAmt = Long.valueOf(stlDiffStlAmt);
+        }
+
         String resultCd = CommonUtil.toString(resBuf, 193, 2).trim();
         String mchtFiller = CommonUtil.toString(resBuf, 195, 5).trim();
 

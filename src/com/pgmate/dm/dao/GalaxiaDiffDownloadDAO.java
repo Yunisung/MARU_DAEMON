@@ -382,8 +382,12 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 					long amount = map.getLong("mchtSalesAmt");
 					long diffVanAmt = map.getLong("diffStlAmt");
 					if(!map.getString("trxType").equals("0")) {
+						if(map.getLong("diffStlAmt") < 0) {
+							diffVanAmt = map.getLong("diffStlAmt");
+						}else {
+							diffVanAmt = -map.getLong("diffStlAmt");
+						}
 						amount = -map.getLong("mchtSalesAmt");
-						diffVanAmt = -map.getLong("diffStlAmt"); 
 					}
 					long stlDiffAgencyFee = calcFeeVat(amount, stlDiffAgencyRate);
 					long stlDiffDistFee = calcFeeVat(amount, stlDiffDistRate);
@@ -398,9 +402,10 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 					// 에이전시 차액정산 최종 수수료 : 에이전시 차액정산 수수료 - 지사 차액정산 수수료
 					capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee")-capDtlMap.getLong("stlDiffSalesFee"));
 
+					// 일반 가맹점의 차액정산금 계산하기 위해 로직 추가
 					// 본사차액정산금 계산
 					capDtlMap.put("stlDiffRate"	, diffRate);
-					capDtlMap.put("stlDiffAmt"	, calcFeeVat(map.getLong("amount"),diffRate));
+					capDtlMap.put("stlDiffAmt"	, calcFeeVat(amount, diffRate));
 
 					capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
 					capDtlMap.put("stlDiffVanType", map.getString("mchtType"));

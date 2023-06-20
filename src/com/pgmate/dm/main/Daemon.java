@@ -32,7 +32,8 @@ public class Daemon {
 						t.getTotCapByCapDay(curDate);
 						t.getCapMerchantList(curDate);
 						t.getCapTmnList(curDate);
-						t.getPrf(curDate);
+						//230620 VA_PRF 테이블 미존재로 주석처리
+//						t.getPrf(curDate);
 					}
 				}else {
 					logger.info("입력받은 날짜가 올바르지 않습니다. = {}",cmd2);

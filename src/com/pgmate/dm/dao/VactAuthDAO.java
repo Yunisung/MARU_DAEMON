@@ -208,7 +208,7 @@ public class VactAuthDAO extends DAO {
         String q = " SELECT A.issueId, B.*, C.companyCd " +
                     " FROM PG_VACT_DTL A INNER JOIN PG_VACT_REG B INNER JOIN PG_VACT C" +
                     " ON A.account=B.account AND A.account = C.account" +
-                    " WHERE A.status='사용자만료' OR A.status='입금횟수초과' ORDER BY A.account ASC " +
+                    " WHERE A.status='사용자만료' OR A.status='입금횟수초과' ORDER BY C.bankCd ASC, A.account ASC " +
                     " LIMIT " + limit;
 
         RecordSet rset = super.query(q);

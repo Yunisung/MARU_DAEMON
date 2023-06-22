@@ -270,44 +270,46 @@ public class ChargeSettlePayOut {
 							
 							//3회 실패 시 
 							if(errCnt == 3) {
-								//펌에러 테이블에 저장 
-								SharedMap<String, Object> errData = dao.getChargeSettle(data.getString("trxId"));
-								errData.put("refId", data.getString("refId"));
-								errData.put("resultCd", data.getString("resultCd"));
-								errData.put("resultMsg", data.getString("resultMsg"));
-								String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
-								errData.put("regDay", regDate.substring(0, 8));
-								dao.insertTrxErr(errData);
+								//230622 타행이체불능 에러 처리 안되어있을 때 로직 수행
+								if(dao.getChargeErrCount(data.getString("trxId")) <= 0) {
+									//펌에러 테이블에 저장
+									SharedMap<String, Object> errData = dao.getChargeSettle(data.getString("trxId"));
+									errData.put("refId", data.getString("refId"));
+									errData.put("resultCd", data.getString("resultCd"));
+									errData.put("resultMsg", data.getString("resultMsg"));
+									String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
+									errData.put("regDay", regDate.substring(0, 8));
+									dao.insertTrxErr(errData);
 
-								if(!firmBean.resultCd.equals("XXXX") && !firmBean.resultCd.equals("")) {
-									logger.info("===========================");
-									logger.info("충전정산 잔액 복구 로직 실행");
-									logger.info("가맹점 ID : {}", data.getString("mchtId"));
-									logger.info("복구금액 : {}", errData.getLong("netAmount"));
-									logger.info("===========================");
+									if (!firmBean.resultCd.equals("XXXX") && !firmBean.resultCd.equals("")) {
+										logger.info("===========================");
+										logger.info("충전정산 잔액 복구 로직 실행");
+										logger.info("가맹점 ID : {}", data.getString("mchtId"));
+										logger.info("복구금액 : {}", errData.getLong("netAmount"));
+										logger.info("===========================");
 
-									//실패거래건의 실출금액 조회
-									long netAmt = errData.getLong("netAmount");
-									//실패거래건의 실출금액 만큼 해당 계정의 이후 결제건의 잔액에 더해줌 
-									dao.updateChargeSettleBalance(data.getString("trxId"), data.getString("mchtId"), netAmt);
-									//실패건 PG_CHARGE_SETTLE 테이블에서 삭제
-									dao.deleteChargeSettle(data.getString("trxId"));
-									
-									logger.debug("hookAddr [{}]",chargeMngMap.getString("hookAddr"));
-									// 출금 실패결과 noti 발송
-									if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
-										String payLoad = setPayLoad(data, "출금실패", firmBean.resultCd, firmBean.resultMsg);
-										data.put("payLoad", payLoad);
-										data.put("trxType", "출금");
-										new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+										//실패거래건의 실출금액 조회
+										long netAmt = errData.getLong("netAmount");
+										//실패거래건의 실출금액 만큼 해당 계정의 이후 결제건의 잔액에 더해줌
+										dao.updateChargeSettleBalance(data.getString("trxId"), data.getString("mchtId"), netAmt);
+										//실패건 PG_CHARGE_SETTLE 테이블에서 삭제
+										dao.deleteChargeSettle(data.getString("trxId"));
+
+										logger.debug("hookAddr [{}]", chargeMngMap.getString("hookAddr"));
+										// 출금 실패결과 noti 발송
+										if (!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+											String payLoad = setPayLoad(data, "출금실패", firmBean.resultCd, firmBean.resultMsg);
+											data.put("payLoad", payLoad);
+											data.put("trxType", "출금");
+											new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+										}
 									}
+
+									msgBody = "충전정산 출금 " + errCnt + "회 실패. 확인요망 [" + data.getString("trxId") + "][" + firmBean.resultMsg + "]";
+
+									logger.info(msgBody);
+									smsGw.sendMessage("0", "4", msgBody);
 								}
-								
-								msgBody = "충전정산 출금 " + errCnt + "회 실패. 확인요망 [" + data.getString("trxId") + "][" + firmBean.resultMsg + "]";
-								
-								logger.info(msgBody);
-								smsGw.sendMessage("0", "4", msgBody);
-								
 								
 							}
 						}

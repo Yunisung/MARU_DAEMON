@@ -314,6 +314,13 @@ public class ChargeSettlePayOutDAO extends DAO{
 		return rset.getRows();
 	}
 
+	public int getChargeErrCount(String trxId) {
+		String query = "SELECT COUNT(*) as cnt FROM PG_CHARGE_SETTLE_ERR WHERE trxId='" + trxId + "'";
+		RecordSet rset = super.query(query);
+		super.initRecord();
+		return rset.getRowFirst().getInt("cnt");
+	}
+
 	public SharedMap<String, Object> getMchtChargeMng(String mchtId) {
 		super.setTable("PG_MCHT_CHARGE_MNG");
 		super.setColumns("*");

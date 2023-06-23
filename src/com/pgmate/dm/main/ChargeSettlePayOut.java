@@ -271,7 +271,7 @@ public class ChargeSettlePayOut {
 							//3회 실패 시 
 							if(errCnt == 3) {
 								//230622 타행이체불능 에러 처리 안되어있을 때 로직 수행
-								if(dao.getChargeErrCount(data.getString("trxId")) <= 0) {
+								if(dao.getChargeErrCount(data.getString("trxId")) == 0) {
 									//펌에러 테이블에 저장
 									SharedMap<String, Object> errData = dao.getChargeSettle(data.getString("trxId"));
 									errData.put("refId", data.getString("refId"));

@@ -68,7 +68,7 @@ public class RebillProcess {
 
         long time = System.currentTimeMillis();
         try {
-            System.out.println("rebillId ["+rebillId+"]");
+            logger.info("rebillId ["+rebillId+"]");
             url = new URL(paymentUrl);
 
 
@@ -103,11 +103,11 @@ public class RebillProcess {
 
         } catch(Exception e) {
             result.append("CONNECT ERROR ["+e.getMessage()+"] "+paymentUrl);
-            System.out.println("PAYMENT URL REQUEST ERROR =["+e.getMessage()+"]");
+            logger.error("PAYMENT URL REQUEST ERROR =["+e.getMessage()+"]");
 
         }finally{
-            System.out.println("ElapsedTime : "+(long)(System.currentTimeMillis()-time)+"msec");
-            System.out.println("LOCAL << PAYMENT ["+result.toString()+"]");
+            logger.info("ElapsedTime : "+(long)(System.currentTimeMillis()-time)+"msec");
+            logger.info("LOCAL << PAYMENT ["+result.toString()+"]");
             conn.disconnect();
         }
         return result.toString();

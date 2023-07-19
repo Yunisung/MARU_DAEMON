@@ -22,7 +22,7 @@ public class SFTPUtil {
      * @param userPw 패스워드
      * @param port 포트번호
      */
-    public void init(String host, String userId, String userPw, int port) {
+    public void init(String host, String userId, String userPw, int port) throws Exception {
         JSch jsch = new JSch();
 
         logger.info("===== CONNECTING START =====");
@@ -41,6 +41,7 @@ public class SFTPUtil {
         } catch (JSchException e) {
             logger.info("CONNECTED FAIL");
             e.printStackTrace();
+            throw e;
         }
 
         channelSftp = (ChannelSftp) channel;
@@ -80,7 +81,7 @@ public class SFTPUtil {
      * @param file 저장할 파일
      * @return 업로드 여부
      */
-    public boolean upload(String dir, File file) {
+    public boolean upload(String dir, File file) throws Exception {
         logger.info("SFTP FILE UPLOAD PATH =====> {}", dir);
         boolean isUpload = false;
         SftpATTRS sftpATTRS;
@@ -98,11 +99,13 @@ public class SFTPUtil {
             }
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
+            throw e;
         } finally {
             try {
                 in.close();
             } catch (IOException e) {
                 e.printStackTrace();
+                throw e;
             }
         }
         return isUpload;

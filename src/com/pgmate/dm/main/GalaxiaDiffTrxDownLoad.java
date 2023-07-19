@@ -58,19 +58,20 @@ public class GalaxiaDiffTrxDownLoad {
             folder.mkdir();
         }
 
-        final SFTPUtil sftpUtil = new SFTPUtil();
+        try {
+            final SFTPUtil sftpUtil = new SFTPUtil();
 
-        sftpUtil.init(HOST, userId, userPw, PORT);
+            sftpUtil.init(HOST, userId, userPw, PORT);
 
-        logger.info("===== GALAXIA 차액정산 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
-        if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + "/" + fileName)) {
-            logger.info("GALAXIA 차액정산 결과 파일 EXIST");
+            logger.info("===== GALAXIA 차액정산 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
+            if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + "/" + fileName)) {
+                logger.info("GALAXIA 차액정산 결과 파일 EXIST");
 
-            downloadPath += File.separator + nowDate + ".galaxia.download";
-            sftpUtil.download(GALAXIA_DOWNLOAD_PATH, fileName, downloadPath);
+                downloadPath += File.separator + nowDate + ".galaxia.download";
+                sftpUtil.download(GALAXIA_DOWNLOAD_PATH, fileName, downloadPath);
 
-            File file = new File(downloadPath);
-            try {
+                File file = new File(downloadPath);
+
                 FileInputStream is = new FileInputStream(file);
                 InputStreamReader isr = new InputStreamReader(is, "EUC-KR");
                 BufferedReader br = new BufferedReader(isr);
@@ -79,11 +80,11 @@ public class GalaxiaDiffTrxDownLoad {
                 while ((line = br.readLine()) != null) {
                     logger.info("GALAXIA 차액정산 등록 DATA : [" + line + "]");
 
-                    if(line.startsWith("HD")) {
+                    if (line.startsWith("HD")) {
                         parssingHeader(line);
-                    } else if(line.startsWith("DT")) {
+                    } else if (line.startsWith("DT")) {
                         parssingData(line);
-                    } else if(line.startsWith("TR")) {
+                    } else if (line.startsWith("TR")) {
                         parssingTotal(line);
                     }
                 }
@@ -91,19 +92,23 @@ public class GalaxiaDiffTrxDownLoad {
 //                    logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
 //                }
                 br.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
+            }else {
+                logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
             }
-        } else {
-            logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
-        }
 
-        sftpUtil.disconnection();
+            if(sftpUtil != null) {
+                sftpUtil.disconnection();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
+        }
 
         logger.info("===== GALAXIA 차액정산 결과 등록 END =====");
     }
+
+
 
     private void parssingHeader(String data) {
         logger.info("TRX DIFF HEADER LINE DATA : {}", data);

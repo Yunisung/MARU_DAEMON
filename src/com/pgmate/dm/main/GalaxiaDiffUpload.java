@@ -77,22 +77,23 @@ public class GalaxiaDiffUpload {
 			folder.mkdir();
 		}
 
-		final SFTPUtil sftpUtil = new SFTPUtil();
-
-		//SFTP 서버 접속
-		sftpUtil.init(HOST, userId, userPw, PORT);
-
-		//파일명 생성
-		uploadPath += File.separator + fileName;
-
-		logger.info("DIFF MCHT UPLOAD FILE NAME ===> {}", uploadPath);
-
-		//파일 객체 생성
-		File uploadFile = new File(uploadPath);
-
-		BufferedWriter bw = null;
 
 		try {
+			final SFTPUtil sftpUtil = new SFTPUtil();
+
+			//SFTP 서버 접속
+			sftpUtil.init(HOST, userId, userPw, PORT);
+
+			//파일명 생성
+			uploadPath += File.separator + fileName;
+
+			logger.info("DIFF MCHT UPLOAD FILE NAME ===> {}", uploadPath);
+
+			//파일 객체 생성
+			File uploadFile = new File(uploadPath);
+
+			BufferedWriter bw = null;
+
 			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
 
 			List<SharedMap<String, Object>> mchtList = dao.getMchtList();
@@ -114,15 +115,20 @@ public class GalaxiaDiffUpload {
 			} else {
 				logger.info("===== GALAXIA DIFFMCHT UPLOAD FAIL =====");
 			}
-		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-		} finally {
+
 			if (bw != null) {
 				bw.close();
 			}
+
+			if(sftpUtil != null) {
+				sftpUtil.disconnection();
+			}
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		} finally {
 		}
 
-		sftpUtil.disconnection();
 
 		logger.info("========== GALAXIA 하위사업자 등록 END ==========");
 	}
@@ -208,7 +214,7 @@ public class GalaxiaDiffUpload {
 	 *
 	 * @throws IOException
 	 */
-	public void makeDiffSettle() throws IOException {
+	public void makeDiffSettle() throws Exception {
 		logger.info("========== GALAXIA 차액정산 등록 START ==========");
 
 		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
@@ -263,15 +269,19 @@ public class GalaxiaDiffUpload {
 			} else {
 				logger.info("===== GALAXIA DIFFSETTLE UPLOAD FAIL =====");
 			}
+
+			if (bw != null) {
+				bw.close();
+			}
+
+			if(sftpUtil != null) {
+				sftpUtil.disconnection();
+			}
+
 		} catch (Exception e) {
 			logger.error("MAKE DIFF SETTLE ERROR ===> " + e.getMessage(), e);
 		} finally {
-			if(bw != null) {
-				bw.close();
-			}
 		}
-
-		sftpUtil.disconnection();
 
 		logger.info("===== GALAXIA DIFFSETTLE UPLOAD END =====");
 	}

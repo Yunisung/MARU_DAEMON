@@ -50,23 +50,25 @@ public class GalaxiaDiffMchtDownLoad {
         GalaxiaDiffDownloadDAO dao = new GalaxiaDiffDownloadDAO();
 
         File folder = new File(downloadPath);
-        if(!folder.exists()) {
+        if (!folder.exists()) {
             folder.mkdir();
         }
 
-        final SFTPUtil sftpUtil = new SFTPUtil();
+        try {
+            final SFTPUtil sftpUtil = new SFTPUtil();
 
-        sftpUtil.init(HOST, userId, userPw, PORT);
+            sftpUtil.init(HOST, userId, userPw, PORT);
 
-        logger.info("===== GALAXIA 하위사업자 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
-        if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + File.separator + fileName)) {
-            logger.info("GALAXIA 하위사업자 결과 파일 EXIST");
+            logger.info("===== GALAXIA 하위사업자 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
 
-            downloadPath += File.separator + nowDate + ".galaxia.download";
-            sftpUtil.download(GALAXIA_DOWNLOAD_PATH, fileName, downloadPath);
+            if (sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + File.separator + fileName)) {
+                logger.info("GALAXIA 하위사업자 결과 파일 EXIST");
 
-            File file = new File(downloadPath);
-            try {
+                downloadPath += File.separator + nowDate + ".galaxia.download";
+                sftpUtil.download(GALAXIA_DOWNLOAD_PATH, fileName, downloadPath);
+
+                File file = new File(downloadPath);
+
                 FileInputStream is = new FileInputStream(file);
                 InputStreamReader isr = new InputStreamReader(is, "EUC-KR");
                 BufferedReader br = new BufferedReader(isr);
@@ -75,28 +77,30 @@ public class GalaxiaDiffMchtDownLoad {
                 while ((line = br.readLine()) != null) {
                     logger.info("GALAXIA 하위사업자 등록 DATA : [" + line + "]");
 
-                    if(line.startsWith("HD")) {
+                    if (line.startsWith("HD")) {
                         parssingHeader(line);
-                    } else if(line.startsWith("RD")) {
+                    } else if (line.startsWith("RD")) {
                         parssingData(line);
-                    } else if(line.startsWith("TR")) {
+                    } else if (line.startsWith("TR")) {
                         parssingTotal(line);
                     }
                 }
                 br.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                logger.error("DOWNLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
+            } else {
+                logger.info("GALAXIA 하위사업자 결과 파일 NOT EXIST");
             }
-        } else {
-            logger.info("GALAXIA 하위사업자 결과 파일 NOT EXIST");
-        }
 
-        sftpUtil.disconnection();
+            if (sftpUtil != null) {
+                sftpUtil.disconnection();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("DOWNLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
+        }
 
         logger.info("===== GALAXIA 하위사업자 결과 등록 END =====");
     }
+
 
     private void parssingHeader(String data) {
         logger.info("line data check : {}", data);

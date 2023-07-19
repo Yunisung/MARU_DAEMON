@@ -22,6 +22,9 @@ import java.util.regex.Pattern;
 public class GalaxiaDiffUpload {
 	private Logger logger = LoggerFactory.getLogger(getClass());
 
+	private SmsGw smsGw = null;
+	private String msgBody = "";
+
 	//JM VMWARE SFTP SERVER
 //	private static String HOST = "192.168.95.139";
 	//GALAXIA SFTP SERVER
@@ -45,7 +48,6 @@ public class GalaxiaDiffUpload {
 	private static String GALAXIA_UPLOAD_PATH="/request";	//운영 폴더
 
 
-	private SmsGw smsGw = null;
 	private String nowDate = "";
 	private int dataCnt = 0;
 	private long dataAmt = 0;
@@ -125,7 +127,9 @@ public class GalaxiaDiffUpload {
 			}
 
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
+			logger.error("UPLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
+			msgBody = "갤럭시아 영중소 가맹점 업로드 오류. 확인요망 [" + e.getMessage() + "]";
+			smsGw.sendMessage("0", "4", msgBody);
 		} finally {
 		}
 
@@ -227,21 +231,21 @@ public class GalaxiaDiffUpload {
 			folder.mkdir();
 		}
 
-		final SFTPUtil sftpUtil = new SFTPUtil();
-
-		//SFTP 서버 접속
-		sftpUtil.init(HOST, userId, userPw, PORT);
-
-		uploadPath += File.separator + fileName;
-		logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPath);
-
-		GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
-		BufferedWriter bw = null;
-
-		//파일 객체 생성
-		File uploadFile = new File(uploadPath);
-
 		try {
+			final SFTPUtil sftpUtil = new SFTPUtil();
+
+			//SFTP 서버 접속
+			sftpUtil.init(HOST, userId, userPw, PORT);
+
+			uploadPath += File.separator + fileName;
+			logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPath);
+
+			GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
+			BufferedWriter bw = null;
+
+			//파일 객체 생성
+			File uploadFile = new File(uploadPath);
+
 			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
 
 			List<SharedMap<String, Object>> payList = dao.getPayList();
@@ -274,12 +278,13 @@ public class GalaxiaDiffUpload {
 				bw.close();
 			}
 
-			if(sftpUtil != null) {
-				sftpUtil.disconnection();
-			}
+			sftpUtil.disconnection();
 
 		} catch (Exception e) {
-			logger.error("MAKE DIFF SETTLE ERROR ===> " + e.getMessage(), e);
+			logger.error("MAKE DIFF SETTLE ERROR ===> {}", e.getMessage(), e);
+			msgBody = "갤럭시아 차액정산 업로드 오류. 확인요망 [" + e.getMessage() + "]";
+			smsGw.sendMessage("0", "4", msgBody);
+
 		} finally {
 		}
 

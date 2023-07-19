@@ -2,6 +2,7 @@ package com.pgmate.dm.main;
 
 import com.pgmate.dm.dao.GalaxiaDiffDownloadDAO;
 import com.pgmate.dm.util.SFTPUtil;
+import com.pgmate.dm.util.SmsGw;
 import com.pgmate.lib.util.lang.CommonUtil;
 import com.pgmate.lib.util.map.SharedMap;
 import org.slf4j.Logger;
@@ -22,6 +23,8 @@ import java.util.List;
 public class GalaxiaDiffTrxDownLoad {
     private static Logger logger = LoggerFactory.getLogger( GalaxiaDiffTrxDownLoad.class );
 
+    private SmsGw smsGw = null;
+    private String msgBody = "";
     //GALAXIA SFTP SERVER
     private static String HOST = "119.207.70.214";
     private static int PORT = 22;
@@ -47,6 +50,7 @@ public class GalaxiaDiffTrxDownLoad {
     }
 
     private void downloadDiffTrx(String nowDate) {
+        smsGw = new SmsGw();
         logger.info("========== GALAXIA 차액정산 결과 등록 START ==========");
         String downloadPath = SETTLE_PATH + nowDate.substring(0, 6);
         String fileName = userId + "_RECEIVE." + nowDate;
@@ -96,13 +100,12 @@ public class GalaxiaDiffTrxDownLoad {
                 logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
             }
 
-            if(sftpUtil != null) {
-                sftpUtil.disconnection();
-            }
+            sftpUtil.disconnection();
 
         } catch (Exception e) {
             logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
-            // SMS
+            msgBody = "갤럭시아 차액정산 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
+            smsGw.sendMessage("0", "4", msgBody);
         }
 
         logger.info("===== GALAXIA 차액정산 결과 등록 END =====");

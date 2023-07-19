@@ -82,7 +82,7 @@ public class SFTPUtil {
      * @param file 저장할 파일
      * @return 업로드 여부
      */
-    public boolean upload(String dir, File file) throws Exception {
+    public boolean upload(String dir, File file) throws DiffConnectionException {
         logger.info("SFTP FILE UPLOAD PATH =====> {}", dir);
         boolean isUpload = false;
         SftpATTRS sftpATTRS;
@@ -99,20 +99,20 @@ public class SFTPUtil {
                 isUpload = true;
             }
         } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw e;
+            logger.error("SFTP FILE UPLOAD ERROR", e);
+            throw new DiffConnectionException(e);
         } finally {
             try {
                 in.close();
             } catch (IOException e) {
-                e.printStackTrace();
-                throw e;
+                logger.error("SFTP FILE INPUTSTREAM CLOSE ERROR", e);
+                throw new DiffConnectionException(e);
             }
         }
         return isUpload;
     }
 
-    public void download(String dir, String downloadFile, String path) {
+    public void download(String dir, String downloadFile, String path) throws DiffConnectionException {
         logger.info("SFTP FILE DOWNLOAD PATH : {}", path);
         InputStream in = null;
         FileOutputStream out = null;
@@ -132,14 +132,15 @@ public class SFTPUtil {
                 out.write(i);
             }
         } catch (IOException e) {
-            logger.info("===== SFTP FILE DOWNLOAD FAIL =====");
-            e.printStackTrace();
+            logger.info("SFTP FILE DOWNLOAD FAIL", e);
+            throw new DiffConnectionException(e);
         } finally {
             try {
                 out.close();
                 in.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.info("SFTP FILE DOWNLOAD IN CLOSE FAIL", e);
+                throw new DiffConnectionException(e);
             }
         }
     }

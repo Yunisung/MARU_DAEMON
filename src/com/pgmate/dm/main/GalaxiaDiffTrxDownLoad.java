@@ -101,8 +101,8 @@ public class GalaxiaDiffTrxDownLoad {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
+            // SMS
         }
 
         logger.info("===== GALAXIA 차액정산 결과 등록 END =====");

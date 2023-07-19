@@ -1,6 +1,7 @@
 package com.pgmate.dm.util;
 
 import com.jcraft.jsch.*;
+import com.pgmate.dm.exception.DiffConnectionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ public class SFTPUtil {
      * @param userPw 패스워드
      * @param port 포트번호
      */
-    public void init(String host, String userId, String userPw, int port) throws Exception {
+    public void init(String host, String userId, String userPw, int port) throws DiffConnectionException {
         JSch jsch = new JSch();
 
         logger.info("===== CONNECTING START =====");
@@ -39,9 +40,9 @@ public class SFTPUtil {
             channel = session.openChannel("sftp");
             channel.connect();
         } catch (JSchException e) {
-            logger.info("CONNECTED FAIL");
-            e.printStackTrace();
-            throw e;
+            //logger.info("CONNECTED FAIL");
+            logger.error("SFTPUTil CONNECTED FAIL ", e);
+            throw new DiffConnectionException(e);
         }
 
         channelSftp = (ChannelSftp) channel;
@@ -147,7 +148,7 @@ public class SFTPUtil {
      * 연결 종료
      */
     public void disconnection() {
-        channelSftp.quit();
-        session.disconnect();
+        if(channelSftp != null) channelSftp.quit();
+        if(session != null) session.disconnect();
     }
 }

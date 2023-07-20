@@ -27,14 +27,14 @@ public class KsnetDiffUpload {
 	private static String SETTLE_PATH="/home/data/diff/settle/";
 //	private static String MCHT_PATH="D:\\dev\\test\\mcht\\";
 //	private static String SETTLE_PATH="D:\\dev\\test\\settle\\";
-	
+
 	private static String ENC_SHOP_PASS = "ec4wxx1foTcnTLpjkFL23Q==";
 	private SmsGw smsGw = null;
 	private String day = "";
 	
 	//22.06.02 vanid 분리용 배열 추가
 	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011"};
-	
+
 	public KsnetDiffUpload() {
 		makeDiffMcht();
 		makeDiffSettle();
@@ -102,8 +102,8 @@ public class KsnetDiffUpload {
 		KsnetDiffUploadDAO dao = new KsnetDiffUploadDAO();
 		
 		for (String id : vanId) {
-			
-			List<SharedMap<String,Object>> payList = dao.getPayList(id); 
+
+			List<SharedMap<String,Object>> payList = dao.getPayList(id);
 			List<SharedMap<String,Object>> rfdList = dao.getRfdList(id);
 			List<SharedMap<String,Object>> errList = dao.getErrList(id);
 			try {
@@ -135,14 +135,14 @@ public class KsnetDiffUpload {
 					bw.newLine();
 				}
 				for(SharedMap<String, Object> map:rfdList) {
-					
+
 					// 부분취소 순번 추가
 					if(map.getString("trxType").equals("3")) {
 						int cnt = 0;
-						//cnt = dao.getRfdListCnt(map.getString("rootTrxId"), map.getString("trxDay") , map.getString("trxTime")); 
+						//cnt = dao.getRfdListCnt(map.getString("rootTrxId"), map.getString("trxDay") , map.getString("trxTime"));
 						map.replace("rfdTurn", Integer.toString(cnt+1));
 					}
-						
+
 					bw.write(map.getString("recordType").trim()+",");
 					bw.write(map.getString("systemType").trim()+",");
 					bw.write(map.getString("vanId").trim()+",");
@@ -179,7 +179,10 @@ public class KsnetDiffUpload {
 				
 				// KSNET 파일업로드
 				if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGTMS", id ,ENC_SHOP_PASS, nowDate) < 0) {
-					logger.info("DIFF TRX UPLOAD FAIL!");
+					logger.error("DIFF TRX UPLOAD FAIL!");
+
+					String msgBody = day + " KSNET 차액정산 파일 송신 오류. 확인요망";
+					smsGw.sendMessage("0", "1", msgBody);
 				}else {
 					logger.info("DIFF TRX UPLOAD SUCCESS!");
 					if(payList.size()>0) {
@@ -189,12 +192,12 @@ public class KsnetDiffUpload {
 						dao.insertTrxDiffUpload(rfdList, nowDate);
 					}
 				}
-					
+
 			}catch (Exception e) {
-				String msgBody = day + " KSNET 차액정산 파일 송신 오류. 확인요망";
-				
+				String msgBody = day + " KSNET 차액정산 파일 생성 오류. 확인요망";
+
 				smsGw.sendMessage("0", "1", msgBody);
-	            
+
 	            logger.error(e.getMessage(), e);
 			}
 		}

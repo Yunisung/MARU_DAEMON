@@ -1,7 +1,7 @@
 package com.pgmate.dm.util;
 
 import com.jcraft.jsch.*;
-import com.pgmate.dm.exception.DiffConnectionException;
+import com.pgmate.dm.exception.DiffTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +23,7 @@ public class SFTPUtil {
      * @param userPw 패스워드
      * @param port 포트번호
      */
-    public void init(String host, String userId, String userPw, int port) throws DiffConnectionException {
+    public void init(String host, String userId, String userPw, int port) throws DiffTransportException {
         JSch jsch = new JSch();
 
         logger.info("===== CONNECTING START =====");
@@ -42,7 +42,7 @@ public class SFTPUtil {
         } catch (JSchException e) {
             //logger.info("CONNECTED FAIL");
             logger.error("SFTPUTil CONNECTED FAIL ", e);
-            throw new DiffConnectionException(e);
+            throw new DiffTransportException(e);
         }
 
         channelSftp = (ChannelSftp) channel;
@@ -54,15 +54,15 @@ public class SFTPUtil {
      * @param path 디렉토리 (or 파일)
      * @return
      */
-    public boolean exists(String path) {
+    public boolean exists(String path) throws DiffTransportException {
         Vector res = null;
         try {
             res = channelSftp.ls(path);
             logger.info("===== GALAXIA FILE EXIST TRUE =====");
         } catch (SftpException e) {
             if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-                logger.info("===== GALAXIA FILE EXIST FALSE =====");
-                return false;
+                logger.error("GALAXIA FILE EXIST FALSE  ", e);
+                throw new DiffTransportException(e);
             }
         }
 
@@ -82,7 +82,7 @@ public class SFTPUtil {
      * @param file 저장할 파일
      * @return 업로드 여부
      */
-    public boolean upload(String dir, File file) throws DiffConnectionException {
+    public boolean upload(String dir, File file) throws DiffTransportException {
         logger.info("SFTP FILE UPLOAD PATH =====> {}", dir);
         boolean isUpload = false;
         SftpATTRS sftpATTRS;
@@ -100,19 +100,19 @@ public class SFTPUtil {
             }
         } catch (Exception e) {
             logger.error("SFTP FILE UPLOAD ERROR", e);
-            throw new DiffConnectionException(e);
+            throw new DiffTransportException(e);
         } finally {
             try {
                 in.close();
             } catch (IOException e) {
                 logger.error("SFTP FILE INPUTSTREAM CLOSE ERROR", e);
-                throw new DiffConnectionException(e);
+                throw new DiffTransportException(e);
             }
         }
         return isUpload;
     }
 
-    public void download(String dir, String downloadFile, String path) throws DiffConnectionException {
+    public void download(String dir, String downloadFile, String path) throws DiffTransportException {
         logger.info("SFTP FILE DOWNLOAD PATH : {}", path);
         InputStream in = null;
         FileOutputStream out = null;
@@ -133,14 +133,14 @@ public class SFTPUtil {
             }
         } catch (IOException e) {
             logger.info("SFTP FILE DOWNLOAD FAIL", e);
-            throw new DiffConnectionException(e);
+            throw new DiffTransportException(e);
         } finally {
             try {
                 out.close();
                 in.close();
             } catch (IOException e) {
                 logger.info("SFTP FILE DOWNLOAD IN CLOSE FAIL", e);
-                throw new DiffConnectionException(e);
+                throw new DiffTransportException(e);
             }
         }
     }

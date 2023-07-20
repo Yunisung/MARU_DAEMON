@@ -218,7 +218,7 @@ public class GalaxiaDiffUpload {
 	 *
 	 * @throws IOException
 	 */
-	public void makeDiffSettle() throws Exception {
+	public void makeDiffSettle() {
 		logger.info("========== GALAXIA 차액정산 등록 START ==========");
 
 		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");

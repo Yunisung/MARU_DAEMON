@@ -129,13 +129,13 @@ public class GalaxiaDiffUpload {
 			msgBody = "갤럭시아 영중소 가맹점 업로드 오류. 확인요망 [" + e.getMessage() + "]";
 			smsGw.sendMessage("0", "4", msgBody);
 		} finally {
-				try {
-					bw.close();
-					osw.close();
-					fos.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			try {
+				bw.close();
+				osw.close();
+				fos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 

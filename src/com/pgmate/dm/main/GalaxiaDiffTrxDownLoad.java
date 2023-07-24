@@ -107,13 +107,13 @@ public class GalaxiaDiffTrxDownLoad {
             msgBody = "갤럭시아 차액정산 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
         }finally {
-                try {
-                    br.close();
-                    isr.close();
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                br.close();
+                isr.close();
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         logger.info("===== GALAXIA 차액정산 결과 등록 END =====");

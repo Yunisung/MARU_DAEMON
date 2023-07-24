@@ -103,13 +103,13 @@ public class GalaxiaDiffMchtDownLoad {
             msgBody = "갤럭시아 영중소 가맹점 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
         } finally {
-                try {
-                    br.close();
-                    isr.close();
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            try {
+                br.close();
+                isr.close();
+                is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         logger.info("===== GALAXIA 하위사업자 결과 등록 END =====");

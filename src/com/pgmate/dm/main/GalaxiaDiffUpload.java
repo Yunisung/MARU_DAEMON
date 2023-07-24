@@ -236,6 +236,10 @@ public class GalaxiaDiffUpload {
 			folder.mkdir();
 		}
 
+		FileOutputStream fos = null;
+		OutputStreamWriter osw = null;
+		BufferedWriter bw = null;
+
 		try {
 			final SFTPUtil sftpUtil = new SFTPUtil();
 
@@ -246,12 +250,13 @@ public class GalaxiaDiffUpload {
 			logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPath);
 
 			GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
-			BufferedWriter bw = null;
 
 			//파일 객체 생성
 			File uploadFile = new File(uploadPath);
 
-			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
+			fos = new FileOutputStream(uploadFile);
+			osw = new OutputStreamWriter(fos, "euc-kr");
+			bw = new BufferedWriter(osw);
 
 			List<SharedMap<String, Object>> payList = dao.getPayList();
 			List<SharedMap<String, Object>> rfdList = dao.getRfdList();
@@ -279,10 +284,6 @@ public class GalaxiaDiffUpload {
 				logger.info("===== GALAXIA DIFFSETTLE UPLOAD FAIL =====");
 			}
 
-			if (bw != null) {
-				bw.close();
-			}
-
 			sftpUtil.disconnection();
 
 		} catch (Exception e) {
@@ -291,6 +292,13 @@ public class GalaxiaDiffUpload {
 			smsGw.sendMessage("0", "4", msgBody);
 
 		} finally {
+			try {
+				bw.close();
+				osw.close();
+				fos.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		logger.info("===== GALAXIA DIFFSETTLE UPLOAD END =====");

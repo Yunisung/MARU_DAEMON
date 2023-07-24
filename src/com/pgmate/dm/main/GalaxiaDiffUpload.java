@@ -122,15 +122,16 @@ public class GalaxiaDiffUpload {
 			}
 
 
-			if(sftpUtil != null) {
-				sftpUtil.disconnection();
-			}
+			sftpUtil.disconnection();
 
 		} catch (Exception e) {
 			logger.error("UPLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
 			msgBody = "갤럭시아 영중소 가맹점 업로드 오류. 확인요망 [" + e.getMessage() + "]";
 			smsGw.sendMessage("0", "4", msgBody);
 		} finally {
+			if(bw != null) bw.close();
+			if(osw != null) osw.close();
+			if(fos != null) fos.close();
 		}
 
 

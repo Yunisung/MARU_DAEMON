@@ -121,7 +121,8 @@ public class SFTPUtil {
             channelSftp.cd(dir);
             in = channelSftp.get(downloadFile);
         } catch (SftpException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
+            logger.info("SFTP FILE - GET FROM SERVER", e);
         }
 
         try {
@@ -140,7 +141,6 @@ public class SFTPUtil {
                 in.close();
             } catch (IOException e) {
                 logger.info("SFTP FILE DOWNLOAD IN CLOSE FAIL", e);
-                throw new DiffTransportException(e);
             }
         }
     }
@@ -152,4 +152,6 @@ public class SFTPUtil {
         if(channelSftp != null) channelSftp.quit();
         if(session != null) session.disconnect();
     }
+
+
 }

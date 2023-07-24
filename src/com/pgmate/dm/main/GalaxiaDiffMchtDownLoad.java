@@ -199,7 +199,7 @@ public class GalaxiaDiffMchtDownLoad {
         String filler = CommonUtil.toString(resBuf, 24, 458).trim();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 //		new KsnetDiffMchtDownLoad(args[0]);
 		new GalaxiaDiffMchtDownLoad("20230412");
     }

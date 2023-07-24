@@ -64,7 +64,7 @@ public class GalaxiaDiffUpload {
 	/**
 	 * 하위사업자 등록
 	 */
-	public void makeDiffMcht() throws IOException {
+	public void makeDiffMcht() {
 		logger.info("========== GALAXIA 하위사업자 등록 START ==========");
 
 		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
@@ -129,9 +129,13 @@ public class GalaxiaDiffUpload {
 			msgBody = "갤럭시아 영중소 가맹점 업로드 오류. 확인요망 [" + e.getMessage() + "]";
 			smsGw.sendMessage("0", "4", msgBody);
 		} finally {
-			if(bw != null) bw.close();
-			if(osw != null) osw.close();
-			if(fos != null) fos.close();
+				try {
+					bw.close();
+					osw.close();
+					fos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 
 

@@ -41,11 +41,11 @@ public class GalaxiaDiffMchtDownLoad {
 
     private int dataCnt = 0;
 
-    public GalaxiaDiffMchtDownLoad(String nowDate) throws IOException {
+    public GalaxiaDiffMchtDownLoad(String nowDate) {
         downloadDiffMcht(nowDate);
     }
 
-    private void downloadDiffMcht(String nowDate) throws IOException {
+    private void downloadDiffMcht(String nowDate) {
         logger.info("========== GALAXIA 하위사업자 결과 등록 START ==========");
         String downloadPath = MCHT_PATH + nowDate.substring(0, 6);
         String fileName = userId + "_RECEIVE_INFO." + nowDate;
@@ -103,9 +103,13 @@ public class GalaxiaDiffMchtDownLoad {
             msgBody = "갤럭시아 영중소 가맹점 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
         } finally {
-            if(br != null) br.close();
-            if(isr != null) isr.close();
-            if(is != null) is.close();
+                try {
+                    br.close();
+                    isr.close();
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
         }
 
         logger.info("===== GALAXIA 하위사업자 결과 등록 END =====");

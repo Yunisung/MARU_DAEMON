@@ -42,11 +42,11 @@ public class GalaxiaDiffTrxDownLoad {
     private String day = "";
 
     private int dataCnt = 0;
-    public GalaxiaDiffTrxDownLoad(String nowDate) throws IOException {
+    public GalaxiaDiffTrxDownLoad(String nowDate) {
         downloadDiffTrx(nowDate);
     }
 
-    private void downloadDiffTrx(String nowDate) throws IOException {
+    private void downloadDiffTrx(String nowDate) {
         smsGw = new SmsGw();
         logger.info("========== GALAXIA 차액정산 결과 등록 START ==========");
         String downloadPath = SETTLE_PATH + nowDate.substring(0, 6);
@@ -77,7 +77,7 @@ public class GalaxiaDiffTrxDownLoad {
 
                 File file = new File(downloadPath);
 
-                                                                                                                                                                                                                                                                                                                                                            is = new FileInputStream(file);
+                is = new FileInputStream(file);                                                                                                                                                                                                                                                                                                                                            is = new FileInputStream(file);
                 isr = new InputStreamReader(is, "EUC-KR");
                 br = new BufferedReader(isr);
                 String line = "";
@@ -107,9 +107,13 @@ public class GalaxiaDiffTrxDownLoad {
             msgBody = "갤럭시아 차액정산 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
         }finally {
-            if(br != null) br.close();
-            if(isr != null) isr.close();
-            if(is != null) is.close();
+                try {
+                    br.close();
+                    isr.close();
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
         }
 
         logger.info("===== GALAXIA 차액정산 결과 등록 END =====");

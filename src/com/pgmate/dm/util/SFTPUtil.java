@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Vector;
 
 public class SFTPUtil {
@@ -62,7 +63,6 @@ public class SFTPUtil {
         } catch (SftpException e) {
             if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
                 logger.error("GALAXIA FILE EXIST FALSE  ", e);
-                throw new DiffTransportException(e);
             }
         }
 

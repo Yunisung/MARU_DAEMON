@@ -80,6 +80,9 @@ public class GalaxiaDiffUpload {
 		}
 
 
+		FileOutputStream fos = null;
+		OutputStreamWriter osw = null;
+		BufferedWriter bw = null;
 		try {
 			final SFTPUtil sftpUtil = new SFTPUtil();
 
@@ -94,9 +97,10 @@ public class GalaxiaDiffUpload {
 			//파일 객체 생성
 			File uploadFile = new File(uploadPath);
 
-			BufferedWriter bw = null;
-
-			bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
+			//bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(uploadFile), "euc-kr"));
+			fos = new FileOutputStream(uploadFile);
+			osw = new OutputStreamWriter(fos, "euc-kr");
+			bw = new BufferedWriter(osw);
 
 			List<SharedMap<String, Object>> mchtList = dao.getMchtList();
 
@@ -105,7 +109,6 @@ public class GalaxiaDiffUpload {
 			dataMchtSetting(bw, mchtList);
 			totalMchtSetting(bw);
 			bw.flush();
-			bw.close();
 			logger.info("GALAXIA DIFFMCHT DATA SETTING END");
 
 			//GALAXIA 파일 업로드
@@ -118,9 +121,6 @@ public class GalaxiaDiffUpload {
 				logger.info("===== GALAXIA DIFFMCHT UPLOAD FAIL =====");
 			}
 
-			if (bw != null) {
-				bw.close();
-			}
 
 			if(sftpUtil != null) {
 				sftpUtil.disconnection();

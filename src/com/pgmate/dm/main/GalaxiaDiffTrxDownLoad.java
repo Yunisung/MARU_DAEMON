@@ -45,11 +45,11 @@ public class GalaxiaDiffTrxDownLoad {
     private String day = "";
 
     private int dataCnt = 0;
-    public GalaxiaDiffTrxDownLoad(String nowDate) {
+    public GalaxiaDiffTrxDownLoad(String nowDate) throws IOException {
         downloadDiffTrx(nowDate);
     }
 
-    private void downloadDiffTrx(String nowDate) {
+    private void downloadDiffTrx(String nowDate) throws IOException {
         smsGw = new SmsGw();
         logger.info("========== GALAXIA 차액정산 결과 등록 START ==========");
         String downloadPath = SETTLE_PATH + nowDate.substring(0, 6);
@@ -61,6 +61,10 @@ public class GalaxiaDiffTrxDownLoad {
         if(!folder.exists()) {
             folder.mkdir();
         }
+
+        FileInputStream is = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
 
         try {
             final SFTPUtil sftpUtil = new SFTPUtil();
@@ -76,9 +80,9 @@ public class GalaxiaDiffTrxDownLoad {
 
                 File file = new File(downloadPath);
 
-                FileInputStream is = new FileInputStream(file);
-                InputStreamReader isr = new InputStreamReader(is, "EUC-KR");
-                BufferedReader br = new BufferedReader(isr);
+                                                                                                                                                                                                                                                                                                                                                            is = new FileInputStream(file);
+                isr = new InputStreamReader(is, "EUC-KR");
+                br = new BufferedReader(isr);
                 String line = "";
 
                 while ((line = br.readLine()) != null) {
@@ -95,7 +99,6 @@ public class GalaxiaDiffTrxDownLoad {
 //                if(dao.updateTrxDiff(list) > 0) {
 //                    logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
 //                }
-                br.close();
             }else {
                 logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
             }
@@ -106,6 +109,10 @@ public class GalaxiaDiffTrxDownLoad {
             logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
             msgBody = "갤럭시아 차액정산 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
+        }finally {
+            if(br != null) br.close();
+            if(isr != null) isr.close();
+            if(is != null) is.close();
         }
 
         logger.info("===== GALAXIA 차액정산 결과 등록 END =====");
@@ -216,7 +223,7 @@ public class GalaxiaDiffTrxDownLoad {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         new GalaxiaDiffTrxDownLoad("20230412");
     }
 }

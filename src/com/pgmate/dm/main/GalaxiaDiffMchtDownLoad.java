@@ -41,11 +41,11 @@ public class GalaxiaDiffMchtDownLoad {
 
     private int dataCnt = 0;
 
-    public GalaxiaDiffMchtDownLoad(String nowDate) {
+    public GalaxiaDiffMchtDownLoad(String nowDate) throws IOException {
         downloadDiffMcht(nowDate);
     }
 
-    private void downloadDiffMcht(String nowDate) {
+    private void downloadDiffMcht(String nowDate) throws IOException {
         logger.info("========== GALAXIA 하위사업자 결과 등록 START ==========");
         String downloadPath = MCHT_PATH + nowDate.substring(0, 6);
         String fileName = userId + "_RECEIVE_INFO." + nowDate;
@@ -56,6 +56,10 @@ public class GalaxiaDiffMchtDownLoad {
         if (!folder.exists()) {
             folder.mkdir();
         }
+
+        FileInputStream is = null;
+        InputStreamReader isr = null;
+        BufferedReader br = null;
 
         try {
             final SFTPUtil sftpUtil = new SFTPUtil();
@@ -72,9 +76,9 @@ public class GalaxiaDiffMchtDownLoad {
 
                 File file = new File(downloadPath);
 
-                FileInputStream is = new FileInputStream(file);
-                InputStreamReader isr = new InputStreamReader(is, "EUC-KR");
-                BufferedReader br = new BufferedReader(isr);
+                is = new FileInputStream(file);
+                isr = new InputStreamReader(is, "EUC-KR");
+                br = new BufferedReader(isr);
                 String line = "";
 
                 while ((line = br.readLine()) != null) {
@@ -88,7 +92,6 @@ public class GalaxiaDiffMchtDownLoad {
                         parssingTotal(line);
                     }
                 }
-                br.close();
             } else {
                 logger.info("GALAXIA 하위사업자 결과 파일 NOT EXIST");
             }
@@ -99,6 +102,10 @@ public class GalaxiaDiffMchtDownLoad {
             logger.error("DOWNLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
             msgBody = "갤럭시아 영중소 가맹점 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
+        } finally {
+            if(br != null) br.close();
+            if(isr != null) isr.close();
+            if(is != null) is.close();
         }
 
         logger.info("===== GALAXIA 하위사업자 결과 등록 END =====");

@@ -40,7 +40,7 @@ public class SmsGw{
 		getConfig(smsCh);
 		
 		if("0".equals(messageType)) {
-			smsSend(msg);
+			//smsSend(msg);
 			telegramSend(msg);
 		} else if("1".equals(messageType)) {
 			smsSend(msg);

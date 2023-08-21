@@ -83,8 +83,8 @@ public class GalaxiaDiffUpload {
 		FileOutputStream fos = null;
 		OutputStreamWriter osw = null;
 		BufferedWriter bw = null;
+		final SFTPUtil sftpUtil = new SFTPUtil();
 		try {
-			final SFTPUtil sftpUtil = new SFTPUtil();
 
 			//SFTP 서버 접속
 			sftpUtil.init(HOST, userId, userPw, PORT);
@@ -120,15 +120,12 @@ public class GalaxiaDiffUpload {
 			} else {
 				logger.info("===== GALAXIA DIFFMCHT UPLOAD FAIL =====");
 			}
-
-
-			sftpUtil.disconnection();
-
 		} catch (Exception e) {
 			logger.error("UPLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
 			msgBody = "갤럭시아 영중소 가맹점 업로드 오류. 확인요망 [" + e.getMessage() + "]";
 			smsGw.sendMessage("0", "4", msgBody);
 		} finally {
+			sftpUtil.disconnection();
 			try {
 				bw.close();
 				osw.close();
@@ -137,8 +134,6 @@ public class GalaxiaDiffUpload {
 				e.printStackTrace();
 			}
 		}
-
-
 		logger.info("========== GALAXIA 하위사업자 등록 END ==========");
 	}
 
@@ -240,9 +235,8 @@ public class GalaxiaDiffUpload {
 		OutputStreamWriter osw = null;
 		BufferedWriter bw = null;
 
+		final SFTPUtil sftpUtil = new SFTPUtil();
 		try {
-			final SFTPUtil sftpUtil = new SFTPUtil();
-
 			//SFTP 서버 접속
 			sftpUtil.init(HOST, userId, userPw, PORT);
 
@@ -283,15 +277,12 @@ public class GalaxiaDiffUpload {
 			} else {
 				logger.info("===== GALAXIA DIFFSETTLE UPLOAD FAIL =====");
 			}
-
-			sftpUtil.disconnection();
-
 		} catch (Exception e) {
 			logger.error("MAKE DIFF SETTLE ERROR ===> {}", e.getMessage(), e);
 			msgBody = "갤럭시아 차액정산 업로드 오류. 확인요망 [" + e.getMessage() + "]";
 			smsGw.sendMessage("0", "4", msgBody);
-
 		} finally {
+			sftpUtil.disconnection();
 			try {
 				bw.close();
 				osw.close();

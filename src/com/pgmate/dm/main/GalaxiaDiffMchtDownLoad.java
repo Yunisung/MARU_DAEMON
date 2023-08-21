@@ -61,8 +61,8 @@ public class GalaxiaDiffMchtDownLoad {
         InputStreamReader isr = null;
         BufferedReader br = null;
 
+        final SFTPUtil sftpUtil = new SFTPUtil();
         try {
-            final SFTPUtil sftpUtil = new SFTPUtil();
 
             sftpUtil.init(HOST, userId, userPw, PORT);
 
@@ -95,14 +95,12 @@ public class GalaxiaDiffMchtDownLoad {
             } else {
                 logger.info("GALAXIA 하위사업자 결과 파일 NOT EXIST");
             }
-
-            sftpUtil.disconnection();
-
         } catch (Exception e) {
             logger.error("DOWNLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
             msgBody = "갤럭시아 영중소 가맹점 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
         } finally {
+            sftpUtil.disconnection();
             try {
                 br.close();
                 isr.close();

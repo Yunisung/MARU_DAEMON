@@ -63,8 +63,8 @@ public class GalaxiaDiffTrxDownLoad {
         InputStreamReader isr = null;
         BufferedReader br = null;
 
+        final SFTPUtil sftpUtil = new SFTPUtil();
         try {
-            final SFTPUtil sftpUtil = new SFTPUtil();
 
             sftpUtil.init(HOST, userId, userPw, PORT);
 
@@ -99,14 +99,12 @@ public class GalaxiaDiffTrxDownLoad {
             }else {
                 logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
             }
-
-            sftpUtil.disconnection();
-
         } catch (Exception e) {
             logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
             msgBody = "갤럭시아 차액정산 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
         }finally {
+            sftpUtil.disconnection();
             try {
                 br.close();
                 isr.close();

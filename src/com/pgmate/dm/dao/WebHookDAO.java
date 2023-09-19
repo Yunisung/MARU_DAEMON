@@ -99,8 +99,8 @@ public class WebHookDAO extends DAO {
 				+ " When A.idType = 'mchtId' then B.mchtId "
 				+ " When A.idType = 'tmnId' then B.tmnId END "
 				+ "AND B.regDate >= A.regDate) E "
-				+ "LEFT JOIN PG_TRX_NTS_PG F ON E.trxId = F.trxId AND E.hookIdx = F.hookIdx "
-				+ "WHERE C.trackId='TX230918377843' AND F.status = '전송실패' AND F.retry < 10 ORDER BY E.trxDate ASC ";
+				+ "LEFT JOIN PG_TRX_NTS_PG F ON E.trxId = CONCAT(F.trxId, '_') AND E.hookIdx = F.hookIdx "
+				+ "WHERE E.trxId='T230918473082_' AND F.status = '전송실패' AND F.retry < 10 ORDER BY E.trxDate ASC ";
 		
 //		String q = "SELECT E.* FROM ( "
 //				+ "SELECT A.idx AS hookIdx, A.hookUrl, B.* FROM "

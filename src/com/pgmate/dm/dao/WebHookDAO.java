@@ -88,7 +88,7 @@ public class WebHookDAO extends DAO {
 				+ "SELECT A.idx AS hookIdx, A.hookUrl, B.* FROM "
 				+ "(SELECT * FROM PG_MCHT_WEBHOOK WHERE trxType = 'CARD' AND STATUS = 'Y') A "
 				+ "JOIN "
-				+ "(SELECT C.mchtId,C.trxId,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,C.cardType,C.issuer,C.acquirer,C.bin,C.last4,C.installment,C.amount,C.regDate, "
+				+ "(SELECT C.mchtId, CONCAT(C.trxId, '_') as trxId ,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,C.cardType,C.issuer,C.acquirer,C.bin,C.last4,C.installment,C.amount,C.regDate, "
 				+ " D.distId, D.agencyId, D.salesId "
 				+ "FROM PG_TRX_PAY C join PG_MCHT D ON C.mchtId = D.mchtId WHERE C.vanTrxId NOT LIKE 'TX%') B "
 				+ "ON A.id = "
@@ -100,7 +100,7 @@ public class WebHookDAO extends DAO {
 				+ " When A.idType = 'tmnId' then B.tmnId END "
 				+ "AND B.regDate >= A.regDate) E "
 				+ "LEFT JOIN PG_TRX_NTS_PG F ON E.trxId = F.trxId AND E.hookIdx = F.hookIdx "
-				+ "WHERE F.status = '전송실패' AND F.retry < 10 ORDER BY E.trxDate ASC ";
+				+ "WHERE C.trackId='TX230918377843' AND F.status = '전송실패' AND F.retry < 10 ORDER BY E.trxDate ASC ";
 		
 //		String q = "SELECT E.* FROM ( "
 //				+ "SELECT A.idx AS hookIdx, A.hookUrl, B.* FROM "

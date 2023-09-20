@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -254,11 +255,24 @@ public class GalaxiaDiffUpload {
 
 			List<SharedMap<String, Object>> payList = dao.getPayList();
 			List<SharedMap<String, Object>> rfdList = dao.getRfdList();
+			// 23.09.20 부분취소 로직 추가
+			List<SharedMap<String, Object>> rootTrxList = dao.getRootTrxList();
+			List<SharedMap<String, Object>> partialList = new ArrayList<SharedMap<String,Object>>();
+			int rfdTurn = 2;
+			for(SharedMap<String, Object> map : rootTrxList) {
+				List<SharedMap<String, Object>> partialTrxList = dao.getPartialTrx(map.getString("rootTrxId"));
+				for(SharedMap<String, Object> partialTrxMap : partialTrxList) {
+					partialTrxMap.put("rfdTurn", rfdTurn);
+					partialList.add(partialTrxMap);
+					rfdTurn++;
+				}
+				rfdTurn = 2;
+			}
 
 			logger.info("GALAXIA DIFFSETTLE DATA SETTING START");
 			headerDiffSetting(bw);
 			if(payList.size() > 0 || rfdList.size() >0) {
-				dataDiffSetting(bw, payList, rfdList);
+				dataDiffSetting(bw, payList, rfdList, partialList);
 			}
 			totalDiffSetting(bw);
 			bw.close();
@@ -321,7 +335,7 @@ public class GalaxiaDiffUpload {
 	 * @param rfdList
 	 * @throws IOException
 	 */
-	private void dataDiffSetting(BufferedWriter bw, List<SharedMap<String, Object>> payList, List<SharedMap<String, Object>> rfdList) throws IOException {
+	private void dataDiffSetting(BufferedWriter bw, List<SharedMap<String, Object>> payList, List<SharedMap<String, Object>> rfdList, List<SharedMap<String, Object>> partialList) throws IOException {
 		StringBuffer bodyData = new StringBuffer();
 
 		for (SharedMap<String, Object> map : payList){
@@ -348,7 +362,6 @@ public class GalaxiaDiffUpload {
 			dataAmt = dataAmt + map.getLong("amount");
 		}
 
-		int rfdCnt = 2;
 		for (SharedMap<String, Object> map : rfdList){
 			bodyData = new StringBuffer();
 
@@ -371,8 +384,30 @@ public class GalaxiaDiffUpload {
 
 			dataCnt++;
 			dataAmt = dataAmt + map.getLong("amount");
+		}
 
-			rfdCnt ++;
+		for (SharedMap<String, Object> map : partialList){
+			bodyData = new StringBuffer();
+
+			bodyData.append(CommonUtil.byteFiller("DT", 2));	//레코드구분
+			bodyData.append(CommonUtil.zerofill("1", 1));		//매입취소구분
+			bodyData.append(CommonUtil.zerofill(map.getString("trxDay"), 8));	//거래일자
+			bodyData.append(CommonUtil.zerofill(map.getString("compNo"), 10));	//중간하위사업자번호
+			bodyData.append(CommonUtil.zerofill(map.getString("mchtCompNo"), 10));	//최종하위사업자번호
+			bodyData.append(CommonUtil.byteFiller(map.getString("vanTrxId"), 20));	//PG거래번호
+			bodyData.append(CommonUtil.zerofill(map.getString("rfdTurn"), 2));	//거래 순번
+			bodyData.append(CommonUtil.byteFiller(map.getString("trxId"), 64));	//가맹점 주문번호
+			bodyData.append(CommonUtil.zerofill(map.getString("amount"), 15));	//하위사업자 매출액
+			bodyData.append(CommonUtil.zerofill(map.getString("amount"), 15));	//원거래 매입금액
+			bodyData.append(CommonUtil.byteFiller("", 30));	//가맹점 검증값
+
+			logger.info("GALAXIA PARIAL REFUND SETTLE DATA FILE : [" + bodyData.toString() + "]");
+
+			bw.write(bodyData.toString());
+			bw.newLine();
+
+			dataCnt++;
+			dataAmt = dataAmt + map.getLong("amount");
 		}
 	}
 

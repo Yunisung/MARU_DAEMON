@@ -48,8 +48,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 	public List<SharedMap<String,Object>> getRfdList(){
 		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
 				+ "A.rootTrxId, A.reqTime as trxTime, "
-				+ "case when A.rfdAll = '전액' then '1' "
-				+ "when A.rfdAll = '부분' then '3' else '1' end as trxType, "
+				+ "'1' as trxType, "
 				+ "'0' AS rfdTurn "
 				+ "FROM PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
@@ -57,6 +56,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
 				//------------------------ GALAXIA 맞게 수정 필요
 				+ "WHERE A.van like 'GALAXIA%' "
+				+ "AND A.rfdAll = '전액' "
 //				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
 //				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 //				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
@@ -64,8 +64,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "AND E.trxId IS NULL "
 				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
-				+ "AND A.status = '완료' "
-				+ "AND A.regDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') ";
+				+ "AND A.status = '완료' ";
 
 
 		RecordSet rset = super.query(q);
@@ -73,7 +72,47 @@ public class GalaxiaDiffUploadDAO extends DAO{
 		
 		return rset.getRows();
 	}
-	
+
+	public List<SharedMap<String,Object>> getRootTrxList(){
+		String q = "SELECT A.rootTrxId FROM "
+				+ "PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
+				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
+				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
+				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
+				//------------------------ GALAXIA 맞게 수정 필요
+				+ "WHERE A.van like 'GALAXIA%' "
+				+ "AND A.rfdAll = '부분' "
+				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+				+ "AND E.trxId IS NULL "
+				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
+				+ "AND A.vanTrxId NOT LIKE 'TX%' "
+				+ "AND A.status = '완료' "
+				+ "GROUP BY A.rootTrxId";
+
+
+		RecordSet rset = super.query(q);
+		super.initRecord();
+
+		return rset.getRows();
+	}
+
+	public List<SharedMap<String,Object>> getPartialTrx(String rootTrxId){
+		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
+				+ "A.rootTrxId, A.reqTime as trxTime, "
+				+ "'3' as trxType "
+				+ "FROM PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
+				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
+				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
+				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
+				+ "WHERE A.rootTrxId = '" + rootTrxId + "'"
+				+ "ORDER BY A.regDate";
+
+		RecordSet rset = super.query(q);
+		super.initRecord();
+
+		return rset.getRows();
+	}
+
 	public List<SharedMap<String, Object>> getErrList(String id) {
 		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(B.identity) AS mchtCompNo, A.vanTrxId, A.amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo, '0' AS trxType, '0' AS rfdTurn "
 				+ "FROM PG_TRX_PAY A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId  "

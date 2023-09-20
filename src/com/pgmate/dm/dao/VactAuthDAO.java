@@ -125,6 +125,16 @@ public class VactAuthDAO extends DAO {
         }
     }
 
+    public List<SharedMap<String,Object>> getReadyAccount(String mchtId) {
+        super.setTable("PG_VACT_DTL");
+        super.setColumns("*");
+        super.addWhere("mchtId", mchtId);
+        super.addWhere("status", "대기");
+        RecordSet rset = super.search();
+        super.initRecord();
+        return rset.getRows();
+    }
+
     /**
      * 정산아이디 생성
      * @return

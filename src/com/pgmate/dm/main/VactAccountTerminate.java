@@ -79,8 +79,17 @@ public class VactAccountTerminate {
                 logger.info("입금횟수초과 가상계좌 조회, 펌뱅킹 전송 : {} {} {} {}", vitualAccount, bankCd, account, holderName);
                 logger.info("=================================================");
 
+                FirmBean firmBean = null;
+                //광주은행 예외처리
+                if(vactBankCd.equals("034")) {
+                    firmBean = new FirmBean();
+                    firmBean.resultCd = "0000";
+                    firmBean.resultMsg = "정상";
+                } else {
+                    firmBean = connectFirm(vactBankCd, companyCd, vitualAccount, bankCd, account, holderName, regType, identity);
+                }
 
-                FirmBean firmBean = connectFirm(vactBankCd, companyCd, vitualAccount, bankCd, account, holderName, regType, identity);
+
 
 
                 if(firmBean.resultCd.equals("0000")) {

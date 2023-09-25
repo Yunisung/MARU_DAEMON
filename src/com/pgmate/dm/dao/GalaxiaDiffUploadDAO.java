@@ -96,6 +96,20 @@ public class GalaxiaDiffUploadDAO extends DAO{
 		return rset.getRows();
 	}
 
+	public String getLastRfdTurn(String rootTrxId) {
+		String q = "SELECT B.rfdTurn "
+				+ "FROM PG_TRX_RFD A INNER JOIN PG_TRX_DIFF B ON A.trxId = B.trxId "
+				+ "WHERE A.rootTrxId='" + rootTrxId + "' ORDER BY B.rfdTurn desc";
+
+		RecordSet rset = super.query(q);
+		super.initRecord();
+		if(rset.size() == 0) {
+			return "";
+		} else {
+			return rset.getRow(0).getString("rfdTurn");
+		}
+	}
+
 	public List<SharedMap<String,Object>> getPartialTrx(String rootTrxId){
 		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
 				+ "A.rootTrxId, A.reqTime as trxTime, "
@@ -105,7 +119,8 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
 				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
 				+ "WHERE A.rootTrxId = '" + rootTrxId + "'"
-				+ "ORDER BY A.regDate";
+				+ "AND E.trxId IS NULL "
+				+ "ORDER BY A.regDay, A.regTime";
 
 		RecordSet rset = super.query(q);
 		super.initRecord();

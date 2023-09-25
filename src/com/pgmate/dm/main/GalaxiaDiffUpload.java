@@ -255,18 +255,26 @@ public class GalaxiaDiffUpload {
 
 			List<SharedMap<String, Object>> payList = dao.getPayList();
 			List<SharedMap<String, Object>> rfdList = dao.getRfdList();
+
 			// 23.09.20 부분취소 로직 추가
 			List<SharedMap<String, Object>> rootTrxList = dao.getRootTrxList();
 			List<SharedMap<String, Object>> partialList = new ArrayList<SharedMap<String,Object>>();
-			int rfdTurn = 2;
+
 			for(SharedMap<String, Object> map : rootTrxList) {
+				int rfdTurn;
+				String lastRfdTurn = dao.getLastRfdTurn(map.getString("rootTrxId"));
+				if(!lastRfdTurn.equals("")) {
+					rfdTurn = Integer.parseInt(lastRfdTurn) + 1;
+				} else {
+					rfdTurn = 2;
+				}
+
 				List<SharedMap<String, Object>> partialTrxList = dao.getPartialTrx(map.getString("rootTrxId"));
 				for(SharedMap<String, Object> partialTrxMap : partialTrxList) {
 					partialTrxMap.put("rfdTurn", rfdTurn);
 					partialList.add(partialTrxMap);
 					rfdTurn++;
 				}
-				rfdTurn = 2;
 			}
 
 			logger.info("GALAXIA DIFFSETTLE DATA SETTING START");

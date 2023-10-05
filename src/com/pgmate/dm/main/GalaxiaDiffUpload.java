@@ -279,7 +279,7 @@ public class GalaxiaDiffUpload {
 
 			logger.info("GALAXIA DIFFSETTLE DATA SETTING START");
 			headerDiffSetting(bw);
-			if(payList.size() > 0 || rfdList.size() >0) {
+			if(payList.size() > 0 || rfdList.size() > 0 || partialList.size() > 0) {
 				dataDiffSetting(bw, payList, rfdList, partialList);
 			}
 			totalDiffSetting(bw);
@@ -295,6 +295,9 @@ public class GalaxiaDiffUpload {
 				}
 				if(rfdList.size() > 0) {
 					dao.insertTrxDiffUpload(rfdList, nowDate);
+				}
+				if(partialList.size() > 0) {
+					dao.insertTrxDiffUpload(partialList, nowDate);
 				}
 			} else {
 				logger.info("===== GALAXIA DIFFSETTLE UPLOAD FAIL =====");

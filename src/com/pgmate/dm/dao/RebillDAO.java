@@ -16,7 +16,7 @@ public class RebillDAO extends DAO {
     public List<SharedMap<String,Object>> getRebillList(String payDay){
         String q = "SELECT a.rebillId, b.payKey "
                 +" FROM PG_REBILL_REG a, PG_MCHT_TMN b"
-                +" WHERE a.nextPayDay = '"+ payDay+ "' AND a.tmnId = b.tmnId AND a.status IN ('승인', '실패')"
+                +" WHERE a.nextPayDay = '"+ payDay+ "' AND a.tmnId = b.tmnId AND a.status IN ('사용')"
                 +" ORDER BY a.regDate ";
 
         RecordSet rset = super.query(q);

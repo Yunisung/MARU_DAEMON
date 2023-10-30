@@ -35,7 +35,7 @@ public class ChargeSettleHook extends Thread {
 	}
 	
 	
-	public ChargeSettleHook(String hookAddr,SharedMap<String,Object> sharedMap,ChargeSettlePayOutDAO dao,String retry) {
+	public ChargeSettleHook(String hookAddr,SharedMap<String,Object> sharedMap,String retry) {
 		this.hookAddr = hookAddr;
 		this.sharedMap 	= sharedMap;
 		this.dao = new ChargeSettlePayOutDAO();

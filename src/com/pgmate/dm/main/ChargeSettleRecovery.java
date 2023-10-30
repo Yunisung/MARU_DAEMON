@@ -40,7 +40,7 @@ public class ChargeSettleRecovery {
                     String payLoad = setPayLoad(chargeData, "출금실패", "9999", "가맹점 잔액 복구완료");
                     chargeData.put("payLoad", payLoad);
                     chargeData.put("trxType", "출금");
-                    new ChargeSettleHook(chargeMngMap.getString("hookAddr"), chargeData, dao, "0").start();
+                    new ChargeSettleHook(chargeMngMap.getString("hookAddr"), chargeData, "0").start();
                 }
 
                 logger.info("============================");

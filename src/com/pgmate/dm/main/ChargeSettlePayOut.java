@@ -128,7 +128,7 @@ public class ChargeSettlePayOut {
 								String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
 								data.put("payLoad", payLoad);
 								data.put("trxType", "출금");
-								new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+								new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 							}
 						}
 						
@@ -173,7 +173,7 @@ public class ChargeSettlePayOut {
 									String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
 									data.put("payLoad", payLoad);
 									data.put("trxType", "출금");
-									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 								}
 							}else if(firmBean.resultCd.equals("VTIM") || firmBean.resultCd.equals("0011")) {
 								logger.info("더즌 타임아웃, 이중송금방지, 한번더 실행");
@@ -220,7 +220,7 @@ public class ChargeSettlePayOut {
 										String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
 										data.put("payLoad", payLoad);
 										data.put("trxType", "출금");
-										new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+										new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 									}
 								}
 
@@ -251,13 +251,11 @@ public class ChargeSettlePayOut {
 										String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
 										data.put("payLoad", payLoad);
 										data.put("trxType", "출금");
-										new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+										new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 									}
 								}
 							}
 						}
-
-
 					}
 					
 					//실시간출금 결과 저장
@@ -308,7 +306,7 @@ public class ChargeSettlePayOut {
 											String payLoad = setPayLoad(data, "출금실패", firmBean.resultCd, firmBean.resultMsg);
 											data.put("payLoad", payLoad);
 											data.put("trxType", "출금");
-											new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+											new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 										}
 									}
 

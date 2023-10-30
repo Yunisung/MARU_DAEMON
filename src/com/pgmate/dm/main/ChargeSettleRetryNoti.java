@@ -28,7 +28,7 @@ public class ChargeSettleRetryNoti {
 				logger.info("chargeSettle noti retry Count [{}]",notiList.size());
 				for(SharedMap<String, Object> sharedMap:notiList){
 					try{Thread.sleep(100);}catch(Exception e){};
-					new ChargeSettleHook(sharedMap.getString("hookAddr"),sharedMap,dao,"retry").start();
+					new ChargeSettleHook(sharedMap.getString("hookAddr"),sharedMap,"retry").start();
 				}
 			}
 		}catch(Exception e) {

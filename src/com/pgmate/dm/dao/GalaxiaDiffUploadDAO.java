@@ -36,8 +36,9 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
 				+ "AND E.trxId IS NULL "
 				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625') "
-				+ "AND A.vanTrxId NOT LIKE 'TX%' ";
-				
+				+ "AND A.vanTrxId NOT LIKE 'TX%' "
+				+ "AND A.vanTrxId ='aaa' ";
+
 				
 		RecordSet rset = super.query(q);
 		super.initRecord();
@@ -64,7 +65,8 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "AND E.trxId IS NULL "
 				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
-				+ "AND A.status = '완료' ";
+				+ "AND A.status = '완료' "
+				+ "AND A.status = 'aaa' ";
 
 
 		RecordSet rset = super.query(q);
@@ -82,8 +84,10 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				//------------------------ GALAXIA 맞게 수정 필요
 				+ "WHERE A.van like 'GALAXIA%' "
 				+ "AND A.rfdAll = '부분' "
-				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
-				+ "AND E.trxId IS NULL "
+//				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+//				+ "AND A.regDay >= 20230920 "
+//				+ "AND E.trxId IS NULL "
+				+ "AND A.vanTrxId IN ('2023091013C2867082', '2023092210C2332424')"
 				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "
@@ -119,7 +123,8 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
 				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
 				+ "WHERE A.rootTrxId = '" + rootTrxId + "'"
-				+ "AND E.trxId IS NULL "
+				+ "AND A.vanTrxId IN ('2023091013C2867082', '2023092210C2332424')"
+//				+ "AND E.trxId IS NULL "
 				+ "ORDER BY A.regDay, A.regTime";
 
 		RecordSet rset = super.query(q);

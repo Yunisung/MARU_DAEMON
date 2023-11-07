@@ -33,11 +33,13 @@ public class GalaxiaDiffUploadDAO extends DAO{
 //				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW(), '%Y%m%d') "
 //				+ "ELSE A.reqDay <= DATE_FORMAT(NOW(), '%Y%m%d') END "
 //				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
-				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+//				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+				+ "AND A.regDay >= '20230827'"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625') "
-				+ "AND A.vanTrxId NOT LIKE 'TX%' "
-				+ "AND A.vanTrxId ='aaa' ";
+//				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625') "
+				+ "AND A.vanid IN ('M2245701') "
+				+ "AND A.vanTrxId NOT LIKE 'TX%' ";
+//				+ "AND A.vanTrxId ='aaa' ";
 
 				
 		RecordSet rset = super.query(q);
@@ -61,12 +63,16 @@ public class GalaxiaDiffUploadDAO extends DAO{
 //				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
 //				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 //				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
-				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+//				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
+				+ "AND A.regDay >= '20230827'"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
+//				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
+				+ "AND A.vanid IN ('M2245701') "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
-				+ "AND A.status = '완료' "
-				+ "AND A.status = 'aaa' ";
+				+ "AND A.status = '완료' ";
+//				+ "AND A.status = 'aaa' ";
+
+
 
 
 		RecordSet rset = super.query(q);
@@ -85,10 +91,11 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "WHERE A.van like 'GALAXIA%' "
 				+ "AND A.rfdAll = '부분' "
 //				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
-//				+ "AND A.regDay >= 20230920 "
+				+ "AND A.regDay >= 20230827 "
 //				+ "AND E.trxId IS NULL "
-				+ "AND A.vanTrxId IN ('2023091013C2867082', '2023092210C2332424')"
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
+//				+ "AND A.vanTrxId IN ('2023091013C2867082', '2023092210C2332424')"
+//				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625')"
+				+ "AND A.vanid IN ('M2245701')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "
 				+ "GROUP BY A.rootTrxId";

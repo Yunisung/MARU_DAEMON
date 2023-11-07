@@ -64,7 +64,7 @@ public class Settle {
 				
 //				smsGw.sendMessage("0", "3", msgBody);
 			// 월정산(영업라인)
-			}else if("06".equals(cmd.substring(6))){
+			}else if("08".equals(cmd.substring(6))){
 				monthExecute(cmd);	// 영업라인
 
 				if(monthErr == 0) {
@@ -72,13 +72,13 @@ public class Settle {
 				}else {
 					msgBody = day + " 월 영업라인 정산 생성오류. 확인요망.";
 				}
-			} else if("05".equals(cmd.substring(6))){
+
 				monthRentExecute(cmd);	// 영업라인
 
 				if(monthErr == 0) {
-					msgBody = "[" + day + "] 월 영업라인 정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";
+					msgBody = "[" + day + "] 월 월세 영업라인 정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";
 				}else {
-					msgBody = day + " 월 영업라인 정산 생성오류. 확인요망.";
+					msgBody = day + " 월 월세 영업라인 정산 생성오류. 확인요망.";
 				}
 			}
 		}else {
@@ -389,6 +389,6 @@ public class Settle {
 	}
 	
 	public static void main(String[] args){
-		new Settle("20231205");
+		new Settle(args[0]);
 	}
 }

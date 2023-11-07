@@ -2,6 +2,8 @@ package com.pgmate.dm.main;
 
 import java.util.List;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +31,19 @@ public class WebHookDaemon {
 			
 			logger.info("payList Count [{}]",payList.size());
 			for(SharedMap<String, Object> sharedMap:payList){
-				String payLoad =  setPayLoad(sharedMap,"PAY");
+				String payLoad = "";
+				if(!sharedMap.getString("rentId").equals("")) {
+					SharedMap<String, Object> ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+					if(ioMap != null) {
+						String jsonStr = ioMap.getString("reqJson");
+						SharedMap<String,Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>(){}.getType());
+						sharedMap.put("udf1", widget.getString("udf1"));
+
+						payLoad = setRentPayLoad(sharedMap, "PAY");
+					}
+				} else {
+					payLoad =  setPayLoad(sharedMap,"PAY");
+				}
 				sharedMap.put("payLoad", payLoad);
 
 				try{Thread.sleep(100);}catch(Exception e){};
@@ -39,7 +53,20 @@ public class WebHookDaemon {
 			try{Thread.sleep(500);}catch(Exception e){};
 			logger.info("payList retry Count [{}]",payRetryList.size());
 			for(SharedMap<String, Object> sharedMap:payRetryList){
-				String payLoad =  setPayLoad(sharedMap,"PAY");
+				String payLoad = "";
+				if(!sharedMap.getString("rentId").equals("")) {
+					SharedMap<String, Object> ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+					if (ioMap != null) {
+						String jsonStr = ioMap.getString("reqJson");
+						SharedMap<String, Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>() {
+						}.getType());
+						sharedMap.put("udf1", widget.getString("udf1"));
+
+						payLoad = setRentPayLoad(sharedMap, "PAY");
+					}
+				} else {
+					payLoad =  setPayLoad(sharedMap,"PAY");
+				}
 				sharedMap.put("payLoad", payLoad);
 
 				try{Thread.sleep(200);}catch(Exception e){};
@@ -49,7 +76,21 @@ public class WebHookDaemon {
 			try{Thread.sleep(500);}catch(Exception e){};
 			logger.info("rfdList Count [{}]",rfdList.size());
 			for(SharedMap<String, Object> sharedMap:rfdList){
-				String payLoad =  setPayLoad(sharedMap,"REFUND");
+				String payLoad = "";
+				if(!sharedMap.getString("rentId").equals("")) {
+					SharedMap<String, Object> ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+					if (ioMap != null) {
+						String jsonStr = ioMap.getString("reqJson");
+						SharedMap<String, Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>() {
+						}.getType());
+						sharedMap.put("udf1", widget.getString("udf1"));
+
+						payLoad = setRentPayLoad(sharedMap, "PAY");
+					}
+				} else {
+					payLoad =  setPayLoad(sharedMap,"REFUND");
+				}
+
 				sharedMap.put("payLoad", payLoad);
 
 				try{Thread.sleep(100);}catch(Exception e){};
@@ -59,7 +100,21 @@ public class WebHookDaemon {
 			try{Thread.sleep(500);}catch(Exception e){};
 			logger.info("rfdList retry Count [{}]",rfdRetryList.size());
 			for(SharedMap<String, Object> sharedMap:rfdRetryList){
-				String payLoad =  setPayLoad(sharedMap,"REFUND");
+				String payLoad = "";
+				if(!sharedMap.getString("rentId").equals("")) {
+					SharedMap<String, Object> ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+					if (ioMap != null) {
+						String jsonStr = ioMap.getString("reqJson");
+						SharedMap<String, Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>() {
+						}.getType());
+						sharedMap.put("udf1", widget.getString("udf1"));
+
+						payLoad = setRentPayLoad(sharedMap, "PAY");
+					}
+				} else {
+					payLoad =  setPayLoad(sharedMap,"REFUND");
+
+				}
 				sharedMap.put("payLoad", payLoad);
 
 				try{Thread.sleep(100);}catch(Exception e){};
@@ -98,6 +153,32 @@ public class WebHookDaemon {
 		payLoadMap.put("installment",CommonUtil.nToB(sharedMap.getString("installment")));
 		payLoadMap.put("amount",sharedMap.getString("amount"));
 		
+		String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
+		return payLoad;
+	}
+
+	public String setRentPayLoad(SharedMap<String, Object> sharedMap, String trxType){
+		SharedMap<String, String> payLoadMap = new SharedMap<String, String>();
+
+		payLoadMap.put("mchtId",sharedMap.getString("mchtId"));
+		payLoadMap.put("trxId",sharedMap.getString("trxId"));
+//		payLoadMap.put("van",sharedMap.getString("van"));
+		payLoadMap.put("tmnId",sharedMap.getString("tmnId"));
+		payLoadMap.put("trxDate",sharedMap.getString("trxDate"));
+		payLoadMap.put("trxType",trxType);
+		payLoadMap.put("rootTrxId", CommonUtil.nToB(sharedMap.getString("rootTrxId")));
+		payLoadMap.put("trackId",sharedMap.getString("trackId"));
+//		payLoadMap.put("vanTrxId",sharedMap.getString("vanTrxId"));
+		payLoadMap.put("authCd",sharedMap.getString("authCd"));
+		payLoadMap.put("cardType",CommonUtil.nToB(sharedMap.getString("cardType")));
+		payLoadMap.put("issuer",sharedMap.getString("issuer"));
+		payLoadMap.put("acquirer",sharedMap.getString("acquirer"));
+		payLoadMap.put("bin",sharedMap.getString("bin"));
+		payLoadMap.put("last4",sharedMap.getString("last4"));
+		payLoadMap.put("installment",CommonUtil.nToB(sharedMap.getString("installment")));
+		payLoadMap.put("amount",sharedMap.getString("amount"));
+		payLoadMap.put("udf1",sharedMap.getString("udf1"));
+
 		String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
 		return payLoad;
 	}

@@ -51,7 +51,7 @@ public class WebHookDAO extends DAO {
 				+ "SELECT A.idx AS hookIdx, A.hookUrl, B.* FROM "
 				+ "(SELECT * FROM PG_MCHT_WEBHOOK WHERE trxType = 'CARD' AND STATUS = 'Y') A "
 				+ "JOIN "
-				+ "(SELECT C.mchtId,C.trxId,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,C.cardType,C.issuer,C.acquirer,C.bin,C.last4,C.installment,C.amount,C.regDate, "
+				+ "(SELECT C.mchtId,C.trxId,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,C.cardType,C.issuer,C.acquirer,C.bin,C.last4,C.installment,C.amount,C.regDate,C.rentId, "
 				+ " D.distId, D.agencyId, D.salesId "
 				+ "FROM PG_TRX_PAY C join PG_MCHT D ON C.mchtId = D.mchtId WHERE C.regDay >= date_format(DATE_ADD(NOW(), INTERVAL -7 DAY),'%Y%m%d') AND C.vanTrxId NOT LIKE 'TX%') B "
 				+ "ON A.id = "
@@ -88,7 +88,7 @@ public class WebHookDAO extends DAO {
 				+ "SELECT A.idx AS hookIdx, A.hookUrl, B.* FROM "
 				+ "(SELECT * FROM PG_MCHT_WEBHOOK WHERE trxType = 'CARD' AND STATUS = 'Y') A "
 				+ "JOIN "
-				+ "(SELECT C.mchtId, C.trxId ,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,C.cardType,C.issuer,C.acquirer,C.bin,C.last4,C.installment,C.amount,C.regDate, "
+				+ "(SELECT C.mchtId,C.trxId,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,C.cardType,C.issuer,C.acquirer,C.bin,C.last4,C.installment,C.amount,C.regDate,C.rentId, "
 				+ " D.distId, D.agencyId, D.salesId "
 				+ "FROM PG_TRX_PAY C join PG_MCHT D ON C.mchtId = D.mchtId WHERE C.vanTrxId NOT LIKE 'TX%') B "
 				+ "ON A.id = "
@@ -145,7 +145,7 @@ public class WebHookDAO extends DAO {
 				+ "(SELECT * FROM PG_MCHT_WEBHOOK WHERE trxType = 'CARD' AND STATUS = 'Y') A "
 				+ "JOIN "
 				+ "(SELECT C.mchtId,C.trxId,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,D.cardType,C.issuer,C.acquirer,C.bin,C.last4,D.installment,ABS(C.rfdAmount) AS amount,C.rootTrxId,C.regDate, "
-				+ " E.distId, E.agencyId, E.salesId "
+				+ " E.distId, E.agencyId, E.salesId, D.rentId "
 				+ "FROM PG_TRX_RFD C join PG_TRX_PAY D ON C.rootTrxId = D.trxId join PG_MCHT E ON C.mchtId = E.mchtId WHERE C.regDay >= date_format(DATE_ADD(NOW(), INTERVAL -7 DAY),'%Y%m%d') AND C.status = '완료' and C.vanTrxId NOT LIKE 'TX%') B "
 				+ "ON A.id = "
 				+ "CASE "
@@ -185,7 +185,7 @@ public class WebHookDAO extends DAO {
 				+ "(SELECT * FROM PG_MCHT_WEBHOOK WHERE trxType = 'CARD' AND STATUS = 'Y') A "
 				+ "JOIN "
 				+ "(SELECT C.mchtId,C.trxId,C.van,C.vanId,C.tmnId,concat(C.reqDay, C.regTime) AS trxDate,C.regDay AS trxDay,C.trackId,C.vanTrxId,C.authCd,D.cardType,C.issuer,C.acquirer,C.bin,C.last4,D.installment,ABS(C.rfdAmount) AS amount,C.rootTrxId,C.regDate, "
-				+ " E.distId, E.agencyId, E.salesId "
+				+ " E.distId, E.agencyId, E.salesId, D.rentId  "
 				+ "FROM PG_TRX_RFD C join PG_TRX_PAY D ON C.rootTrxId = D.trxId join PG_MCHT E ON C.mchtId = E.mchtId WHERE C.status = '완료' and C.vanTrxId NOT LIKE 'TX%') B "
 				+ "ON A.id = "
 				+ "CASE "
@@ -232,6 +232,21 @@ public class WebHookDAO extends DAO {
 		super.initRecord();
 		
 		return rset.getRows();
+	}
+
+	public SharedMap<String,Object> getTrxIo3d(String trxId) {
+		super.setTable("PG_TRX_IO_3D");
+		super.setColumns("*");
+		super.addWhere("trxId", trxId, eq);
+		super.setLimit(1);
+
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() == 0) {
+			return null;
+		} else {
+			return rset.getRow(0);
+		}
 	}
 
 

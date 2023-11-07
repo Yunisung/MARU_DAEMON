@@ -73,7 +73,9 @@ public class Settle {
 					msgBody = day + " 월 영업라인 정산 생성오류. 확인요망.";
 				}
 
-				monthRentExecute(cmd);	// 영업라인
+				monthErr = 0;	// 카운트 초기화
+
+				monthRentExecute(cmd);	// 월세 영업라인
 
 				if(monthErr == 0) {
 					msgBody = "[" + day + "] 월 월세 영업라인 정산대상 건수 : " +  formatter.format(monthSumCnt) + "건, 지급예정금액 : " + formatter.format(monthSumAmt) + "원 입니다.";

@@ -2,10 +2,16 @@ package com.pgmate.dm.dao;
 
 import com.pgmate.lib.dao.DAO;
 import com.pgmate.lib.dao.RecordSet;
+import com.pgmate.lib.util.db.DBFactory;
+import com.pgmate.lib.util.db.DBManager;
+import com.pgmate.lib.util.lang.CommonUtil;
 import com.pgmate.lib.util.map.SharedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 
 public class ChargeSettleReserveDAO extends DAO {
@@ -15,13 +21,26 @@ public class ChargeSettleReserveDAO extends DAO {
         super.setDebug(false);
     }
 
+    public List<SharedMap<String, Object>> getChareSettleRealTimeList() {
+        String q = "SELECT *"
+                +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE"
+                +"  WHERE transferType = '실시간' and "
+                +"  status != '완료' and status != '전송' and retry < 3 "
+                +"  order by regDate";
+
+        RecordSet rset = super.query(q);
+        super.initRecord();
+
+        return rset.getRows();
+    }
+
     public List<SharedMap<String, Object>> getChareSettleReserveList() {
-        String q = "SELECT A.*, FN_AES_DEC(A.account) as decAccount, B.vactBankCd "
-                +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE A INNER JOIN PG_MCHT_MNG_VACT B"
-                +"  ON A.mchtId = B.mchtId"
-                +"  WHERE A.pubDay = DATE_FORMAT(NOW(), '%Y%m%d') and "
-                +"  A.pubTime < DATE_FORMAT(NOW(), '%H%i%s') and "
-                +"  A.status != '완료' and A.status != '전송' and A.retry < 3 "
+        String q = "SELECT *"
+                +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE "
+                +"  WHERE pubDay = DATE_FORMAT(NOW(), '%Y%m%d') and "
+                +"  pubTime < DATE_FORMAT(NOW(), '%H%i%s') and "
+                +"  transferType = '예약' and "
+                +"  status != '완료' and status != '전송' and retry < 3 "
                 +"  order by regDate";
 
         RecordSet rset = super.query(q);
@@ -194,5 +213,69 @@ public class ChargeSettleReserveDAO extends DAO {
         super.setTable("PG_CHARGE_SETTLE");
         super.addWhere("trxId",trxId,eq);
         super.delete();
+    }
+
+    public static String getFunction(String function, String value) {
+        String returnVal = "";
+        String query = "SELECT " + function + "(?) as val";
+
+        DBManager db = null;
+        PreparedStatement pstmt = null;
+        Connection conn = null;
+        ResultSet rset = null;
+
+        try {
+
+            db = DBFactory.getInstance();
+            conn = db.getConnection();
+            pstmt = conn.prepareStatement(query);
+            pstmt.setString(1, value);
+            rset = pstmt.executeQuery();
+
+            while (rset.next()) {
+                returnVal = rset.getString(1);
+            }
+            conn.commit();
+        } catch (Exception t) {
+
+        } finally {
+            db.close(conn, pstmt, rset);
+        }
+        return returnVal;
+    }
+
+    public synchronized static String getSettleId() {
+        return "S" + getFunction("FN_NEXTVAL2", "SETTLE");
+    }
+
+    public boolean updateTrxCapDtl(String refId, String stlId) {
+        String q = "UPDATE PG_TRX_CAP_DTL "
+                + "    SET stlStatus = '정산완료' , payOutDay = '" + CommonUtil.getCurrentDate("yyyyMMdd") + "' , stlId = '" +stlId+ "' "
+                + "  WHERE capId = '" +refId + "'";
+
+        boolean updated =  super.update(q);
+
+        super.initRecord();
+        return updated;
+    }
+
+    public SharedMap<String, Object> getMchtRent(String mchtId) {
+        super.setTable("PG_MCHT_RENT");
+        super.setColumns("*");
+        super.addWhere("mchtId",mchtId,eq);
+        RecordSet rset = super.search();
+        super.initRecord();
+        return rset.getRowFirst();
+    }
+
+    public SharedMap<String, Object> getTrxCapList(String capId) {
+        String q = "SELECT name, stlAmount, billingType, authCd"
+                +"    FROM VW_TRX_CAP_DTL "
+                +"	 WHERE capId = '"+capId+"'";
+
+        RecordSet rset = super.query(q);
+
+        super.initRecord();
+        return rset.getRowFirst();
     }
 }

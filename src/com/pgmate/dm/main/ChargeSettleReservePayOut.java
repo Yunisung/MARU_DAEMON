@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -55,15 +56,30 @@ public class ChargeSettleReservePayOut {
                 return;
             }
 
+            List<SharedMap<String,Object>> chargeSettleList = new ArrayList<>();
             List<SharedMap<String,Object>> reserveList = dao.getChareSettleReserveList();
-
-            logger.info("chargeSettleReservePayOut COUNT : {}", reserveList.size());
+            List<SharedMap<String,Object>> realTimeList = dao.getChareSettleRealTimeList();
 
             if(reserveList.size() > 0) {
+                for(SharedMap<String, Object> data : reserveList) {
+                    chargeSettleList.add(data);
+                }
+            }
+
+            if(realTimeList.size() > 0) {
+                for(SharedMap<String, Object> data : realTimeList) {
+                    chargeSettleList.add(data);
+                }
+            }
+
+
+            logger.info("chargeSettleReservePayOut COUNT : {}", chargeSettleList.size());
+
+            if(chargeSettleList.size() > 0) {
                 logger.info("==================================================");
                 logger.info("충전정산 예약 START");
 
-                for(SharedMap<String,Object> data : reserveList) {
+                for(SharedMap<String,Object> data : chargeSettleList) {
                     msgBody = "";
                     FirmBean firmBean = new FirmBean();
                     String idx = "";
@@ -74,8 +90,10 @@ public class ChargeSettleReservePayOut {
                     //상태값 전송으로 변경
                     dao.updateStatus(data.getString("trxId"));
 
-                    String vactBankCd = data.getString("vactBankCd");
+                    //펌뱅킹 광주은행으로 고정
+                    String vactBankCd = "034";
                     SharedMap<String, Object> chargeMngMap = dao.getMchtChargeMng(data.getString("mchtId"));
+                    SharedMap<String, Object> rentMap = dao.getMchtRent(data.getString("mchtId"));
 
                     if("0".equals(data.getString("retry"))) {
                         //첫시도
@@ -97,6 +115,36 @@ public class ChargeSettleReservePayOut {
                             status = "완료";
                             msgBody = "충전정산 예약 출금 성공. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
                             logger.info(msgBody);
+
+                            //정산완료처리
+                            String stlId = ChargeSettleReserveDAO.getSettleId();
+                            dao.updateTrxCapDtl(data.getString("refId"), stlId);
+
+                            //가맹점 정산 처리
+                            if(!CommonUtil.isNullOrSpace(rentMap.getString("mchtSettleNotiAddr"))) {
+                                logger.info("가맹점 정산 노티");
+                                SharedMap<String, Object> capList = dao.getTrxCapList(data.getString("refId"));
+
+                                data.put("stlId", stlId);
+                                data.put("mchtName", capList.getString("name"));
+                                data.put("stlAmount", capList.getString("stlAmount"));
+                                if(data.getLong("stlAmount") > 0) {
+                                    data.put("trxType", "승인");
+                                } else {
+                                    data.put("trxType", "취소");
+                                }
+                                data.put("billingType", capList.getString("billingType"));
+                                data.put("accntHolder", data.getString("holder"));
+                                data.put("sender", data.getString("recordInfo"));
+                                data.put("authCd", capList.getString("authCd"));
+
+                                //출금 노티
+                                String mchtSettle = setMchtSettle(data, firmBean.resultCd, firmBean.resultMsg);
+                                data.put("payLoad", mchtSettle);
+                                data.put("trxType", "출금");
+                                new ChargeSettleHook(rentMap.getString("mchtSettleNotiAddr"), data, "0").start();
+                            }
+
 
                             // 출금 완료 결과 noti 발송
                             if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
@@ -135,6 +183,35 @@ public class ChargeSettleReservePayOut {
                                 status = "완료";
                                 msgBody = "충전정산 예약 결과확인 성공. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
                                 logger.info(msgBody);
+
+                                //정산완료처리
+                                String stlId = ChargeSettleReserveDAO.getSettleId();
+                                dao.updateTrxCapDtl(data.getString("refId"), stlId);
+
+                                //가맹점 정산 처리
+                                if(!CommonUtil.isNullOrSpace(rentMap.getString("mchtSettleNotiAddr"))) {
+                                    logger.info("가맹점 정산 노티");
+                                    SharedMap<String, Object> capList = dao.getTrxCapList(data.getString("refId"));
+
+                                    data.put("stlId", stlId);
+                                    data.put("mchtName", capList.getString("name"));
+                                    data.put("stlAmount", capList.getString("stlAmount"));
+                                    if(data.getLong("stlAmount") > 0) {
+                                        data.put("trxType", "승인");
+                                    } else {
+                                        data.put("trxType", "취소");
+                                    }
+                                    data.put("billingType", capList.getString("billingType"));
+                                    data.put("accntHolder", data.getString("holder"));
+                                    data.put("sender", data.getString("recordInfo"));
+                                    data.put("authCd", capList.getString("authCd"));
+
+                                    //출금 노티
+                                    String mchtSettle = setMchtSettle(data, firmBean.resultCd, firmBean.resultMsg);
+                                    data.put("payLoad", mchtSettle);
+                                    data.put("trxType", "출금");
+                                    new ChargeSettleHook(rentMap.getString("mchtSettleNotiAddr"), data, "0").start();
+                                }
 
                                 // 출금완료 결과 noti 발송
                                 if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
@@ -274,7 +351,7 @@ public class ChargeSettleReservePayOut {
                                         if (!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
                                             String payLoad = setPayLoad(data, "출금실패", firmBean.resultCd, firmBean.resultMsg);
                                             data.put("payLoad", payLoad);
-                                            data.put("trxType", "출금");
+                                            data.put("trxType", "출금실패");
                                             new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
                                         }
                                     }
@@ -360,5 +437,27 @@ public class ChargeSettleReservePayOut {
         payLoadMap.put("amount",sharedMap.getString("amount"));
         String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
         return payLoad;
+    }
+
+    public String setMchtSettle(SharedMap<String,Object> sharedMap, String resultCd, String resultMsg) {
+        SharedMap<String, String> mchtSettleMap = new SharedMap<>();
+        mchtSettleMap.put("mchtId", sharedMap.getString("mchtId"));
+        mchtSettleMap.put("stlId", sharedMap.getString("stlId"));
+        mchtSettleMap.put("mchtName", sharedMap.getString("mchtName"));
+        mchtSettleMap.put("stlAmount", sharedMap.getString("stlAmount"));
+        mchtSettleMap.put("trxType", sharedMap.getString("trxType"));
+        mchtSettleMap.put("billingType", sharedMap.getString("billingType"));
+        mchtSettleMap.put("resultCd", resultCd);
+        mchtSettleMap.put("resultMsg", resultMsg);
+        mchtSettleMap.put("stlDay", CommonUtil.getCurrentDate("yyyyMMdd"));
+        mchtSettleMap.put("payOutDate", CommonUtil.getCurrentDate("yyyyMMdd"));
+        mchtSettleMap.put("accntHolder", sharedMap.getString("holder"));
+        mchtSettleMap.put("sender", sharedMap.getString("recordInfo"));
+        mchtSettleMap.put("bankName", sharedMap.getString("bankName"));
+        mchtSettleMap.put("account", sharedMap.getString("account"));
+        mchtSettleMap.put("authCd", sharedMap.getString("authCd"));
+
+        String mchtSettle = CommonUtil.toQueryString(mchtSettleMap, "UTF-8");
+        return mchtSettle;
     }
 }

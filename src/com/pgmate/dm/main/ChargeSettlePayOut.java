@@ -177,6 +177,7 @@ public class ChargeSettlePayOut {
 								}
 							}else if(firmBean.resultCd.equals("VTIM") || firmBean.resultCd.equals("0011")) {
 								logger.info("더즌 타임아웃, 이중송금방지, 한번더 실행");
+								errFlag = true;
 
 							}else {
 								msgBody = "충전정산 결과확인 실패. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";
@@ -305,7 +306,7 @@ public class ChargeSettlePayOut {
 										if (!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
 											String payLoad = setPayLoad(data, "출금실패", firmBean.resultCd, firmBean.resultMsg);
 											data.put("payLoad", payLoad);
-											data.put("trxType", "출금");
+											data.put("trxType", "출금실패");
 											new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 										}
 									}

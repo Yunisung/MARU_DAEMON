@@ -18,8 +18,8 @@ public class WebHookDAO extends DAO {
 	
 	
 	public void insertTrxNTSPG(SharedMap<String, Object> ntsMap) {
-
 		super.setTable("PG_TRX_NTS_PG");
+		super.setXssChange(false);
 
 		super.setRecord("trxId", ntsMap.getString("trxId"));
 		super.setRecord("trxType", ntsMap.getString("trxType"));

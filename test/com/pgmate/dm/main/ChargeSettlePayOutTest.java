@@ -32,7 +32,7 @@ public class ChargeSettlePayOutTest {
         String payLoad = setPayLoad(data, "출금완료", "0000", "정상처리");
         data.put("payLoad", payLoad);
         data.put("trxType", "출금");
-        new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, dao, "0").start();
+        new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
     }
 
     public String setPayLoad(SharedMap<String, Object> sharedMap, String status, String resultCd, String resultMsg){

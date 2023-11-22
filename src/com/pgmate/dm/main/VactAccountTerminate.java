@@ -115,15 +115,16 @@ public class VactAccountTerminate {
 
                         //230504_PYS : 해지된거 노티전송
                         String hookAddr = dao.getMchtMngVactByMchtId(data.getString("mchtId")).getString("statusHookAddr");
-                        SharedMap<String, Object> statusMap = new SharedMap<>();
-                        statusMap.put("trxId", VactAccountDAO.getNotiId());
-                        statusMap.put("mchtId", data.getString("mchtId"));
-                        statusMap.put("vactAccount", data.getString("account"));
-                        statusMap.put("vactStatus", "대기");
-                        statusMap.put("holderName", dao.getMchtMngVactByMchtId(data.getString("mchtId")).getString("holderName"));
+                        if(!CommonUtil.isNullOrSpace(hookAddr)) {
+                            SharedMap<String, Object> statusMap = new SharedMap<>();
+                            statusMap.put("trxId", VactAccountDAO.getNotiId());
+                            statusMap.put("mchtId", data.getString("mchtId"));
+                            statusMap.put("vactAccount", data.getString("account"));
+                            statusMap.put("vactStatus", "대기");
+                            statusMap.put("holderName", dao.getMchtMngVactByMchtId(data.getString("mchtId")).getString("holderName"));
 
-                        new VactAccountStatusHook(hookAddr, statusMap, "0").start();
-
+                            new VactAccountStatusHook(hookAddr, statusMap, "0").start();
+                        }
                     } else {
                         logger.info("PG_VACT_DTL 상태 변경 실패 : {}", data.getString("issueId"));
                         msgBody = "PG_VACT_DTL 상태 변경 실패 : [ " + data.getString("issueId") + " ]";

@@ -51,7 +51,7 @@ public class FirmClient {
 			firmBean.data.put("regType", regType);
 			firmBean.data.put("identity", identity);
 		}else if(vactBankCd.equals("007")) {
-			firmBean.data.put("trxType", 3);
+			firmBean.data.put("trxType", "3");
 		}
 
 

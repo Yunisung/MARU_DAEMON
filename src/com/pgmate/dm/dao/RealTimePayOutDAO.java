@@ -132,7 +132,7 @@ public class RealTimePayOutDAO extends DAO{
 			return new SharedMap<String,Object>();
 		}
 	}
-	
+
 	public SharedMap<String, Object> getDistMngByNum(int distNum) {
 		super.setTable("PG_MAM_DIST_MNG");
 		super.setColumns("*");
@@ -163,6 +163,45 @@ public class RealTimePayOutDAO extends DAO{
 		super.setTable("PG_MAM_SALES_MNG");
 		super.setColumns("*");
 		super.addWhere("num", salesNum, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+
+	public SharedMap<String, Object> getDistMngById(String distId) {
+		super.setTable("PG_MAM_DIST_MNG");
+		super.setColumns("*");
+		super.addWhere("distId", distId, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+
+	public SharedMap<String, Object> getAgencyMngById(String agencyId) {
+		super.setTable("PG_MAM_AGENCY_MNG");
+		super.setColumns("*");
+		super.addWhere("agencyId", agencyId, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
+		}
+	}
+
+	public SharedMap<String, Object> getSalesMngById(String salesId) {
+		super.setTable("PG_MAM_SALES_MNG");
+		super.setColumns("*");
+		super.addWhere("salesId", salesId, eq);
 		RecordSet rset = super.search();
 		super.initRecord();
 		if(rset.size() > 0){
@@ -269,10 +308,50 @@ public class RealTimePayOutDAO extends DAO{
 	
 	public boolean insertTrxPayOut(SharedMap<String,Object> data){
 		super.setTable("PG_TRX_PAYOUT");
+		//super.setDebug(true);
 		
-		for(String key : data.keySet()){
-			super.setRecord(key, data.get(key));
-		}
+		super.setRecord("trxId", 		data.getString("trxId"));
+		super.setRecord("mchtId", 		data.getString("mchtId"));
+		super.setRecord("trxType", 		data.getString("trxType"));
+		super.setRecord("amount", 		data.getLong("amount"));
+		super.setRecord("payOutFee", 	data.getLong("payOutFee"));
+		super.setRecord("payOutFeeVat", 	data.getLong("payOutFeeVat"));
+		super.setRecord("payOutType", 	data.getString("payOutType"));
+		super.setRecord("payOutId", 		data.getString("payOutId"));
+
+		super.setRecord("distNum", 		data.getString("distNum"));
+		super.setRecord("distId", 		data.getString("distId"));
+		super.setRecord("distPayInFee", 	data.getLong("distPayInFee"));
+		super.setRecord("distPayInFeeVat", data.getLong("distPayInFeeVat"));
+		super.setRecord("stlDistType", 	data.getString("stlDistType"));
+		super.setRecord("stlDistId", 	data.getString("stlDistId"));
+		super.setRecord("stlDistDay", 	data.getString("stlDistDay"));
+
+		super.setRecord("agencyNum", 	data.getString("agencyNum"));
+		super.setRecord("agencyId", 		data.getString("agencyId"));
+		super.setRecord("agencyPayInFee", data.getLong("agencyPayInFee"));
+		super.setRecord("agencyPayInFeeVat", data.getLong("agencyPayInFeeVat"));
+		super.setRecord("stlAgencyType", data.getString("stlAgencyType"));
+		super.setRecord("stlAgencyId", data.getString("stlAgencyId"));
+		super.setRecord("stlAgencyDay", data.getString("stlAgencyDay"));
+
+		super.setRecord("salesNum", 	data.getString("salesNum"));
+		super.setRecord("salesId", 		data.getString("salesId"));
+		super.setRecord("salesPayInFee", data.getLong("salesPayInFee"));
+		super.setRecord("salesPayInFeeVat", data.getLong("salesPayInFeeVat"));
+		super.setRecord("stlSalesType", data.getString("stlSalesType"));
+		super.setRecord("stlSalesId", data.getString("stlSalesId"));
+		super.setRecord("stlSalesDay", data.getString("stlSalesDay"));
+
+		super.setRecord("payOutAmount", data.getLong("payOutAmount"));
+		super.setRecord("sendCheck", data.getString("sendCheck"));
+		super.setRecord("bankCd", data.getString("bankCd"));
+		super.setRecord("bankName", data.getString("bankName"));
+		super.setRecord("account", data.getString("account"));
+		super.setRecord("accntHolder", data.getString("accntHolder"));
+		super.setRecord("payOutDay", data.getString("payOutDay"));
+		super.setRecord("payOutTime", data.getString("payOutTime"));
+
 		
 		boolean inserted =  super.insert();
 		
@@ -542,7 +621,7 @@ public class RealTimePayOutDAO extends DAO{
 	 */
 	public boolean insertSettleAuto(SharedMap<String,Object> data){
 		super.setTable("PG_SETTLE_AUTO");
-		
+
 		for(String key : data.keySet()){
 			super.setRecord(key, data.get(key));
 		}

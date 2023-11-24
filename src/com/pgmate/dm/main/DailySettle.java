@@ -59,6 +59,8 @@ public class DailySettle {
 	 
 	public static void main(String[] args){
 		new DailySettle(args);
+//		String[] myArgs = {"A+0", "20231122"};
+//		new DailySettle(myArgs);
 	}
 	
 	public DailySettle(String[] args) {
@@ -430,9 +432,13 @@ public class DailySettle {
 	private void insertAutoSettle(String type) {
 		RealTimePayOutDAO dao = new RealTimePayOutDAO();
 		settleData = new SharedMap<String, Object>();
-		SharedMap<String,Object> agencyMngMap	= dao.getAgencyMngByNum(mchtMngMap.getInt("agencyNum"));
-		SharedMap<String,Object> distMngMap		= dao.getDistMngByNum(mchtMngMap.getInt("distNum"));
-		SharedMap<String,Object> salesMngMap	= dao.getSalesMngByNum(mchtMngMap.getInt("salesNum"));
+		SharedMap<String,Object> mchtMap	= dao.getMcht(mchtId);
+		SharedMap<String,Object> agencyMngMap	= dao.getAgencyMngById(mchtMap.getString("agencyId"));
+		SharedMap<String,Object> distMngMap		= dao.getDistMngById(mchtMap.getString("distId"));
+		SharedMap<String,Object> salesMngMap	= dao.getSalesMngById(mchtMap.getString("salesId"));
+//		SharedMap<String,Object> agencyMngMap	= dao.getAgencyMngByNum(mchtMngMap.getInt("agencyNum"));
+//		SharedMap<String,Object> distMngMap		= dao.getDistMngByNum(mchtMngMap.getInt("distNum"));
+//		SharedMap<String,Object> salesMngMap	= dao.getSalesMngByNum(mchtMngMap.getInt("salesNum"));
 		SharedMap<String,Object> trxPayOutData = new SharedMap<String, Object>(); // 출금수수료 정산관련 거래 데이터
 		 
 		settleData.put("stlId", stlId);
@@ -467,19 +473,19 @@ public class DailySettle {
 		
 		if(type.equals("C")) {
 			if(agencyMngMap.size() >0 ){
-				trxPayOutData.put("agencyNum"	, mchtMngMap.getLong("agencyNum"));
+				//trxPayOutData.put("agencyNum"	, mchtMngMap.getLong("agencyNum"));
 				trxPayOutData.put("agencyId", agencyMngMap.getString("agencyId"));
 				trxPayOutData.put("stlAgencyType", agencyMngMap.getString("settleType"));
 				trxPayOutData.put("stlAgencyId"	, "");
 			}
 			if(distMngMap.size() >0 ){
-				trxPayOutData.put("distNum"	, mchtMngMap.getLong("distNum"));
+				//trxPayOutData.put("distNum"	, mchtMngMap.getLong("distNum"));
 				trxPayOutData.put("distId", distMngMap.getString("distId"));
 				trxPayOutData.put("stlDistType", distMngMap.getString("settleType"));
 				trxPayOutData.put("stlDistId"	, "");
 			}
 			if(salesMngMap.size() >0 ){
-				trxPayOutData.put("salesNum"	, mchtMngMap.getLong("salesNum"));
+				//trxPayOutData.put("salesNum"	, mchtMngMap.getLong("salesNum"));
 				trxPayOutData.put("salesId", salesMngMap.getString("salesId"));
 				trxPayOutData.put("stlSalesType", salesMngMap.getString("settleType"));
 				trxPayOutData.put("stlSalesId"	, "");
@@ -498,7 +504,7 @@ public class DailySettle {
 				if(mchtMngMap.getString("payInStatus").equals("사용")) {
 					trxPayOutData.put("distPayInFee", mchtMngMap.getLong("distPayInFee"));
 					trxPayOutData.put("distPayInFeeVat", calcVat(mchtMngMap.getLong("distPayInFee")));
-					trxPayOutData.put("agencyNum", mchtMngMap.getInt("agencyNum"));
+					//trxPayOutData.put("agencyNum", mchtMngMap.getInt("agencyNum"));
 					trxPayOutData.put("agencyPayInFee", mchtMngMap.getLong("agencyPayInFee"));
 					trxPayOutData.put("agencyPayInFeeVat", calcVat(mchtMngMap.getLong("agencyPayInFee")));
 					trxPayOutData.put("salesPayInFee", mchtMngMap.getLong("salesPayInFee"));
@@ -541,15 +547,15 @@ public class DailySettle {
 			}
 		} else {
 			trxPayOutData.put("distId", new RealTimePayOutDAO().getMcht(mchtId).getString("distId"));
-			trxPayOutData.put("distNum", mchtMngVactMap.getInt("distNum"));
+			//trxPayOutData.put("distNum", mchtMngVactMap.getInt("distNum"));
 			trxPayOutData.put("stlDistType", mchtMngVactMap.getString("distSettleType"));
 			trxPayOutData.put("stlDistId"	, "");
 			trxPayOutData.put("agencyId", new RealTimePayOutDAO().getMcht(mchtId).getString("agencyId"));
-			trxPayOutData.put("agencyNum", mchtMngVactMap.getInt("agencyNum"));
+			//trxPayOutData.put("agencyNum", mchtMngVactMap.getInt("agencyNum"));
 			trxPayOutData.put("stlAgencyType", mchtMngVactMap.getString("agencySettleType"));
 			trxPayOutData.put("stlAgencyId"	, "");
 			trxPayOutData.put("salesId", new RealTimePayOutDAO().getMcht(mchtId).getString("salesId"));
-			trxPayOutData.put("salesNum", mchtMngVactMap.getInt("salesNum"));
+			//trxPayOutData.put("salesNum", mchtMngVactMap.getInt("salesNum"));
 			trxPayOutData.put("stlSalesType", mchtMngVactMap.getString("salesSettleType"));
 			trxPayOutData.put("stlSalesId"	, "");
 			
@@ -610,7 +616,7 @@ public class DailySettle {
 		}
 		
 		
-		if(firmPort == 10006) {
+		/*if(firmPort == 10006) {
 			//KWON_FIRM - 우리은행
 			if(mchtTaxMap.getString("bankCd").equals("020")) { 
 				 settleData.put("bankFee",50); 
@@ -620,7 +626,7 @@ public class DailySettle {
 		}else if(firmPort == 10026) {
 			//KWON_FIRM_KSNET - 케이뱅크
 			settleData.put("bankFee", 99);
-		}
+		}*/
 		
 		if(stlAmount != 0) {
 			settleData.put("payOutAmount", stlAmount - settleData.getLong("payOutFee") - settleData.getLong("payOutFeeVat"));	
@@ -696,11 +702,11 @@ public class DailySettle {
     	try{
             // 프로퍼티 파일 위치
     		//운영
-            String propFile = "/home/bkwinners/MARU/MARU_DAEMON/conf/firmconfig.properties"; 
+            //String propFile = "/home/bkwinners/MARU/MARU_DAEMON/conf/firmconfig.properties";
     		//테스트
-    		//String propFile = "/home/KWON/KWON_DAEMON/conf/firmconfig.properties";
+    		String propFile = "/home/KWON/KWON_DAEMON/conf/firmconfig.properties";
             //로컬
-    		//String propFile = "C:/workspace/KWON_DAEMON/conf/firmconfig.properties";
+    		//String propFile = "D:\\workspace_creditop/github/MARU_DAEMON/conf/firmconfig.properties";
     		
             // 프로퍼티 객체 생성
             Properties props = new Properties();

@@ -26,6 +26,7 @@ public class ChargeSettleReserveDAO extends DAO {
                 +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE"
                 +"  WHERE transferType = '실시간' and "
                 +"  status != '완료' and status != '전송' and retry < 3 "
+                +"  and rootTrxId = '' "
                 +"  order by regDate";
 
         RecordSet rset = super.query(q);
@@ -41,6 +42,7 @@ public class ChargeSettleReserveDAO extends DAO {
                 +"  pubTime < DATE_FORMAT(NOW(), '%H%i%s') and "
                 +"  transferType = '예약' and "
                 +"  status != '완료' and status != '전송' and retry < 3 "
+                + " and rootTrxId = '' "
                 +"  order by regDate";
 
         RecordSet rset = super.query(q);
@@ -268,14 +270,23 @@ public class ChargeSettleReserveDAO extends DAO {
         return rset.getRowFirst();
     }
 
-    public SharedMap<String, Object> getTrxCapList(String capId) {
+    public SharedMap<String, Object> getTrxCapList(String trxId) {
         String q = "SELECT name, stlAmount, billingType, authCd"
-                +"    FROM VW_TRX_CAP_DTL "
-                +"	 WHERE capId = '"+capId+"'";
+                +"    FROM VW_TRX_CAP "
+                +"	 WHERE trxId = '"+trxId+"'";
 
         RecordSet rset = super.query(q);
 
         super.initRecord();
         return rset.getRowFirst();
+    }
+
+    public String getCapId(String trxId) {
+        super.setTable("VW_TRX_CAP");
+        super.setColumns("capId");
+        super.addWhere("trxId", trxId);
+        RecordSet rset = super.search();
+        super.initRecord();
+        return rset.getRow(0).getString("capId");
     }
 }

@@ -7,6 +7,9 @@
     "jdbcUrl": "jdbc:mariadb://10.100.200.10:3306/CP_MARU",
     "userName": "bkwinners",
     "passWord": "2021bk07&*(db2",
+//    "jdbcUrl": "jdbc:mariadb://10.100.100.101:3306/CP_MARU",
+//        "userName": "bkwinners",
+//        "passWord": "2021bk06&*(db2",
     "maxConnection": 20,
     "minConnection": 10,
     "partitionCount": 1

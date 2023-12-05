@@ -237,8 +237,8 @@ public class KsnetDiffDownloadDAO extends DAO{
 		return rset.getRowFirst().getInt("cnt");
 	}
 
-	public int checkDownSettle(String nowDate) {
-		String query = "SELECT COUNT(*) AS cnt FROM PG_TRX_DIFF WHERE van LIKE '%KSPAY%' AND downDay = '"+nowDate+"'";
+	public int checkDownSettle(String nowDate, String vanId) {
+		String query = "SELECT COUNT(*) AS cnt FROM PG_TRX_DIFF WHERE van LIKE '%KSPAY%' AND downDay = '"+nowDate+"' AND vanId = '" + vanId + "'";
 		RecordSet rset = super.query(query);
 		super.initRecord();
 		return rset.getRowFirst().getInt("cnt");

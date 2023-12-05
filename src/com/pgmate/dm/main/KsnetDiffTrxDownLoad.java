@@ -26,10 +26,10 @@ public class KsnetDiffTrxDownLoad {
 
 	private static String SETTLE_PATH="/home/data/diff/settle/";
 //	private static String SETTLE_PATH="D:\\ksnet\\diffSettle\\";
-	
+
 	private static String ENC_SHOP_PASS = "ec4wxx1foTcnTLpjkFL23Q==";
 	private static String ENC_SHOP_PASS_13 = "0RdUH3zaXnYHFhKrKsr+sQ==";
-	
+
 	private SmsGw smsGw = null;
 	private String day = "";
 	
@@ -46,17 +46,17 @@ public class KsnetDiffTrxDownLoad {
 		day = nowDate.substring(0,4) + "년 " + nowDate.substring(4,6) + "월 " + nowDate.substring(6) + "일";
 		
 		for (String id : vanId) {
-			
+
 			try {
 				String path = SETTLE_PATH+nowDate.substring(0, 6);
 				String fileName = path+File.separator+nowDate+"("+id+")"+".ksnet.download.txt";
 				KsnetDiffDownloadDAO dao = new KsnetDiffDownloadDAO();
-				
-				if(dao.checkDownSettle(nowDate) > 0) {
+
+				if(dao.checkDownSettle(nowDate, id) > 0) {
 					logger.info("============= "+nowDate+"일자 차액정산 PASS ===============");
 					return;
 				}
-				
+
 				File folder = new File(path);
 				if(!folder.exists()) {
 					folder.mkdir();
@@ -73,9 +73,9 @@ public class KsnetDiffTrxDownLoad {
 						File cvs = new File(fileName);
 //					File cvs = new File("C:\\dev\\test\\log\\20190929.ksnet.download.txt");
 						BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(cvs),"euc-kr"));
-						
+
 						String line = "";
-						
+
 						while((line = br.readLine()) != null) {
 							String [] token = line.split(",",-1);
 							SharedMap<String, Object> map = new SharedMap<String, Object>();
@@ -93,7 +93,7 @@ public class KsnetDiffTrxDownLoad {
 							map.put("trxId", token[11]);
 							map.put("udf", token[12]);
 							map.put("resultCd", token[13]);
-							
+
 							String mchtType = "";
 							String mchtCode = token[14];
 							switch(mchtCode) {
@@ -123,23 +123,23 @@ public class KsnetDiffTrxDownLoad {
 					if(dao.updateTrxDiff(list) > 0) {
 						logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
 					}
-					
+
 					//String msgBody = day + " KSNET 차액정산"+ "("+id+") " + formatter.format(list.size()) + "건 완료.";
 					//smsGw.sendMessage("0", "3", msgBody);
 				} else {
 					String msgBody = day + " KSNET 차액정산 다운로드 파일이 존재하지 않습니다." + "("+id+")";
 					smsGw.sendMessage("0", "3", msgBody);
 				}
-				
+
 				logger.info("============= "+nowDate+"일자 차액정산 종료 ===============");
 			}catch (Exception e) {
 				String msgBody = day + " KSNET 차액정산 오류. 확인요망"+"("+id+")";
 				smsGw.sendMessage("0", "3", msgBody);
-			
+
 				logger.error(e.getMessage(), e);
-			}	
+			}
 		}
-		
+
 	}
 	
 	public static void main(String[] args) {

@@ -25,16 +25,17 @@ public class KsnetDiffTrxDownLoad {
 	private static int PORT = 9800;	//KSNET 서버포트
 
 	private static String SETTLE_PATH="/home/data/diff/settle/";
-//	private static String SETTLE_PATH="C:\\dev\\test\\settle\\";
+//	private static String SETTLE_PATH="D:\\ksnet\\diffSettle\\";
 	
 	private static String ENC_SHOP_PASS = "ec4wxx1foTcnTLpjkFL23Q==";
+	private static String ENC_SHOP_PASS_13 = "0RdUH3zaXnYHFhKrKsr+sQ==";
 	
 	private SmsGw smsGw = null;
 	private String day = "";
 	
 	//22.06.02 vanid 분리용 배열 추가
-	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011"};
-	
+	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011", "2010000001", "2010000013"};
+
 	public KsnetDiffTrxDownLoad(String nowDate) {
 		downLoadDiffTrx(nowDate);
 	}
@@ -60,8 +61,13 @@ public class KsnetDiffTrxDownLoad {
 				if(!folder.exists()) {
 					folder.mkdir();
 				}
+				String pass = ENC_SHOP_PASS;
+				// KSNET 파일업로드
+				if(id.equals("2010000013")){
+					pass = ENC_SHOP_PASS_13;
+				}
 				logger.info("============= "+nowDate+"일자 차액정산 다운로드 시작 ===============");
-				if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGTMS", "0", id, ENC_SHOP_PASS, nowDate) > -1) {
+				if(KSPGFtsUpDownLib.fileDownload(HOST, PORT, fileName, "PGTMS", "0", id, pass, nowDate) > -1) {
 					List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
 					try {
 						File cvs = new File(fileName);

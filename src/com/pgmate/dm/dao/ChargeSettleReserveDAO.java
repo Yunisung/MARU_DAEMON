@@ -22,11 +22,10 @@ public class ChargeSettleReserveDAO extends DAO {
     }
 
     public List<SharedMap<String, Object>> getChareSettleRealTimeList() {
-        String q = "SELECT *"
+        String q = "SELECT *, FN_AES_DEC(account) as decAccount"
                 +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE"
                 +"  WHERE transferType = '실시간' and "
-                +"  status != '완료' and status != '전송' and retry < 3 "
-                +"  and rootTrxId = '' "
+                +"  status != '완료' and status != '전송' and retry < 3 and rootTrxId = ''"
                 +"  order by regDate";
 
         RecordSet rset = super.query(q);
@@ -36,13 +35,25 @@ public class ChargeSettleReserveDAO extends DAO {
     }
 
     public List<SharedMap<String, Object>> getChareSettleReserveList() {
-        String q = "SELECT *"
+        String q = "SELECT *, FN_AES_DEC(account) as decAccount"
                 +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE "
                 +"  WHERE pubDay = DATE_FORMAT(NOW(), '%Y%m%d') and "
                 +"  pubTime < DATE_FORMAT(NOW(), '%H%i%s') and "
                 +"  transferType = '예약' and "
-                +"  status != '완료' and status != '전송' and retry < 3 "
-                + " and rootTrxId = '' "
+                +"  status != '완료' and status != '전송' and retry < 3 and rootTrxId = ''"
+                +"  order by regDate";
+
+        RecordSet rset = super.query(q);
+        super.initRecord();
+
+        return rset.getRows();
+    }
+
+    public List<SharedMap<String, Object>> getChareSettleReserveChildList(String rootTrxId) {
+        String q = "SELECT *, FN_AES_DEC(account) as decAccount"
+                +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE "
+                +"  WHERE rootTrxId ='" + rootTrxId + "' and "
+                +"  status != '완료' and status != '전송' "
                 +"  order by regDate";
 
         RecordSet rset = super.query(q);
@@ -120,10 +131,21 @@ public class ChargeSettleReserveDAO extends DAO {
         return updateed;
     }
 
-    public boolean updatePayOutRes(String trxId, String resCd, String resMsg, String status, String trxDay, String trxTime){
+    public boolean updatePayOutRes(String trxId, long balance, String resCd, String resMsg, String status, String trxDay, String trxTime){
         String q = "UPDATE PG_CHARGE_SETTLE_FIRM_RESERVE "
-                + "    SET resultCd='"+resCd+"', resultMsg='"+resMsg+"', status='"+status+"', trxDay='"+trxDay+"', trxTime='"+trxTime+"'"
+                + "    SET balance="+balance+ ", resultCd='"+resCd+"', resultMsg='"+resMsg+"', status='"+status+"', trxDay='"+trxDay+"', trxTime='"+trxTime+"'"
                 + "	 WHERE trxid = '"+trxId+"'";
+
+        boolean updateed =  super.update(q);
+
+        super.initRecord();
+        return updateed;
+    }
+
+    public boolean updatePayOutResChild(String rootTrxId, long balance, String resCd, String resMsg, String status, String trxDay, String trxTime){
+        String q = "UPDATE PG_CHARGE_SETTLE_FIRM_RESERVE "
+                + "    SET balance="+balance+ ", resultCd='"+resCd+"', resultMsg='"+resMsg+"', status='"+status+"', trxDay='"+trxDay+"', trxTime='"+trxTime+"'"
+                + "	 WHERE rootTrxId = '"+rootTrxId+"'";
 
         boolean updateed =  super.update(q);
 
@@ -250,16 +272,27 @@ public class ChargeSettleReserveDAO extends DAO {
         return "S" + getFunction("FN_NEXTVAL2", "SETTLE");
     }
 
-    public boolean updateTrxCapDtl(String refId, String stlId) {
-        String q = "UPDATE PG_TRX_CAP_DTL "
-                + "    SET stlStatus = '정산완료' , payOutDay = '" + CommonUtil.getCurrentDate("yyyyMMdd") + "' , stlId = '" +stlId+ "' "
-                + "  WHERE capId = '" +refId + "'";
+    public boolean updateTrxCapDtl(String trxId) {
+        String q = "UPDATE VW_TRX_CAP "
+                + "    SET stlStatus = '정산완료' , payOutDay = '" + CommonUtil.getCurrentDate("yyyyMMdd") + "' "
+                + "  WHERE trxId = '" +trxId + "'";
 
         boolean updated =  super.update(q);
 
         super.initRecord();
         return updated;
     }
+
+    /*public boolean updateStlCompleted(String trxId, String stlId) {
+        String q = "UPDATE PG_CHARGE_SETTLE_FIRM_RESERVE "
+                + "    SET stlStatus = '지급완료', stlId = '" +stlId+ "' "
+                + "  WHERE trxId = '" +trxId + "'";
+
+        boolean updated =  super.update(q);
+
+        super.initRecord();
+        return updated;
+    }*/
 
     public SharedMap<String, Object> getMchtRent(String mchtId) {
         super.setTable("PG_MCHT_RENT");
@@ -270,8 +303,8 @@ public class ChargeSettleReserveDAO extends DAO {
         return rset.getRowFirst();
     }
 
-    public SharedMap<String, Object> getTrxCapList(String trxId) {
-        String q = "SELECT name, stlAmount, billingType, authCd"
+    public SharedMap<String, Object> getTrxCapById(String trxId) {
+        String q = "SELECT *"
                 +"    FROM VW_TRX_CAP "
                 +"	 WHERE trxId = '"+trxId+"'";
 
@@ -281,12 +314,54 @@ public class ChargeSettleReserveDAO extends DAO {
         return rset.getRowFirst();
     }
 
-    public String getCapId(String trxId) {
-        super.setTable("VW_TRX_CAP");
-        super.setColumns("capId");
-        super.addWhere("trxId", trxId);
+    /**
+     * 충전정산 잔액조회
+     * @param mchtId
+     * @return
+     */
+    public SharedMap<String, Object> getMchtBalance(String mchtId){
+        super.setTable("PG_MCHT_BALANCE");
+        super.setColumns("*");
+        super.addWhere("mchtId",mchtId,eq);
+        super.setOrderBy("");
         RecordSet rset = super.search();
         super.initRecord();
-        return rset.getRow(0).getString("capId");
+        return rset.getRowFirst();
+    }
+
+    public boolean insertChargeSettle(SharedMap<String, Object> trxMap) {
+        super.setTable("PG_CHARGE_SETTLE");
+        super.setRecord("trxId", trxMap.getString("trxId"));
+        super.setRecord("mchtId", trxMap.getString("mchtId"));
+        super.setRecord("trxType", trxMap.getString("trxType"));
+        super.setRecord("trxUnit", trxMap.getString("trxUnit"));
+        super.setRecord("trxDay", trxMap.getString("trxDay"));
+        super.setRecord("trxTime", trxMap.getString("trxTime"));
+        super.setRecord("amount", trxMap.getLong("amount"));
+        super.setRecord("fee", trxMap.getLong("fee"));
+        super.setRecord("feeVat", trxMap.getLong("feeVat"));
+        super.setRecord("bankFee", trxMap.getLong("bankFee"));
+        super.setRecord("netAmount", trxMap.getLong("netAmount"));
+        super.setRecord("balance", trxMap.getLong("balance"));
+        super.setRecord("trackId", trxMap.getString("trackId"));
+        super.setRecord("refId", trxMap.getString("refId"));
+        super.setRecord("bankCd", trxMap.getString("bankCd"));
+        super.setRecord("bankName", trxMap.getString("bankName"));
+        super.setRecord("account", trxMap.getString("account"));
+        super.setRecord("holder", trxMap.getString("holder"));
+        super.setRecord("recordInfo", trxMap.getString("recordInfo"));
+        super.setRecord("summary", trxMap.getString("summary"));
+        super.setRecord("regId", trxMap.getString("regId"));
+        super.setRecord("regDay", trxMap.getString("regDay"));
+
+        boolean result = super.insert();
+        super.initRecord();
+        logger.info("insert PG_CHARGE_SETTLE [{}]", result);
+        return result;
+
+    }
+
+    public synchronized String getChargeSettleTrxId() {
+        return "CS" + getFunction("FN_NEXTVAL2", "TRN");
     }
 }

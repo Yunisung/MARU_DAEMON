@@ -256,5 +256,13 @@ public class WebHookDAO extends DAO {
 
 		super.initRecord();
 	}
-	
+
+	public String getRebillTrackId(String mchtId) {
+		super.setTable("PG_REBILL_REG");
+		super.setColumns("trackId AS rebillTrackId");
+		super.addWhere("mchtId", mchtId);
+		RecordSet rset = super.search();
+		super.initRecord();
+		return rset.getRowFirst().getString("rebillTrackId");
+	}
 }

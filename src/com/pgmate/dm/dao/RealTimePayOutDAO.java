@@ -613,6 +613,23 @@ public class RealTimePayOutDAO extends DAO{
 		
 		return rset.getRows();
 	}
+
+	/**
+	 * PYS
+	 * 통합인증 수수료 조회
+	 * @return
+	 */
+	public List<SharedMap<String,Object>> getTotalAuthOrgFeeList(String stlDay, String stlType){
+		String q = "SELECT a.mchtId, SUM(a.authFee) AS fee, b.bankCd, b.bankName, b.account, b.accntHolder"
+				+" FROM PG_TOTAL_AUTH a, PG_MCHT_TAX b "
+				+" WHERE a.mchtId = b.mchtId and a.stlDay = '"+stlDay+"' AND a.stlType = '" + stlType + "' AND a.stlStatus != '정산완료'"
+				+" GROUP BY a.mchtId ";
+
+		RecordSet rset = super.query(q);
+		super.initRecord();
+
+		return rset.getRows();
+	}
 	
 	/**
 	 * 자동정산 데이터 (PG_SETTLE_AUTO) 테이블 INSERT
@@ -890,9 +907,9 @@ public class RealTimePayOutDAO extends DAO{
 				+" IF(trxType = '취소',1,0) as rfdCnt, "
 				+" stlAmount, stlType "
 				+" FROM VW_VACT_TRX  ";
-				
+
 				if("09".equals(hour)) {
-					q = q + "  WHERE trxDay < '" + stlDay + "' and stlDay = '"+stlDay+"' AND stlId = '' AND stlType = '" + stlType + "' AND settleTarget = 'Y' ";	
+					q = q + "  WHERE trxDay < '" + stlDay + "' and stlDay = '"+stlDay+"' AND stlId = '' AND stlType = '" + stlType + "' AND settleTarget = 'Y' ";
 				}else {
 					q = q + "  WHERE trxDay = '" + stlDay + "' and stlDay = '"+stlDay+"' AND stlId = '' AND stlType = '" + stlType + "' AND settleTarget = 'Y' ";
 				}
@@ -968,6 +985,22 @@ public class RealTimePayOutDAO extends DAO{
 		super.initRecord();
 		return updateed;
 	}
+
+	/**
+	 * PYS
+	 * 통합인증 정산번호 업데이트
+	 * @return
+	 */
+	public boolean updateTotalAuthStlId(String stlId, String mchtId, String stlDay, String stlType){
+		String q = "UPDATE PG_TOTAL_AUTH "
+				+ "    SET stlId = '" + stlId +"'"
+				+ "	 WHERE mchtId = '" + mchtId + "' and stlDay = '" + stlDay + "' and stlType = '" + stlType + "'";
+
+		boolean updateed =  super.update(q);
+
+		super.initRecord();
+		return updateed;
+	}
 	
 	/**
 	 * 인증테이블 정산상태 완료
@@ -984,6 +1017,22 @@ public class RealTimePayOutDAO extends DAO{
 		super.initRecord();
 		return updateed;
 	}
+
+	/**
+	 * PYS
+	 * 통합인증테이블 정산상태 완료
+	 */
+	public boolean updateTotalAuthStlStatus(String stlId){
+		String q = "UPDATE PG_TOTAL_AUTH"
+				+ "    SET stlStatus = '정산완료'"
+				+ "	 WHERE stlId = '" + stlId + "'";
+
+		boolean updated =  super.update(q);
+
+		super.initRecord();
+		return updated;
+	}
+
 	
 	public String getSettleDay(String today) {	
 		String q = "SELECT days FROM PG_CODE_HOLIDAY WHERE days >= '"+today+"' AND status ='no' limit 1";

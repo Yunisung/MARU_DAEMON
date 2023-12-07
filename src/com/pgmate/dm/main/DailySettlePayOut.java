@@ -47,8 +47,9 @@ public class DailySettlePayOut {
 		logger.info("==================================================");
 		logger.info("DailySettlePayOut Strart");
 		smsGw = new SmsGw();
-		
-		configSetting();
+
+		//사용안함
+		//configSetting();
 		
 		stlType = "A+0";
 		dailySettlePayOut(args);
@@ -104,20 +105,20 @@ public class DailySettlePayOut {
 					if(data.getLong("payOutAmount") > 0) {
 						//당일정산 출금요청
 						//운영
-						FirmBean firmBean = new FirmBean(); 
-						
-						if(frimPort == 10006) {
-							//KWON_FIRM - 우리은행
-							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("020", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("stlId"), "", "AS");	
-						}else if(frimPort == 10026) {
-							//KWON_FIRM_KSNET - 케이뱅크
-							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("stlId"), "", "AS");
-						}
+//						FirmBean firmBean = new FirmBean();
+//
+//						if(frimPort == 10006) {
+//							//KWON_FIRM - 우리은행
+//							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("020", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("stlId"), "", "AS");
+//						}else if(frimPort == 10026) {
+//							//KWON_FIRM_KSNET - 케이뱅크
+//							firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer("089", mchtTaxMap.getString("bankCd"), mchtTaxMap.getString("account").replace("-", "").trim(), data.getLong("payOutAmount"), data.getString("stlId"), "", "AS");
+//						}
 						
 						//테스트
-						//FirmBean firmBean = new FirmBean();
-						//firmBean.resultCd = "0000";
-						//firmBean.resultMsg = "성공";
+						FirmBean firmBean = new FirmBean();
+						firmBean.resultCd = "0000";
+						firmBean.resultMsg = "성공";
 						
 						resCd = firmBean.resultCd;
 						resMsg = firmBean.resultMsg;
@@ -191,7 +192,9 @@ public class DailySettlePayOut {
 								smsGw.sendMessage("0", "4", msgBody);
 							}
 						}else {
-							logger.info("당일정산 인증상태 업데이트 : [{}][{}]", data.getString("stlId"), dao.updateAuthStlStatus(data.getString("stlId")));
+							//logger.info("당일정산 인증상태 업데이트 : [{}][{}]", data.getString("stlId"), dao.updateAuthStlStatus(data.getString("stlId")));
+							//PYS : 통합인증으로 변경
+							logger.info("당일정산 인증상태 업데이트 : [{}][{}]", data.getString("stlId"), dao.updateTotalAuthStlStatus(data.getString("stlId")));
 						}
 
 						if(errFlag) {

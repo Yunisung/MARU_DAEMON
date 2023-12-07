@@ -67,8 +67,9 @@ public class DailySettle {
 		logger.info("==================================================");
 		logger.info("DailySettle Strart");
 		smsGw = new SmsGw();
-		
-		configSetting();
+
+		//firm 필요없음
+		//configSetting();
 		
 		stlDay = CommonUtil.getCurrentDate("yyyyMMdd");
 		hour = CommonUtil.getCurrentDate("HH");
@@ -261,7 +262,7 @@ public class DailySettle {
 						
 						startDay = data.getString("trxDay");
 						endDay = data.getString("trxDay");
-						stlRate = mchtMngVactMap.getDouble("rate");;
+						stlRate = mchtMngVactMap.getDouble("rate");
 						mchtId = data.getString("mchtId");
 						
 						mchtTaxMap	= dao.getMchtTaxByMchtId(mchtId);
@@ -336,7 +337,8 @@ public class DailySettle {
 			}
 			
 			//가상계좌 거래내역 정산예정일자의 자동정산 정산 인증 수수료 데이터 조회
-			List<SharedMap<String,Object>> getAutoVactSettleOrgFeeList = dao.getAutoVactSettleOrgFeeList(stlDay, stlType);
+			//List<SharedMap<String,Object>> getAutoVactSettleOrgFeeList = dao.getAutoVactSettleOrgFeeList(stlDay, stlType);
+			List<SharedMap<String,Object>> getAutoVactSettleOrgFeeList = dao.getTotalAuthOrgFeeList(stlDay, stlType);
 			logger.info("getAutoVactSettleOrgFeeList COUNT : {}", getAutoVactSettleOrgFeeList.size());
 			
 			if(getAutoVactSettleOrgFeeList.size() > 0) {
@@ -351,7 +353,9 @@ public class DailySettle {
 					
 					if(!"".equals(stlId)) {
 						dao.updateAuthFee(stlId, data.getLong("fee"), calcVat(data.getLong("fee")));
-						dao.updateAuthStlId(stlId, data.getString("mchtId"), stlDay, stlType);
+						//dao.updateAuthStlId(stlId, data.getString("mchtId"), stlDay, stlType);
+						//PYS : 통합인증 쓰도록 변경
+						dao.updateTotalAuthStlId(stlId, data.getString("mchtId"), stlDay, stlType);
 						
 						logger.info("당일정산 인증 수수료 UPDATE");
 						logger.info("stlId  : {}",stlId);
@@ -404,7 +408,9 @@ public class DailySettle {
 						logger.info("payOutAmount : {}",settleData.getLong("payOutAmount"));
 						
 						if(dao.insertSettleAuto(settleData)){
-							dao.updateAuthStlId(stlId, data.getString("mchtId"), stlDay, stlType);
+							//dao.updateAuthStlId(stlId, data.getString("mchtId"), stlDay, stlType);
+							//PYS : 통합인증 쓰도록 변경
+							dao.updateTotalAuthStlId(stlId, data.getString("mchtId"), stlDay, stlType);
 						}else {
 							msgBody = "PG_SETTLE_AUTO VACT INSERT 실패. 확인요망 [" + stlDay + "][" + data.getString("mchtId") + "]";
 						}
@@ -546,6 +552,7 @@ public class DailySettle {
 				trxPayOutData.put("salesPayInFeeVat", 0);
 			}
 		} else {
+			//가상계좌 당일정산
 			trxPayOutData.put("distId", new RealTimePayOutDAO().getMcht(mchtId).getString("distId"));
 			//trxPayOutData.put("distNum", mchtMngVactMap.getInt("distNum"));
 			trxPayOutData.put("stlDistType", mchtMngVactMap.getString("distSettleType"));
@@ -614,19 +621,25 @@ public class DailySettle {
 				trxPayOutData.put("salesPayInFeeVat", 0);
 			}
 		}
-		
-		
-		/*if(firmPort == 10006) {
-			//KWON_FIRM - 우리은행
-			if(mchtTaxMap.getString("bankCd").equals("020")) { 
-				 settleData.put("bankFee",50); 
-			}else { 
-				 settleData.put("bankFee", 100); 
-			}
-		}else if(firmPort == 10026) {
-			//KWON_FIRM_KSNET - 케이뱅크
+
+		String vactBankCd = mchtMngVactMap.getString("vactBankCd");
+		if(vactBankCd.equals("089")) {
 			settleData.put("bankFee", 99);
-		}*/
+		}else if(vactBankCd.equals("039")) {
+			// 경남은행일 경우 부가세 미포함
+			if(mchtTaxMap.getString("bankCd").equals("039")) {
+				settleData.put("bankFee", 100);
+			} else {
+				settleData.put("bankFee", 200);
+			}
+		}else if(vactBankCd.equals("034")) {
+			//광주은행
+			settleData.put("bankFee", 300);
+		}else if(vactBankCd.equals("007")) {
+			//수협은행
+			settleData.put("bankFee", 330);
+		}
+
 		
 		if(stlAmount != 0) {
 			settleData.put("payOutAmount", stlAmount - settleData.getLong("payOutFee") - settleData.getLong("payOutFeeVat"));	

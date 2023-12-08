@@ -152,15 +152,15 @@ public class VactAutoChargeSettle {
                     String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
                     trxMap.put("trxDay", regDate.substring(0, 8));
                     trxMap.put("trxTime", regDate.substring(8));
-                    trxMap.put("amount", data.getLong("payAmt"));
-                    trxMap.put("fee", data.getLong("payFee"));
-                    trxMap.put("feeVat", data.getLong("payVat"));
+                    trxMap.put("amount", data.getLong("payAmt") + data.getLong("rfdAmt"));
+                    trxMap.put("fee", data.getLong("payFee") + data.getLong("rfdFee"));
+                    trxMap.put("feeVat", data.getLong("payVat") + data.getLong("rfdVat"));
                     trxMap.put("bankFee", data.getLong("bankFee"));
 
                     trxMap.put("netAmount", data.getLong("stlAmount"));
                     trxMap.put("balance", balance);
                     trxMap.put("trackId", data.getString("stlId"));
-
+                    
                     trxMap.put("summary", "가상계좌 자동충전 정산금 지금");
                     trxMap.put("regId", "SYSTEM");
                     trxMap.put("regDay", regDate.substring(0, 8));

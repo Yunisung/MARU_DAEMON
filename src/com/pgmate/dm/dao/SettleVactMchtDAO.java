@@ -36,7 +36,7 @@ public class SettleVactMchtDAO extends SettleDAO implements ImplSettle {
 				+" SUM(stlSalesFee)+SUM(stlSalesFeeVat) AS salesFee, "
 				+" SUM(vanFee) AS vanFee, "
 				+" SUM(stlAmount) AS stlAmount "
-				+" FROM VW_VACT_TRX WHERE stlDay = '"+stlDay+"' AND stlId = '' AND stlType != 'D+0' AND stlType !='A+1' AND stlType != 'C+0' AND stlType NOT LIKE 'B+%' AND settleTarget = 'Y' GROUP BY mchtId) A  "
+				+" FROM VW_VACT_TRX WHERE stlDay = '"+stlDay+"' AND stlId = '' AND stlType != 'D+0' AND stlType NOT LIKE 'A+%' AND stlType != 'C+0' AND stlType NOT LIKE 'B+%' AND settleTarget = 'Y' GROUP BY mchtId) A  "
 				+" LEFT JOIN PG_MCHT_TAX B ON A.mchtId = B.mchtId AND B.taxStatus = '사용' ";
 		RecordSet rset = super.query(q);
 		super.initRecord();

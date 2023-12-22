@@ -37,7 +37,7 @@ public class WebHookDaemon {
 				try{Thread.sleep(100);}catch(Exception e){};
 				new PGWebHook("pay",sharedMap,webHookDAO,"").start();
 			}
-			
+
 			try{Thread.sleep(500);}catch(Exception e){};
 			logger.info("payList retry Count [{}]",payRetryList.size());
 			for(SharedMap<String, Object> sharedMap:payRetryList){
@@ -47,7 +47,7 @@ public class WebHookDaemon {
 				try{Thread.sleep(200);}catch(Exception e){};
 				new PGWebHook("pay",sharedMap,webHookDAO,"retry").start();
 			}
-			
+
 			try{Thread.sleep(500);}catch(Exception e){};
 			logger.info("rfdList Count [{}]",rfdList.size());
 			for(SharedMap<String, Object> sharedMap:rfdList){
@@ -57,7 +57,7 @@ public class WebHookDaemon {
 				try{Thread.sleep(100);}catch(Exception e){};
 				new PGWebHook("refund",sharedMap,webHookDAO,"").start();
 			}
-			
+
 			try{Thread.sleep(500);}catch(Exception e){};
 			logger.info("rfdList retry Count [{}]",rfdRetryList.size());
 			for(SharedMap<String, Object> sharedMap:rfdRetryList){
@@ -69,26 +69,34 @@ public class WebHookDaemon {
 			}
 		}catch(Exception e) {
 			SmsGw smsGw = new SmsGw();
-			
+
 			String msgBody = "노티수신 수신 가맹점 노티 재전송 오류. 확인요망";
 			smsGw.sendMessage("0", "1", msgBody);
-            
+
             logger.error(e.getMessage(), e);
 		}
-		
+
 	}
 
 	public String getPayLoad(SharedMap<String,Object> sharedMap, WebHookDAO webHookDAO, String trxType) {
 		String payLoad = "";
+		// 월세앱 결제건 일 때
 		if(!sharedMap.getString("rentId").equals("")) {
 			SharedMap<String, Object> ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+			// 월세앱 일반결제
 			if(ioMap != null) {
 				String jsonStr = ioMap.getString("reqJson");
 				SharedMap<String,Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>(){}.getType());
 				sharedMap.put("udf1", widget.getString("udf1"));
 
 				payLoad = setRentPayLoad(sharedMap, trxType);
+			} else {
+				// 월세앱 정기결제 && 취소
+				String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
+				sharedMap.put("rebillTrackId", rebillTrackId);
+				payLoad =  setPayLoad(sharedMap,trxType);
 			}
+		// 일반 결제
 		} else {
 			String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
 			sharedMap.put("rebillTrackId", rebillTrackId);

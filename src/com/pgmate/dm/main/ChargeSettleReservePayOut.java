@@ -432,6 +432,8 @@ public class ChargeSettleReservePayOut {
 
                     data.put("mchtName", trxCap.getString("name"));
                     data.put("stlAmount", trxCap.getString("stlAmount"));
+                    data.put("amount", trxCap.getString("amount"));
+                    logger.info("amount : {} ", trxCap.getString("amount"));
                     data.put("billingType", trxCap.getString("billingType"));
                     data.put("accntHolder", data.getString("holder"));
                     data.put("sender", data.getString("recordInfo"));
@@ -523,6 +525,7 @@ public class ChargeSettleReservePayOut {
         mchtSettleMap.put("trxId",sharedMap.getString("trxId"));
         mchtSettleMap.put("trackId",sharedMap.getString("trackId"));
         mchtSettleMap.put("mchtName", sharedMap.getString("mchtName"));
+        mchtSettleMap.put("amount", sharedMap.getString("amount"));
         mchtSettleMap.put("stlAmount", sharedMap.getString("stlAmount"));
         mchtSettleMap.put("trxType", sharedMap.getString("trxType"));
         mchtSettleMap.put("status",status);

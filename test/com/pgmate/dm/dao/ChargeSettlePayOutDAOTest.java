@@ -26,7 +26,7 @@ public class ChargeSettlePayOutDAOTest {
     }
 
     @Test
-    public void 충전정산에러건수확인() {
+    public void chargeErrorTest() {
         String trxId = "CS230426042083";
         int cnt = chargeSettlePayOutDAO.getChargeErrCount(trxId);
         logger.debug("건수: {}", cnt);
@@ -34,5 +34,11 @@ public class ChargeSettlePayOutDAOTest {
     }
 
 
+    @Test
+    public void chargeFirmTest() {
+        ChargeSettleReserveDAO dao = new ChargeSettleReserveDAO();
+        dao.updateTrxCapDtlStlComplete("T231220045250");
+
+    }
 
 }

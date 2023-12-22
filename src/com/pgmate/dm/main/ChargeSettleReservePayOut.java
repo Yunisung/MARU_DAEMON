@@ -349,12 +349,12 @@ public class ChargeSettleReservePayOut {
         if(dao.insertChargeSettle(chargeSettleMap)) {
             //정산완료처리
             if(!"집계".equals(data.getString("trxType"))) {
-                dao.updateTrxCapDtl(data.getString("trxId"));
+                dao.updateTrxCapDtlStlComplete(data.getString("trxId"));
             } else {
                 // 하위 거래건 정산완료 처리
                 List<SharedMap<String,Object>> reserveChildList = dao.getChareSettleReserveChildList(data.getString("trxId"));
                 for(SharedMap<String,Object> child : reserveChildList) {
-                    dao.updateTrxCapDtl(child.getString("trxId"));
+                    dao.updateTrxCapDtlStlComplete(child.getString("trxId"));
                 }
             }
         }
@@ -365,11 +365,10 @@ public class ChargeSettleReservePayOut {
         String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
         ChargeSettleReserveDAO dao = new ChargeSettleReserveDAO();
 
-        String trxId = dao.getChargeSettleTrxId();
-        chargeSettleMap.put("trxId"	    , trxId);
+        chargeSettleMap.put("trxId"	    , chargeSettleFirmMap.getString("trxId"));
         chargeSettleMap.put("mchtId"	, chargeSettleFirmMap.getString("mchtId"));
         chargeSettleMap.put("trxType"	, "출금");
-        chargeSettleMap.put("trxUnit"	, "신용카드정산");
+        chargeSettleMap.put("trxUnit"	, "펌뱅킹");
         chargeSettleMap.put("trxDay"	, regDate.substring(0, 8));
         chargeSettleMap.put("trxTime"	, regDate.substring(8));
         chargeSettleMap.put("amount"	, Math.abs(chargeSettleFirmMap.getLong("amount")));

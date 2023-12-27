@@ -128,9 +128,9 @@ public class GalaxiaDiffUpload {
 		} finally {
 			sftpUtil.disconnection();
 			try {
-				bw.close();
-				osw.close();
-				fos.close();
+				if(bw != null) bw.close();
+				if(osw != null) osw.close();
+				if(fos != null) fos.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -283,7 +283,7 @@ public class GalaxiaDiffUpload {
 				dataDiffSetting(bw, payList, rfdList, partialList);
 			}
 			totalDiffSetting(bw);
-			bw.close();
+			//bw.close();
 			logger.info("GALAXIA DIFFSETTLE DATA SETTING END");
 
 			//GALAXIA 파일 업로드
@@ -309,9 +309,9 @@ public class GalaxiaDiffUpload {
 		} finally {
 			sftpUtil.disconnection();
 			try {
-				bw.close();
-				osw.close();
-				fos.close();
+				if(bw != null) bw.close();
+				if(osw != null) osw.close();
+				if(fos != null) fos.close();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

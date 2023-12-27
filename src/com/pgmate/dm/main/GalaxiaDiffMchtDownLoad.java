@@ -102,9 +102,9 @@ public class GalaxiaDiffMchtDownLoad {
         } finally {
             sftpUtil.disconnection();
             try {
-                br.close();
-                isr.close();
-                is.close();
+                if(br != null) br.close();
+                if(isr != null) isr.close();
+                if(is != null) is.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }

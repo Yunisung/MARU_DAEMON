@@ -33,12 +33,4 @@ public class ChargeSettlePayOutDAOTest {
         Assert.assertTrue(cnt == 1);
     }
 
-
-    @Test
-    public void chargeFirmTest() {
-        ChargeSettleReserveDAO dao = new ChargeSettleReserveDAO();
-        dao.updateTrxCapDtlStlComplete("T231220045250");
-
-    }
-
 }

@@ -115,8 +115,9 @@ public class ChargeSettleReservePayOut {
                         if("0".equals(data.getString("retry"))) {
                             //첫시도
                             firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
-                            //firmBean.resultCd = "0000";
-                            //firmBean.resultMsg = "정상";
+//                            firmBean.resultCd = "0000";
+//                            firmBean.resultMsg = "정상";
+//                            firmBean.idx = 9999;
 
                             idx = String.valueOf(firmBean.idx);
 
@@ -349,12 +350,12 @@ public class ChargeSettleReservePayOut {
         if(dao.insertChargeSettle(chargeSettleMap)) {
             //정산완료처리
             if(!"집계".equals(data.getString("trxType"))) {
-                dao.updateTrxCapDtlStlComplete(data.getString("trxId"));
+                dao.updateTrxCapDtlStlComplete(data.getString("refTrxId"));
             } else {
                 // 하위 거래건 정산완료 처리
                 List<SharedMap<String,Object>> reserveChildList = dao.getChareSettleReserveChildList(data.getString("trxId"));
                 for(SharedMap<String,Object> child : reserveChildList) {
-                    dao.updateTrxCapDtlStlComplete(child.getString("trxId"));
+                    dao.updateTrxCapDtlStlComplete(child.getString("refTrxId"));
                 }
             }
         }

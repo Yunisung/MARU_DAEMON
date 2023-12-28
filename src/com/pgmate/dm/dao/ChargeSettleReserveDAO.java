@@ -37,10 +37,11 @@ public class ChargeSettleReserveDAO extends DAO {
     public List<SharedMap<String, Object>> getChareSettleReserveList() {
         String q = "SELECT *, FN_AES_DEC(account) as decAccount"
                 +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE "
-                +"  WHERE pubDay = DATE_FORMAT(NOW(), '%Y%m%d') and "
-                +"  pubTime < DATE_FORMAT(NOW(), '%H%i%s') and "
-                +"  transferType = '예약' and "
-                +"  status != '완료' and status != '전송' and retry < 3 and rootTrxId = ''"
+                +"  WHERE 1=1 "
+                +"  AND pubDay = DATE_FORMAT(NOW(), '%Y%m%d') "
+                +"  AND pubTime < DATE_FORMAT(NOW(), '%H%i%s') "
+                +"  AND transferType = '예약' "
+                +"  AND status != '완료' and status != '전송' and retry < 3 and rootTrxId = ''"
                 +"  order by regDate";
 
         RecordSet rset = super.query(q);

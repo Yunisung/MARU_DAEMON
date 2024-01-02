@@ -283,7 +283,7 @@ public class GalaxiaDiffUpload {
 				dataDiffSetting(bw, payList, rfdList, partialList);
 			}
 			totalDiffSetting(bw);
-			//bw.close();
+			bw.close();
 			logger.info("GALAXIA DIFFSETTLE DATA SETTING END");
 
 			//GALAXIA 파일 업로드

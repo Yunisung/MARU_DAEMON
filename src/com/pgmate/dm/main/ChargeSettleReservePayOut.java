@@ -96,7 +96,7 @@ public class ChargeSettleReservePayOut {
 
                     // 월세앱 정보
                     SharedMap<String, Object> rentMap = dao.getMchtRent(data.getString("mchtId"));
-                    SharedMap<String, Object> trxCap = dao.getTrxCapById(data.getString("trxId"));
+                    SharedMap<String, Object> trxCap = dao.getTrxCapById(data.getString("refTrxId"));
                     boolean isRentService = !CommonUtil.isNullOrSpace(rentMap.getString("mchtSettleNotiAddr"));
                     String hookAddr = isRentService ? rentMap.getString("mchtSettleNotiAddr") : chargeMngMap.getString("hookAddr");
 
@@ -405,7 +405,7 @@ public class ChargeSettleReservePayOut {
                     ChargeSettleReserveDAO dao = new ChargeSettleReserveDAO();
                     List<SharedMap<String,Object>> reserveChildList = dao.getChareSettleReserveChildList(data.getString("trxId"));
                     for(SharedMap<String,Object> child : reserveChildList) {
-                        SharedMap<String, Object> trxCapChild = dao.getTrxCapById(child.getString("trxId"));
+                        SharedMap<String, Object> trxCapChild = dao.getTrxCapById(child.getString("refTrxId"));
 
                         child.put("mchtId", trxCapChild.getString("mchtId"));
                         child.put("mchtName", trxCapChild.getString("name"));

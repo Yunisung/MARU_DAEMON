@@ -109,6 +109,7 @@ public class VactHook extends Thread {
 				conn.setDoOutput(true);
 				conn.setRequestMethod("POST");
 				conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
+				conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36");
 				conn.setConnectTimeout(30000);
 				conn.setReadTimeout(30000);
 				OutputStream os = conn.getOutputStream();

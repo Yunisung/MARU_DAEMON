@@ -98,6 +98,10 @@ public class WebHookDaemon {
 			}
 		// 일반 결제
 		} else {
+			// 1. PG_TRX_REQ 에서 가져올 것 - (3DTR: IO_3D), (ONTR, REBILL: IO)
+			// 2. ioMap Null 체크후 jsonStr 가져오기 -> udf1, udf2 가져오기
+			// 3. setPayLoad에서 udf1, udf2 추가
+
 			String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
 			sharedMap.put("rebillTrackId", rebillTrackId);
 			payLoad =  setPayLoad(sharedMap,trxType);

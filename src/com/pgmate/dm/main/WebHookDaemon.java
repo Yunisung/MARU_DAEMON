@@ -80,9 +80,10 @@ public class WebHookDaemon {
 
 	public String getPayLoad(SharedMap<String,Object> sharedMap, WebHookDAO webHookDAO, String trxType) {
 		String payLoad = "";
+		SharedMap<String, Object> ioMap;
 		// 월세앱 결제건 일 때
 		if(!sharedMap.getString("rentId").equals("")) {
-			SharedMap<String, Object> ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+			ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
 			// 월세앱 일반결제
 			if(ioMap != null) {
 				String jsonStr = ioMap.getString("reqJson");
@@ -98,10 +99,21 @@ public class WebHookDaemon {
 			}
 		// 일반 결제
 		} else {
-			// 1. PG_TRX_REQ 에서 가져올 것 - (3DTR: IO_3D), (ONTR, REBILL: IO)
+			// 1. PG_TRX_REQ 에서 가져올 것 - (3DTR: IO_3D), (ELSE: IO)
+			String trx3DType = webHookDAO.getTrxType(sharedMap.getString("trxId"));
+			if(trx3DType.equals("3DTR")) {
+				ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+			} else {
+				ioMap = webHookDAO.getTrxIo(sharedMap.getString("trxId"));
+			}
 			// 2. ioMap Null 체크후 jsonStr 가져오기 -> udf1, udf2 가져오기
+			if(ioMap != null) {
+				String jsonStr = ioMap.getString("reqJson");
+				SharedMap<String,Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>(){}.getType());
+				sharedMap.put("udf1", widget.getString("udf1"));
+				sharedMap.put("udf2", widget.getString("udf2"));
+			}
 			// 3. setPayLoad에서 udf1, udf2 추가
-
 			String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
 			sharedMap.put("rebillTrackId", rebillTrackId);
 			payLoad =  setPayLoad(sharedMap,trxType);
@@ -130,6 +142,8 @@ public class WebHookDaemon {
 		payLoadMap.put("last4",sharedMap.getString("last4"));
 		payLoadMap.put("installment",CommonUtil.nToB(sharedMap.getString("installment")));
 		payLoadMap.put("amount",sharedMap.getString("amount"));
+		payLoadMap.put("udf1",sharedMap.getString("udf1"));
+		payLoadMap.put("udf2",sharedMap.getString("udf2"));
 		payLoadMap.put("rebillTrackId", sharedMap.getString("rebillTrackId"));
 
 		String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");

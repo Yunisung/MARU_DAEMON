@@ -88,7 +88,9 @@ public class WebHookDaemon {
 			if(ioMap != null) {
 				String jsonStr = ioMap.getString("reqJson");
 				SharedMap<String,Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>(){}.getType());
-				sharedMap.put("udf1", widget.getString("udf1"));
+				if(widget != null) {
+					sharedMap.put("udf1", widget.getString("udf1"));
+				}
 
 				payLoad = setRentPayLoad(sharedMap, trxType);
 			} else {
@@ -101,14 +103,16 @@ public class WebHookDaemon {
 		} else {
 			// 1. PG_TRX_REQ 에서 가져올 것 - (3DTR: IO_3D), (ELSE: IO)
 			String trx3DType = webHookDAO.getTrxType(sharedMap.getString("trxId"));
+			String jsonStr = "";
 			if(trx3DType.equals("3DTR")) {
 				ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
+				jsonStr = ioMap.getString("reqJson");
 			} else {
 				ioMap = webHookDAO.getTrxIo(sharedMap.getString("trxId"));
+				jsonStr = ioMap.getString("regData");
 			}
 			// 2. ioMap Null 체크후 jsonStr 가져오기 -> udf1, udf2 가져오기
 			if(ioMap != null) {
-				String jsonStr = ioMap.getString("reqJson");
 				SharedMap<String,Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>(){}.getType());
 				if(widget != null) {
 					sharedMap.put("udf1", widget.getString("udf1"));

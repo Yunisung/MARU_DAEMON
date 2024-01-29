@@ -110,8 +110,10 @@ public class WebHookDaemon {
 			if(ioMap != null) {
 				String jsonStr = ioMap.getString("reqJson");
 				SharedMap<String,Object> widget = new GsonBuilder().create().fromJson(jsonStr, new TypeToken<SharedMap<String, Object>>(){}.getType());
-				sharedMap.put("udf1", widget.getString("udf1"));
-				sharedMap.put("udf2", widget.getString("udf2"));
+				if(widget != null) {
+					sharedMap.put("udf1", widget.getString("udf1"));
+					sharedMap.put("udf2", widget.getString("udf2"));
+				}
 			}
 			// 3. setPayLoad에서 udf1, udf2 추가
 			String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));

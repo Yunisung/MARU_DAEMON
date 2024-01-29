@@ -249,6 +249,21 @@ public class WebHookDAO extends DAO {
 		}
 	}
 
+	public SharedMap<String,Object> getTrxIo(String trxId) {
+		super.setTable("PG_TRX_IO");
+		super.setColumns("*");
+		super.addWhere("trxId", trxId, eq);
+		super.setLimit(1);
+
+		RecordSet rset = super.search();
+		super.initRecord();
+		if(rset.size() == 0) {
+			return null;
+		} else {
+			return rset.getRow(0);
+		}
+	}
+
 
 	public void updateTrxNTSPG(SharedMap<String, Object> ntsMap) {
 		String query = "UPDATE PG_TRX_NTS_PG SET retry = retry + 1, status='"+ntsMap.getString("status")+"' WHERE  trxId = '"+ntsMap.getString("trxId")+"' AND hookIdx = "+ntsMap.getLong("hookIdx");
@@ -264,5 +279,14 @@ public class WebHookDAO extends DAO {
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRowFirst().getString("rebillTrackId");
+	}
+
+	public String getTrxType(String trxId) {
+		super.setTable("PG_TRX_REQ");
+		super.setColumns("trxType");
+		super.addWhere("trxId", trxId);
+		RecordSet rset = super.search();
+		super.initRecord();
+		return rset.getRowFirst().getString("trxType");
 	}
 }

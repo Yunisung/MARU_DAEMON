@@ -26,7 +26,6 @@ public class CloseRentMcht {
         if(mchtList.size() > 0) {
             // 가맹점 종료 처리
             dao.closeMcht(mchtList);
-            dao.initRecord();
         }
 
         logger.info("===== CLOSE RENT MCHT END =====");

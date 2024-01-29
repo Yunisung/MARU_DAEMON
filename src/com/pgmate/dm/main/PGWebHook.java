@@ -75,6 +75,7 @@ public class PGWebHook extends Thread {
 			logger.info("trxId       : {}",ntsMap.getString("trxId"));
 			url = new URL(ntsMap.getString("webHookUrl"));
 			conn = (HttpURLConnection)url.openConnection();
+			conn.setRequestProperty("User-Agent", "Mozilla/4.0");
 			conn.setDoInput(true);
 			conn.setDoOutput(true);
 			conn.setRequestMethod("POST");
@@ -83,6 +84,7 @@ public class PGWebHook extends Thread {
 			conn.setReadTimeout(10000);
 			OutputStream os = conn.getOutputStream();
 			String payload = ntsMap.getString("payLoad");
+			logger.info("payLoad :: {}", payload);
 			os.write(payload.getBytes("UTF-8"));
 			os.flush();
 			os.close();

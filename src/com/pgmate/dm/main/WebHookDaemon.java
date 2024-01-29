@@ -106,10 +106,10 @@ public class WebHookDaemon {
 			String jsonStr = "";
 			if(trx3DType.equals("3DTR")) {
 				ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
-				jsonStr = ioMap.getString("reqJson");
+				if(ioMap != null) jsonStr = ioMap.getString("reqJson");
 			} else {
 				ioMap = webHookDAO.getTrxIo(sharedMap.getString("trxId"));
-				jsonStr = ioMap.getString("regData");
+				if(ioMap != null) jsonStr = ioMap.getString("regData");
 			}
 			// 2. ioMap Null 체크후 jsonStr 가져오기 -> udf1, udf2 가져오기
 			if(ioMap != null) {

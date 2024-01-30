@@ -264,7 +264,7 @@ public class ChargeSettleReservePayOut {
                         msgBody = "PG_CHARGE_SETTLE_FIRM_RESERVE UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
 
                         logger.info(msgBody);
-                        smsGw.sendMessage("0", "4", msgBody);
+//                        smsGw.sendMessage("0", "4", msgBody);
                     }
 
                     // 집계시 하위 거래건 결과 update
@@ -317,7 +317,7 @@ public class ChargeSettleReservePayOut {
                                     msgBody = "충전정산 예약 출금 " + errCnt + "회 실패. 확인요망 [" + data.getString("trxId") + "][" + firmBean.resultMsg + "]";
 
                                     logger.info(msgBody);
-                                    smsGw.sendMessage("0", "4", msgBody);
+//                                    smsGw.sendMessage("0", "4", msgBody);
                                 }
 
                             }
@@ -332,7 +332,7 @@ public class ChargeSettleReservePayOut {
             logger.error(e.getMessage(), e);
 
             msgBody = "충전정산 예약출금 오류발생. 확인요망 [" + e.getMessage() + "]";
-            smsGw.sendMessage("0", "4", msgBody);
+//            smsGw.sendMessage("0", "4", msgBody);
         }
 
     }

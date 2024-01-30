@@ -119,7 +119,7 @@ public class ChargeSettleReservePayOut {
                                 compNm = data.getString("recordInfo");
                             }
                             //첫시도
-                            firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
+                            firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("netAmount"), data.getString("trxId"), compNm, "CS");
 //                            firmBean.resultCd = "0000";
 //                            firmBean.resultMsg = "정상";
 //                            firmBean.idx = 9999;

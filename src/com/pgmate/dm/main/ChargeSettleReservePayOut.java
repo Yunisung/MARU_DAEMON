@@ -93,7 +93,9 @@ public class ChargeSettleReservePayOut {
                     dao.updateStatus(data.getString("trxId"));
 
                     //펌뱅킹 광주은행으로 고정
-                    String vactBankCd = "034";
+                    //경남은행으로 변경
+//                    String vactBankCd = "034";
+                    String vactBankCd = "039";
                     SharedMap<String, Object> chargeMngMap = dao.getMchtChargeMng(data.getString("mchtId"));
 
                     // 월세앱 정보

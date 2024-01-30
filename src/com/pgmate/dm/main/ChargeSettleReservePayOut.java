@@ -20,9 +20,11 @@ public class ChargeSettleReservePayOut {
     private SmsGw smsGw = null;
     private String msgBody = "";
 
-    private String firmServer = "10.100.200.10";
+//    private String firmServer = "10.100.200.10";
+    private String firmServer = "pgwas3";
     private String compNm = "";
-    private int frimPort = 10006;
+//    private int firmPort = 10006;
+    private int firmPort = 10026;
     private int firmTimeOut = 70000;
     private int firmStartTime = 3000; //출금 시작 시간
     private int firmEndTime = 233000; //출금 중지 시간
@@ -114,7 +116,7 @@ public class ChargeSettleReservePayOut {
                     if(balance >= checkAmount) {
                         if("0".equals(data.getString("retry"))) {
                             //첫시도
-                            firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
+                            firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
 //                            firmBean.resultCd = "0000";
 //                            firmBean.resultMsg = "정상";
 //                            firmBean.idx = 9999;
@@ -162,7 +164,7 @@ public class ChargeSettleReservePayOut {
 
                             logger.info("충전정산 예약 결과확인 출금 : [{}][{}][{}]", data.getString("trxId"), data.getString("retry"), orgSeq);
 
-                            firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
+                            firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
 
                             if(vactBankCd.equals("034")) {
                                 //광주은행일때
@@ -188,7 +190,7 @@ public class ChargeSettleReservePayOut {
                             } else {
                                 if( firmBean.resultCd.equals("KS10")) {
                                     logger.info("충전정산 예약 출금 재시도 : [{}]", data.getString("trxId"));
-                                    firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).reTransfer(vactBankCd, data.getString("trxId"));
+                                    firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).reTransfer(vactBankCd, data.getString("trxId"));
                                     logger.info("결과메세지 체크 : {}", firmBean.resultMsg);
                                     //PYS : 결과메세지 제대로 나오면 아래 로직은 삭제하는걸로.
                                     if(firmBean.resultCd.startsWith("KS")) {
@@ -485,7 +487,7 @@ public class ChargeSettleReservePayOut {
             String strEndTime = props.getProperty("firm_endtime");
 
             if(strFirmPort != null && !"".equals(strFirmPort)) {
-                frimPort = Integer.parseInt(strFirmPort);
+                firmPort = Integer.parseInt(strFirmPort);
             }
 
             if(strFirmTimeOut != null && !"".equals(strFirmTimeOut)) {

@@ -115,6 +115,9 @@ public class ChargeSettleReservePayOut {
 
                     if(balance >= checkAmount) {
                         if("0".equals(data.getString("retry"))) {
+                            if(data.getString("recordInfo") != null && !"".equals(data.getString("recordInfo"))) {
+                                compNm = data.getString("recordInfo");
+                            }
                             //첫시도
                             firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
 //                            firmBean.resultCd = "0000";

@@ -267,7 +267,12 @@ public class ChargeSettleReservePayOut {
                     String day = CommonUtil.getCurrentDate("yyyyMMdd");
                     String time = CommonUtil.getCurrentDate("HHmmss");
 
-                    if(!dao.updatePayOutRes(data.getString("trxId"), (balance - netAmount), firmBean.resultCd, firmBean.resultMsg, status, day, time)) {
+                    long resBalance = balance;
+                    if(!errFlag) {
+                        resBalance = (balance - netAmount);
+                    }
+
+                    if(!dao.updatePayOutRes(data.getString("trxId"), resBalance, firmBean.resultCd, firmBean.resultMsg, status, day, time)) {
                         msgBody = "PG_CHARGE_SETTLE_FIRM_RESERVE UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
 
                         logger.info(msgBody);
@@ -276,7 +281,7 @@ public class ChargeSettleReservePayOut {
 
                     // 집계시 하위 거래건 결과 update
                     if("집계".equals(data.getString("trxType"))) {
-                        if(!dao.updatePayOutResChild(data.getString("trxId"), (balance - netAmount), firmBean.resultCd, firmBean.resultMsg, status, day, time)) {
+                        if(!dao.updatePayOutResChild(data.getString("trxId"), resBalance, firmBean.resultCd, firmBean.resultMsg, status, day, time)) {
                             msgBody = "하위 PG_CHARGE_SETTLE_FIRM_RESERVE UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
 
                             logger.info(msgBody);

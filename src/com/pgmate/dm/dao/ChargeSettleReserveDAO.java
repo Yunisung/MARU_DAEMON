@@ -42,6 +42,8 @@ public class ChargeSettleReserveDAO extends DAO {
                 +"  AND pubTime < DATE_FORMAT(NOW(), '%H%i%s') "
                 +"  AND transferType = '예약' "
                 +"  AND status != '완료' and status != '전송' and retry < 3 and rootTrxId = ''"
+//                + " AND trxId IN ('CS231227045999','CS231227045768','CS231227045996','CS231227045994','CS231227045993','CS231227045990','CS231227045989','CS231227045987','CS231227045988','CS231227045986')"
+//                + " AND trxId IN ('CS231227045999')"
                 +"  order by regDate";
 
         RecordSet rset = super.query(q);

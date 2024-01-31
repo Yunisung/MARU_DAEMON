@@ -300,7 +300,8 @@ public class ChargeSettleReservePayOut {
                                 //230622 타행이체불능 에러 처리 안되어있을 때 로직 수행
                                 if(dao.getChargeErrCount(data.getString("trxId")) == 0) {
                                     //펌에러 테이블에 저장
-                                    SharedMap<String, Object> errData = dao.getChargeSettle(data.getString("trxId"));
+                                    SharedMap<String, Object> errData = dao.getChargeSettleFirm(data.getString("trxId"));
+                                    errData.put("trxUnit", "펌뱅킹");
                                     errData.put("refId", data.getString("refId"));
                                     errData.put("resultCd", data.getString("resultCd"));
                                     errData.put("resultMsg", data.getString("resultMsg"));

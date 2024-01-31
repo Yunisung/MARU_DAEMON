@@ -180,6 +180,15 @@ public class ChargeSettleReserveDAO extends DAO {
         return rset.getRowFirst();
     }
 
+    public SharedMap<String, Object> getChargeSettleFirm(String trxId) {
+        super.setTable("PG_CHARGE_SETTLE_FIRM_RESERVE");
+        super.setColumns("*");
+        super.addWhere("trxId",trxId,eq);
+        RecordSet rset = super.search();
+        super.initRecord();
+        return rset.getRowFirst();
+    }
+
     public boolean insertTrxErr(SharedMap<String, Object> trxMap) {
         super.setTable("PG_CHARGE_SETTLE_ERR");
         super.setRecord("trxId", trxMap.getString("trxId"));

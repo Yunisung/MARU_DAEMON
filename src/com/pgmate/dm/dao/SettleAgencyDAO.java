@@ -34,7 +34,7 @@ public class SettleAgencyDAO extends SettleDAO implements ImplSettle {
 				+"  ,SUM(IF(capType ='매입', 0,stlFeeVat)) rfdVat "
 				+"  ,SUM(stlAgencyFee) stlFee "								// 정산 금액 (수수료를 정산)
 				+"  ,SUM(stlDiffAgencyFee) stlDiffFee "						// 영중소 차액정산 수수료 정산 금액
-				+"  FROM VW_TRX_CAP_LIST where stlAgencyDay between '"+month+"01' and '"+month+"31' and serviceType != '월세앱' and stlAgencyId ='' group by agencyId, stlAgencyDay "
+				+"  FROM VW_TRX_CAP_LIST where stlAgencyDay between '"+month+"01' and '"+month+"31' and IFNULL(serviceType, '') != '월세앱' and stlAgencyId ='' group by agencyId, stlAgencyDay "
 				+"  ) A , PG_MAM_AGENCY_MNG  B WHERE A.agencyId = B.agencyId  ";
 		RecordSet rset = super.query(q);
 		super.initRecord();

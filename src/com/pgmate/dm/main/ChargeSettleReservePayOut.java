@@ -261,6 +261,7 @@ public class ChargeSettleReservePayOut {
                     } else {
                         msgBody = "충전정산 잔액부족. trxId : [" + data.getString("trxId") + "], mchtId : [" + data.getString("mchtId") + "]";
                         logger.info(msgBody);
+                        firmBean.resultMsg = "충전정산 잔액부족";
                         errFlag = true;
                     }
 

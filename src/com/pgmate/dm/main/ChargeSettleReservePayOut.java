@@ -289,6 +289,9 @@ public class ChargeSettleReservePayOut {
                         }
                     }
 
+                    // history 추가
+                    dao.insertFirmReserveHistory(data.getString("trxId"));
+
                     if(errFlag) {
                         String sendCnt = dao.getRetry(data.getString("trxId"));
 
@@ -324,16 +327,19 @@ public class ChargeSettleReservePayOut {
                                         //실패건 PG_CHARGE_SETTLE 테이블에서 삭제
                                         dao.deleteChargeSettle(data.getString("trxId"));
                                     }*/
-
-                                    logger.debug("hookAddr [{}]", chargeMngMap.getString("hookAddr"));
-                                    runChargeSettleHook(trxCap, data, isRentService, hookAddr, firmBean, "출금실패", "출금실패");
-
-                                    msgBody = "충전정산 예약 출금 " + errCnt + "회 실패. 확인요망 [" + data.getString("trxId") + "][" + firmBean.resultMsg + "]";
-
-                                    logger.info(msgBody);
-//                                    smsGw.sendMessage("0", "4", msgBody);
+                                } else {
+                                    //펌에러 테이블에 업데이트
+                                    SharedMap<String, Object> errData = dao.getChargeSettleFirm(data.getString("trxId"));
+                                    dao.updateTrxErr(errData);
                                 }
 
+                                logger.debug("hookAddr [{}]", chargeMngMap.getString("hookAddr"));
+                                runChargeSettleHook(trxCap, data, isRentService, hookAddr, firmBean, "출금실패", "출금실패");
+
+                                msgBody = "충전정산 예약 출금 " + errCnt + "회 실패. 확인요망 [" + data.getString("trxId") + "][" + firmBean.resultMsg + "]";
+
+                                logger.info(msgBody);
+//                                smsGw.sendMessage("0", "4", msgBody);
                             }
                         }
                     }

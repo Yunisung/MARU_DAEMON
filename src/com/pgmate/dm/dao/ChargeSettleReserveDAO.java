@@ -222,6 +222,19 @@ public class ChargeSettleReserveDAO extends DAO {
         return inserted;
     }
 
+    public boolean updateTrxErr(SharedMap<String, Object> trxMap) {
+        super.setTable("PG_CHARGE_SETTLE_ERR");
+
+        super.setRecord("resultCd", trxMap.getString("resultCd"));
+        super.setRecord("resultMsg", trxMap.getString("resultMsg"));
+        super.setRecord("regDay", 	CommonUtil.getCurrentDate("yyyyMMdd"));
+
+        boolean updated =  super.update();
+        logger.info("set trx : {}", updated);
+        super.initRecord();
+        return updated;
+    }
+
     public boolean updateChargeSettleBalance(String trxId, String mchtId, long netAmount){
         String q = "UPDATE PG_CHARGE_SETTLE "
                 + "    SET balance = balance + " + netAmount +" "
@@ -371,7 +384,51 @@ public class ChargeSettleReserveDAO extends DAO {
 
     }
 
+
     public synchronized String getChargeSettleTrxId() {
         return "CS" + getFunction("FN_NEXTVAL2", "TRN");
+    }
+
+    public boolean insertFirmReserveHistory(String trxId) {
+        SharedMap<String,Object> map = getChargeSettleFirm(trxId);
+
+        super.setTable("HT_CHARGE_SETTLE_FIRM_RESERVE");
+
+        super.setRecord("trxId",        map.getString("trxId"));
+        super.setRecord("transferType", map.getString("transferType"));
+        super.setRecord("trxType",      map.getString("trxType"));
+        super.setRecord("mchtId",       map.getString("mchtId"));
+        super.setRecord("trackId",      map.getString("trackId"));
+        super.setRecord("pubDay",       map.getString("pubDay"));
+        super.setRecord("pubTime",      map.getString("pubTime"));
+        super.setRecord("status",       map.getString("status"));
+        super.setRecord("retry",        map.getInt("retry"));
+        super.setRecord("trxDay",       map.getString("trxDay"));
+        super.setRecord("trxTime",      map.getString("trxTime"));
+        super.setRecord("amount",       map.getLong("amount"));
+        super.setRecord("fee",          map.getLong("fee"));
+        super.setRecord("feeVat",       map.getLong("feeVat"));
+        super.setRecord("bankFee",      map.getLong("bankFee"));
+        super.setRecord("netAmount",    map.getLong("netAmount"));
+        super.setRecord("balance",      map.getLong("balance"));
+        super.setRecord("resultCd",     map.getString("resultCd"));
+        super.setRecord("resultMsg",    map.getString("resultMsg"));
+        super.setRecord("refId",        map.getString("refId"));
+        super.setRecord("refTrxId",     map.getString("refTrxId"));
+        super.setRecord("rootTrxId",    map.getString("rootTrxId"));
+        super.setRecord("account",      map.getString("account"));
+        super.setRecord("bankCd",       map.getString("bankCd"));
+        super.setRecord("bankName",     map.getString("bankName"));
+        super.setRecord("holder",       map.getString("holder"));
+        super.setRecord("recordInfo",   map.getString("recordInfo"));
+        super.setRecord("regId", 		"SYSTEM");											// 등록자아이디
+        super.setRecord("regDay", 			CommonUtil.getCurrentDate("yyyyMMdd"));			// 등록일
+        super.setRecord("summary",   "예약이체 FIRM 실행");
+
+        boolean insert = super.insert();
+        logger.info("set HT_CHARGE_SETTLE_FIRM_RESERVE insert : {}", insert);
+
+        super.initRecord();
+        return insert;
     }
 }

@@ -289,9 +289,6 @@ public class ChargeSettleReservePayOut {
                         }
                     }
 
-                    // history 추가
-                    dao.insertFirmReserveHistory(data.getString("trxId"));
-
                     if(errFlag) {
                         String sendCnt = dao.getRetry(data.getString("trxId"));
 
@@ -340,6 +337,9 @@ public class ChargeSettleReservePayOut {
 
                                 logger.info(msgBody);
 //                                smsGw.sendMessage("0", "4", msgBody);
+
+                                // history 추가 (실패시)
+                                dao.insertFirmReserveHistory(data.getString("trxId"));
                             }
                         }
                     }
@@ -379,6 +379,9 @@ public class ChargeSettleReservePayOut {
                 }
             }
         }
+
+        // history 추가 (성공시)
+        dao.insertFirmReserveHistory(data.getString("trxId"));
     }
 
     private SharedMap<String,Object> createRefundChargeSettleMap(SharedMap<String,Object> chargeSettleFirmMap) {

@@ -39,7 +39,7 @@ public class ChargeSettleReserveDAO extends DAO {
                 +"	FROM PG_CHARGE_SETTLE_FIRM_RESERVE "
                 +"  WHERE 1=1 "
                 +"  AND pubDay = DATE_FORMAT(NOW(), '%Y%m%d') "
-                +"  AND pubTime < DATE_FORMAT(NOW(), '%H%i%s') "
+                +"  AND pubTime <= DATE_FORMAT(NOW(), '%H%i%s') "
                 +"  AND transferType = '예약' "
                 +"  AND status != '완료' and status != '전송' and retry < 3 and rootTrxId = ''"
                 +"  order by regDate";

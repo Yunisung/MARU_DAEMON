@@ -92,12 +92,12 @@ public class WebHookDaemon {
 					sharedMap.put("udf1", widget.getString("udf1"));
 				}
 
-				payLoad = setRentPayLoad(sharedMap, trxType);
+				payLoad = createPayLoad(sharedMap, trxType, true);
 			} else {
 				// 월세앱 정기결제 && 취소
 				String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
 				sharedMap.put("rebillTrackId", rebillTrackId);
-				payLoad =  setPayLoad(sharedMap,trxType);
+				payLoad =  createPayLoad(sharedMap, trxType, false);
 			}
 		// 일반 결제
 		} else {
@@ -122,13 +122,13 @@ public class WebHookDaemon {
 			// 3. setPayLoad에서 udf1, udf2 추가
 			String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
 			sharedMap.put("rebillTrackId", rebillTrackId);
-			payLoad =  setPayLoad(sharedMap,trxType);
+			payLoad =  createPayLoad(sharedMap, trxType, false);
 		}
 
 		return payLoad;
 	}
 
-	public String setPayLoad(SharedMap<String, Object> sharedMap, String trxType){
+	public String createPayLoad(SharedMap<String, Object> sharedMap, String trxType, boolean isRentApp){
 		SharedMap<String, String> payLoadMap = new SharedMap<String, String>();
 		
 		payLoadMap.put("mchtId",sharedMap.getString("mchtId"));
@@ -149,39 +149,15 @@ public class WebHookDaemon {
 		payLoadMap.put("installment",CommonUtil.nToB(sharedMap.getString("installment")));
 		payLoadMap.put("amount",sharedMap.getString("amount"));
 		payLoadMap.put("udf1",sharedMap.getString("udf1"));
-		payLoadMap.put("udf2",sharedMap.getString("udf2"));
-		payLoadMap.put("rebillTrackId", sharedMap.getString("rebillTrackId"));
+		if(!isRentApp) {
+			payLoadMap.put("udf2", sharedMap.getString("udf2"));
+			payLoadMap.put("rebillTrackId", sharedMap.getString("rebillTrackId"));
+		}
 
 		String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
 		return payLoad;
 	}
 
-	public String setRentPayLoad(SharedMap<String, Object> sharedMap, String trxType){
-		SharedMap<String, String> payLoadMap = new SharedMap<String, String>();
-
-		payLoadMap.put("mchtId",sharedMap.getString("mchtId"));
-		payLoadMap.put("trxId",sharedMap.getString("trxId"));
-//		payLoadMap.put("van",sharedMap.getString("van"));
-		payLoadMap.put("tmnId",sharedMap.getString("tmnId"));
-		payLoadMap.put("trxDate",sharedMap.getString("trxDate"));
-		payLoadMap.put("trxType",trxType);
-		payLoadMap.put("rootTrxId", CommonUtil.nToB(sharedMap.getString("rootTrxId")));
-		payLoadMap.put("trackId",sharedMap.getString("trackId"));
-//		payLoadMap.put("vanTrxId",sharedMap.getString("vanTrxId"));
-		payLoadMap.put("authCd",sharedMap.getString("authCd"));
-		payLoadMap.put("cardType",CommonUtil.nToB(sharedMap.getString("cardType")));
-		payLoadMap.put("issuer",sharedMap.getString("issuer"));
-		payLoadMap.put("acquirer",sharedMap.getString("acquirer"));
-		payLoadMap.put("bin",sharedMap.getString("bin"));
-		payLoadMap.put("last4",sharedMap.getString("last4"));
-		payLoadMap.put("installment",CommonUtil.nToB(sharedMap.getString("installment")));
-		payLoadMap.put("amount",sharedMap.getString("amount"));
-		payLoadMap.put("udf1",sharedMap.getString("udf1"));
-
-		String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");
-		return payLoad;
-	}
-	
 	public static void main(String[] args) {
 		WebHookDaemon d = new WebHookDaemon();
 	}

@@ -302,7 +302,8 @@ public class ChargeSettleReservePayOut {
                                 if(dao.getChargeErrCount(data.getString("trxId")) == 0) {
                                     //펌에러 테이블에 저장
                                     SharedMap<String, Object> errData = dao.getChargeSettleFirm(data.getString("trxId"));
-                                    errData.put("trxUnit", "펌뱅킹");
+                                    errData.put("trxUnit", "월세앱정산");
+                                    errData.put("trxType", "출금");
                                     errData.put("refId", data.getString("refId"));
                                     errData.put("resultCd", data.getString("resultCd"));
                                     errData.put("resultMsg", data.getString("resultMsg"));
@@ -392,7 +393,7 @@ public class ChargeSettleReservePayOut {
         chargeSettleMap.put("trxId"	    , chargeSettleFirmMap.getString("trxId"));
         chargeSettleMap.put("mchtId"	, chargeSettleFirmMap.getString("mchtId"));
         chargeSettleMap.put("trxType"	, "출금");
-        chargeSettleMap.put("trxUnit"	, "펌뱅킹");
+        chargeSettleMap.put("trxUnit"	, "월세앱정산");
         chargeSettleMap.put("trxDay"	, regDate.substring(0, 8));
         chargeSettleMap.put("trxTime"	, regDate.substring(8));
         chargeSettleMap.put("amount"	, Math.abs(chargeSettleFirmMap.getLong("amount")));

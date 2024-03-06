@@ -162,7 +162,7 @@ public class ChargeSettlePayOut {
 
 						//230405_PYS : 거래없음일때 출금 재시도 로직 추가
 						//230913_PYS : 광주은행 예외추가
-						if(vactBankCd.equals("034")) {
+						if(vactBankCd.equals("034") || vactBankCd.equals("007")) {
 							if(firmBean.resultCd.equals("0000")) {
 								status = "완료";
 								msgBody = "충전정산 결과확인 성공. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";

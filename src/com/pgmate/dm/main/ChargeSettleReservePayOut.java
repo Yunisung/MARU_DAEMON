@@ -369,7 +369,7 @@ public class ChargeSettleReservePayOut {
     private void insertChargeSettleAndStlComplete(ChargeSettleReserveDAO dao, SharedMap<String,Object> data) {
         SharedMap<String,Object> chargeSettleMap = createRefundChargeSettleMap(data);
         if(dao.insertChargeSettle(chargeSettleMap)) {
-            //정산완료처리
+            //이체완료처리
             if(!"집계".equals(data.getString("trxType"))) {
                 dao.updateTrxCapDtlStlComplete(data.getString("refTrxId"));
             } else {

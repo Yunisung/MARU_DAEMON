@@ -171,7 +171,7 @@ public class ChargeSettleReservePayOut {
 
                             firmBean = new FirmClient(firmServer, firmPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
 
-                            if(vactBankCd.equals("034")) {
+                            if(vactBankCd.equals("034") || vactBankCd.equals("007")) {
                                 //광주은행일때
                                 if(firmBean.resultCd.equals("0000")) {
                                     status = "완료";
@@ -185,6 +185,7 @@ public class ChargeSettleReservePayOut {
 
                                 }else if(firmBean.resultCd.equals("VTIM") || firmBean.resultCd.equals("0011")) {
                                     logger.info("더즌 타임아웃, 이중송금방지, 한번더 실행");
+                                    errFlag = true;
 
                                 }else {
                                     msgBody = "충전정산 예약 결과확인 실패. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";

@@ -191,7 +191,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 
 	public List<SharedMap<String, Object>> getTrxCap(String nowDate) {
 		super.setDebug(true);
-		String query = "SELECT A.*, B.capId, C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlAgencyFee,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
+		String query = "SELECT A.*, B.capId, C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlDistRate,C.stlAgencyFee,C.stlAgencyRate,C.stlSalesFee,C.stlSalesRate,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
 				+ "INNER JOIN PG_TRX_CAP B ON A.trxId = B.trxId "
 				+ "INNER JOIN PG_TRX_CAP_DTL C ON B.capId = C.capId "
 				+ "LEFT JOIN PG_CODE D on A.resultCd = D.code and D.alias = 'DIFF_GAL' "

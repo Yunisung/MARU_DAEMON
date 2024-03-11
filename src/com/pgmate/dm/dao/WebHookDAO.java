@@ -272,10 +272,10 @@ public class WebHookDAO extends DAO {
 		super.initRecord();
 	}
 
-	public String getRebillTrackId(String mchtId) {
+	public String getRebillTrackId(String rebillId) {
 		super.setTable("PG_REBILL_REG");
 		super.setColumns("trackId AS rebillTrackId");
-		super.addWhere("mchtId", mchtId);
+		super.addWhere("rebillId", rebillId);
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRowFirst().getString("rebillTrackId");
@@ -288,5 +288,21 @@ public class WebHookDAO extends DAO {
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRowFirst().getString("trxType");
+	}
+
+	public String getRootTrackId(String trxId) {
+		String q = "SELECT trackId FROM VW_TRX_CAP WHERE capId = (SELECT rootTrxId FROM VW_TRX_CAP WHERE trxId='" + trxId + "')";
+		RecordSet rset = super.query(q);
+		super.initRecord();
+		return rset.getRowFirst().getString("trackId");
+	}
+
+	public String getRebillId(String trackId) {
+		super.setTable("PG_REBILL_PAY");
+		super.setColumns("rebillId");
+		super.addWhere("trackId", trackId, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		return rset.getRowFirst().getString("rebillId");
 	}
 }

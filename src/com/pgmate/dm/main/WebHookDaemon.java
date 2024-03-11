@@ -94,9 +94,23 @@ public class WebHookDaemon {
 
 				payLoad = createPayLoad(sharedMap, trxType, true);
 			} else {
-				// 월세앱 정기결제 && 취소
-				String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
-				sharedMap.put("rebillTrackId", rebillTrackId);
+				// 취소건의 원주문번호 확인
+				String rootTrackId = "";
+				if(trxType.equals("refund")) {
+					rootTrackId = webHookDAO.getRootTrackId(sharedMap.getString("trxId"));
+				}
+				// 정기결제건 이거나 정기결제 취소건 일 때
+				// rebillTrackId 설정
+				if(sharedMap.getString("trackId").startsWith("RB") || rootTrackId.startsWith("RB")) {
+					String trackId = "";
+					if(!CommonUtil.isNullOrSpace(rootTrackId)) {
+						trackId = rootTrackId;
+					} else {
+						trackId = sharedMap.getString("trackId");
+					}
+					String rebillTrackId = webHookDAO.getRebillTrackId(webHookDAO.getRebillId(trackId));
+					sharedMap.put("rebillTrackId", rebillTrackId);
+				}
 				payLoad =  createPayLoad(sharedMap, trxType, false);
 			}
 		// 일반 결제
@@ -120,7 +134,7 @@ public class WebHookDaemon {
 				}
 			}
 			// 3. setPayLoad에서 udf1, udf2 추가
-			String rebillTrackId = webHookDAO.getRebillTrackId(sharedMap.getString("mchtId"));
+			String rebillTrackId = webHookDAO.getRebillTrackId(webHookDAO.getRebillId(sharedMap.getString("trackId")));
 			sharedMap.put("rebillTrackId", rebillTrackId);
 			payLoad =  createPayLoad(sharedMap, trxType, false);
 		}

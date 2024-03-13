@@ -320,6 +320,9 @@ public class WelcomeDiffUpload {
                 }
             }
 
+            dataCnt = 0;
+            dataAmt = 0;
+
             endDiffSetting(bw);
             bw.close();
 
@@ -490,6 +493,7 @@ public class WelcomeDiffUpload {
         totalData.append(CommonUtil.byteFiller("", 323));
 
         bw.write(totalData.toString());
+        bw.newLine();
 
         rowCnt ++;
     }

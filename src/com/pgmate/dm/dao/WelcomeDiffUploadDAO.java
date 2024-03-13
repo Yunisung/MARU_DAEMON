@@ -229,7 +229,7 @@ public class WelcomeDiffUploadDAO extends DAO {
     }
 
     public int getLastSeq() {
-        super.setTable("PG_MCHT_DIFF_UPDLOAD");
+        super.setTable("PG_MCHT_DIFF_UPLOAD");
         super.setColumns("SUBSTRING(welSeq,8) AS welSeq");
         super.addWhere("vanName", "WELCOME", eq);
         super.addWhere("recordType", "D", eq);

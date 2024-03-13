@@ -28,6 +28,7 @@ public class WelcomeDiffUpload {
 
     //WELCOME SFTP SERVER
     private static String userId = "bkwinners";
+    private static String serverIdentity = "/home/bkwinners/.ssh/id_rsa";
 
 //    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
 //    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
@@ -84,7 +85,7 @@ public class WelcomeDiffUpload {
         try {
 
             //SFTP 서버 접속
-            sftpUtil.init(HOST, userId, "", PORT);
+            sftpUtil.initWithIdentity(HOST, userId, serverIdentity, PORT);
 
             //파일명 생성
             uploadPath += File.separator + fileName;
@@ -249,7 +250,7 @@ public class WelcomeDiffUpload {
         final SFTPUtil sftpUtil = new SFTPUtil();
         try {
             //SFTP 서버 접속
-            sftpUtil.init(HOST, userId, "", PORT);
+            sftpUtil.initWithIdentity(HOST, userId, serverIdentity, PORT);
 
             uploadPath += File.separator + fileName;
             logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPath);

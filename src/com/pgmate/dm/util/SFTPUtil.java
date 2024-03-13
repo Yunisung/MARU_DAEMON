@@ -21,15 +21,14 @@ public class SFTPUtil {
      *
      * @param host 서버 주소
      * @param userId 아이디
-     * @param userPw 패스워드
      * @param port 포트번호
      */
-    public void init(String host, String userId, String userPw, int port) throws DiffTransportException {
+    public void initWithIdentity(String host, String userId, String identity, int port) throws DiffTransportException {
         JSch jsch = new JSch();
 
         logger.info("===== CONNECTING START =====");
         try {
-            jsch.addIdentity("/home/bkwinners/.ssh/id_rsa");
+            jsch.addIdentity(identity);
             session = jsch.getSession(userId, host, port);
 //            session.setPassword(userPw);
 
@@ -50,30 +49,30 @@ public class SFTPUtil {
         channelSftp = (ChannelSftp) channel;
     }
 
-//    public void init(String host, String userId, String userPw, int port) throws DiffTransportException {
-//        JSch jsch = new JSch();
-//
-//        logger.info("===== CONNECTING START =====");
-//        try {
-//            session = jsch.getSession(userId, host, port);
-////            session.setPassword(userPw);
-//
-//            java.util.Properties config = new java.util.Properties();
-//            config.put("StrictHostKeyChecking", "no");
-//            session.setConfig(config);
-//            session.connect();
-//
-//            logger.info("CONNECTED TO ===> {}", host);
-//            channel = session.openChannel("sftp");
-//            channel.connect();
-//        } catch (JSchException e) {
-//            //logger.info("CONNECTED FAIL");
-//            logger.error("SFTPUTil CONNECTED FAIL ", e);
-//            throw new DiffTransportException(e);
-//        }
-//
-//        channelSftp = (ChannelSftp) channel;
-//    }
+    public void init(String host, String userId, String userPw, int port) throws DiffTransportException {
+        JSch jsch = new JSch();
+
+        logger.info("===== CONNECTING START =====");
+        try {
+            session = jsch.getSession(userId, host, port);
+            session.setPassword(userPw);
+
+            java.util.Properties config = new java.util.Properties();
+            config.put("StrictHostKeyChecking", "no");
+            session.setConfig(config);
+            session.connect();
+
+            logger.info("CONNECTED TO ===> {}", host);
+            channel = session.openChannel("sftp");
+            channel.connect();
+        } catch (JSchException e) {
+            //logger.info("CONNECTED FAIL");
+            logger.error("SFTPUTil CONNECTED FAIL ", e);
+            throw new DiffTransportException(e);
+        }
+
+        channelSftp = (ChannelSftp) channel;
+    }
 
     /**
      * 디렉토리( or 파일) 존재 여부

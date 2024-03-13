@@ -30,7 +30,7 @@ public class SFTPUtil {
         logger.info("===== CONNECTING START =====");
         try {
             session = jsch.getSession(userId, host, port);
-            session.setPassword(userPw);
+//            session.setPassword(userPw);
 
             java.util.Properties config = new java.util.Properties();
             config.put("StrictHostKeyChecking", "no");

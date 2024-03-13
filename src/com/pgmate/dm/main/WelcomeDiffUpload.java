@@ -168,7 +168,7 @@ public class WelcomeDiffUpload {
 
         for(SharedMap<String, Object> map : mchtList) {
             // 카드사별 각각 업로드 / 가맹점 1 : 카드사 N
-            for(String cardCd : this.cardCdList) {
+            for(String cardCd : cardCdList) {
                 // 시퀀스 값 설정(+1)
                 if(lastSeq == 0) {
                     lastSeq = dao.getLastSeq();
@@ -294,7 +294,7 @@ public class WelcomeDiffUpload {
                     }
                 }
 
-                logger.info("WELCOME DIFFSETTLE DATA SETTING START");
+                logger.info("WELCOME DIFFSETTLE DETAIL DATA SETTING START");
                 headerDiffSetting(bw, mid);
                 if(payList.size() > 0 || rfdList.size() > 0 || partialList.size() > 0) {
                     dataDiffSetting(bw, payList, rfdList, partialList);

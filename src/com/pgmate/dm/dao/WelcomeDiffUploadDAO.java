@@ -95,7 +95,7 @@ public class WelcomeDiffUploadDAO extends DAO {
 
     public List<SharedMap<String,Object>> getRfdList(String mid){
         String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
-                + "A.rootTrxId, A.reqTime as trxTime, G.vanTrxId as rootVanTrxId, G.trxDay as rootTrxDay "
+                + "A.rootTrxId, A.reqTime as trxTime, G.vanTrxId as rootVanTrxId, G.regDay as rootTrxDay, "
                 + "'1' as trxType, "
                 + "'0' AS rfdTurn "
                 + "FROM PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
@@ -120,15 +120,15 @@ public class WelcomeDiffUploadDAO extends DAO {
         String q = "SELECT A.rootTrxId FROM "
                 + "PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
                 + "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
-                + "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
-                + "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
+                + "INNER JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
+                + "INNER JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
                 //------------------------ GALAXIA 맞게 수정 필요
                 + "AND A.rfdAll = '부분' "
                 + "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
                 + "AND E.trxId IS NULL "
-                + "AND A.vanid = '" + mid + "' "
                 + "AND A.vanTrxId NOT LIKE 'TX%' "
                 + "AND A.status = '완료' "
+                + "WHERE A.vanid = '" + mid + "' "
                 + "GROUP BY A.rootTrxId";
 
 
@@ -154,14 +154,14 @@ public class WelcomeDiffUploadDAO extends DAO {
 
     public List<SharedMap<String,Object>> getPartialTrx(String rootTrxId){
         String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
-                + "A.rootTrxId, A.rootAmount, A.reqTime as trxTime, G.vanTrxId as rootVanTrxId "
+                + "A.rootTrxId, A.rootAmount, A.reqTime as trxTime, G.vanTrxId as rootVanTrxId, "
                 + "'3' as trxType "
                 + "FROM PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
                 + "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
                 + "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
                 + "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
                 + "LEFT JOIN PG_TRX_PAY G ON A.rootTrxId = G.trxId "
-                + "WHERE A.rootTrxId = '" + rootTrxId + "'"
+                + "WHERE A.rootTrxId = '" + rootTrxId + "' "
                 + "AND E.trxId IS NULL "
                 + "ORDER BY A.regDay, A.regTime";
 
@@ -236,7 +236,7 @@ public class WelcomeDiffUploadDAO extends DAO {
         super.setOrderBy("regDate DESC");
         super.setLimit(1);
 
-        String welSeq = super.search().getString("welSeq");
+        String welSeq = super.search().getRowFirst().getString("welSeq");
         super.initRecord();
 
         return Integer.parseInt(welSeq);

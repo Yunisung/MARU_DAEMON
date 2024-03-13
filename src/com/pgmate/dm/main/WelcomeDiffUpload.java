@@ -29,8 +29,10 @@ public class WelcomeDiffUpload {
     //WELCOME SFTP SERVER
     private static String userId = "bkwinners";
 
-    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
-    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
+//    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
+//    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
+    private static String MCHT_PATH="/home/bkwinners/diff/mcht_welcome";
+    private static String SETTLE_PATH="/home/bkwinners/diff/settle_welcome";
 
 //    /upload/dfsttm/send (가맹점 요청파일)
 //    /upload/dfsttm/recv (내부검증 및 카드사 결과파일)

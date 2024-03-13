@@ -32,7 +32,8 @@ public class WelcomeDiffUploadDAO extends DAO {
     public List<SharedMap<String, Object>> getMidList() {
         super.setTable("PG_VAN");
         super.setColumns("vanId");
-        super.addWhere("van", "%WELCOME%", lk);
+//        super.addWhere("van", "%WELCOME%", lk);
+        super.addWhere("van", "WELCOME", eq);
         RecordSet rset = super.search();
         super.initRecord();
         return rset.getRows();
@@ -153,7 +154,7 @@ public class WelcomeDiffUploadDAO extends DAO {
 
     public List<SharedMap<String,Object>> getPartialTrx(String rootTrxId){
         String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
-                + "A.rootTrxId, A.reqTime as trxTime, G.vanTrxId as rootVanTrxId "
+                + "A.rootTrxId, A.rootAmount, A.reqTime as trxTime, G.vanTrxId as rootVanTrxId "
                 + "'3' as trxType "
                 + "FROM PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
                 + "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
@@ -225,5 +226,19 @@ public class WelcomeDiffUploadDAO extends DAO {
             db.close(conn);
         }
         return inserted;
+    }
+
+    public int getLastSeq() {
+        super.setTable("PG_MCHT_DIFF_UPDLOAD");
+        super.setColumns("SUBSTRING(welSeq,8) AS welSeq");
+        super.addWhere("vanName", "WELCOME", eq);
+        super.addWhere("recordType", "D", eq);
+        super.setOrderBy("regDate DESC");
+        super.setLimit(1);
+
+        String welSeq = super.search().getString("welSeq");
+        super.initRecord();
+
+        return Integer.parseInt(welSeq);
     }
 }

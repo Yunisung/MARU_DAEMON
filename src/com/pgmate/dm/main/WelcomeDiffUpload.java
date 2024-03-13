@@ -20,25 +20,21 @@ public class WelcomeDiffUpload {
     private SmsGw smsGw = null;
     private String msgBody = "";
 
-    //JM VMWARE SFTP SERVER
-//	private static String HOST = "192.168.95.139";
-    //WELCOME SFTP SERVER
-    private static String HOST = "119.207.70.214";
-    private static int PORT = 22;
+    // TEST SFTP SERVER
+	private static String HOST = "118.130.130.27";
+    // LIVE SFTP SERVER
+//    private static String HOST = "118.129.171.153";
+    private static int PORT = 5555;
 
-    //JM VMWARE SFTP SERVER
-//	final String userId = "mysftpuser";
-//	final String userPw = "1234";
     //WELCOME SFTP SERVER
-    private static String userId = "A2240732";
-    private static String userPw = "1!qnrnrdnlsjtm0732";
+    private static String userId = "bkwinners";
 
-    private static String MCHT_PATH="D:\\galaxia\\diffMcht\\";
-    private static String SETTLE_PATH="D:\\galaxia\\diffSettle\\";
+    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
+    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
 
 //    /upload/dfsttm/send (가맹점 요청파일)
 //    /upload/dfsttm/recv (내부검증 및 카드사 결과파일)
-    private static String WELCOME_UPLOAD_PATH ="/test";		//테스트 폴더
+    private static String WELCOME_UPLOAD_PATH ="/upload/dfsttm/send";		//테스트 폴더
     //	private static String GALAXIA_UPLOAD_PATH="/request";	//운영 폴더
 
     private String nowDate = "";
@@ -47,6 +43,9 @@ public class WelcomeDiffUpload {
     private int rowCnt = 0;
 
     private String identity = "6758600152";
+
+    // 하위사업자 등록 카드사 리스트
+    private String[] cardCdList = {"01", "03", "04", "06", "11", "12", "14", "16", "44"};
 
     public WelcomeDiffUpload() {
         try {
@@ -83,7 +82,7 @@ public class WelcomeDiffUpload {
         try {
 
             //SFTP 서버 접속
-            sftpUtil.init(HOST, userId, userPw, PORT);
+            sftpUtil.init(HOST, userId, "", PORT);
 
             //파일명 생성
             uploadPath += File.separator + fileName;
@@ -102,7 +101,7 @@ public class WelcomeDiffUpload {
 
             logger.info("WELCOME DIFFMCHT DATA SETTING START");
             headerMchtSetting(bw);
-            dataMchtSetting(bw, mchtList);
+            dataMchtSetting(bw, mchtList, cardCdList, dao);
             totalMchtSetting(bw);
             bw.flush();
             logger.info("WELCOME DIFFMCHT DATA SETTING END");
@@ -118,7 +117,7 @@ public class WelcomeDiffUpload {
             }
         } catch (Exception e) {
             logger.error("UPLOAD MCHT DIFF ERROR ===> {}", e.getMessage());
-            msgBody = "갤럭시아 영중소 가맹점 업로드 오류. 확인요망 [" + e.getMessage() + "]";
+            msgBody = "웰컴 영중소 가맹점 업로드 오류. 확인요망 [" + e.getMessage() + "]";
             smsGw.sendMessage("0", "4", msgBody);
         } finally {
             sftpUtil.disconnection();
@@ -156,37 +155,50 @@ public class WelcomeDiffUpload {
      *
      * @param bw
      * @param mchtList
+     * @param cardCdList
+     * @param dao
      * @throws IOException
      */
-    private void dataMchtSetting(BufferedWriter bw, List<SharedMap<String, Object>> mchtList) throws IOException {
+    private void dataMchtSetting(BufferedWriter bw, List<SharedMap<String, Object>> mchtList, String[] cardCdList, WelcomeDiffUploadDAO dao) throws IOException {
         StringBuffer bodyData = new StringBuffer();
+        int lastSeq = 0;
 
         for(SharedMap<String, Object> map : mchtList) {
-            bodyData = new StringBuffer();
+            // 카드사별 각각 업로드 / 가맹점 1 : 카드사 N
+            for(String cardCd : this.cardCdList) {
+                // 시퀀스 값 설정(+1)
+                if(lastSeq == 0) {
+                    lastSeq = dao.getLastSeq();
+                }
 
-            bodyData.append(CommonUtil.byteFiller("11", 2));	//레코드구분
-            bodyData.append(CommonUtil.zerofill(00, 2));	//등록구분
-            bodyData.append(CommonUtil.zerofill(map.getString("compNo"), 10));	//오픈마켓 사업자번호
-            // **** 카드사 확인 필요
-            bodyData.append(CommonUtil.zerofill("099", 2));	//카드사코드
-            bodyData.append(CommonUtil.zerofill(map.getString("mchtCompNo").replace("-", ""), 10));	//사업자등록번호(하위몰)
-            bodyData.append(getRPad(map.getString("bizType"), 20, " "));	//업종명(하위몰)
-            bodyData.append(getRPad(map.getString("mchtName"), 40, " "));	//회사명(하위몰)
-            bodyData.append(getRPad(map.getString("mchtUrl"), 80, " "));	//웹사이트URL(하위몰)
-            bodyData.append(getRPad(map.getString("addr1") + map.getString("addr2"), 100, " "));	//주소(하위몰)
-            bodyData.append(CommonUtil.zerofill(map.getString("zip"), 6));	//우편번호
-            bodyData.append(getRPad(map.getString("mchtCeo"), 40, " "));	//대표자명(하위몰)
-            cutAndSetTel(bodyData, map.getString("mchtPhone"));	//전화번호(하위몰)
-            bodyData.append(getRPad(map.getString("mchtEmail"), 40, " "));	//이메일(하위몰)
-            bodyData.append(getRPad(nowDate, 8, " "));	//정보등록일
-            // ***** 문의 필요
-            bodyData.append(getRPad("가맹점 결과 조회용 KEY", 20, " ")); // 시퀀스
-            bodyData.append(CommonUtil.byteFiller("", 109));    // 공백 109
+                lastSeq += 1;
 
-            bw.write(bodyData.toString());
-            bw.newLine();
+                String seq = "WELCOME" + CommonUtil.zerofill(String.valueOf(lastSeq), 13);
 
-            dataCnt++;
+                bodyData = new StringBuffer();
+
+                bodyData.append(CommonUtil.byteFiller("11", 2));	//레코드구분
+                bodyData.append(CommonUtil.zerofill(00, 2));	//등록구분
+                bodyData.append(CommonUtil.zerofill(map.getString("compNo"), 10));	//오픈마켓 사업자번호
+                bodyData.append(CommonUtil.zerofill(cardCd, 2));	//카드사코드
+                bodyData.append(CommonUtil.zerofill(map.getString("mchtCompNo").replace("-", ""), 10));	//사업자등록번호(하위몰)
+                bodyData.append(getRPad(map.getString("bizType"), 20, " "));	//업종명(하위몰)
+                bodyData.append(getRPad(map.getString("mchtName"), 40, " "));	//회사명(하위몰)
+                bodyData.append(getRPad(map.getString("mchtUrl"), 80, " "));	//웹사이트URL(하위몰)
+                bodyData.append(getRPad(map.getString("addr1") + map.getString("addr2"), 100, " "));	//주소(하위몰)
+                bodyData.append(CommonUtil.zerofill(map.getString("zip"), 6));	//우편번호
+                bodyData.append(getRPad(map.getString("mchtCeo"), 40, " "));	//대표자명(하위몰)
+                cutAndSetTel(bodyData, map.getString("mchtPhone"));	//전화번호(하위몰)
+                bodyData.append(getRPad(map.getString("mchtEmail"), 40, " "));	//이메일(하위몰)
+                bodyData.append(getRPad(nowDate, 8, " "));	//정보등록일
+                bodyData.append(getRPad(seq, 20, " ")); // 시퀀스
+                bodyData.append(CommonUtil.byteFiller("", 109));    // 공백 109
+
+                bw.write(bodyData.toString());
+                bw.newLine();
+
+                dataCnt++;
+            }
         }
         logger.info("WELCOME DIFFMCHT {} DATA", dataCnt);
     }
@@ -235,7 +247,7 @@ public class WelcomeDiffUpload {
         final SFTPUtil sftpUtil = new SFTPUtil();
         try {
             //SFTP 서버 접속
-            sftpUtil.init(HOST, userId, userPw, PORT);
+            sftpUtil.init(HOST, userId, "", PORT);
 
             uploadPath += File.separator + fileName;
             logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPath);
@@ -280,7 +292,7 @@ public class WelcomeDiffUpload {
                 }
 
                 logger.info("WELCOME DIFFSETTLE DATA SETTING START");
-                headerDiffSetting(bw);
+                headerDiffSetting(bw, mid);
                 if(payList.size() > 0 || rfdList.size() > 0 || partialList.size() > 0) {
                     dataDiffSetting(bw, payList, rfdList, partialList);
                 }
@@ -351,15 +363,15 @@ public class WelcomeDiffUpload {
      * 차액정산 등록 헤더전문
      *
      * @param bw
+     * @param mid
      * @throws IOException
      */
-    private void headerDiffSetting(BufferedWriter bw) throws IOException {
+    private void headerDiffSetting(BufferedWriter bw, String mid) throws IOException {
         StringBuffer headerData = new StringBuffer();
 
-        headerData.append(CommonUtil.byteFiller("HD", 2));	//레코드구분
-        headerData.append(CommonUtil.zerofill(nowDate, 8));	//파일생성일자
-        headerData.append(CommonUtil.byteFiller(userId, 20));	//가맹점 AID
-        headerData.append(CommonUtil.byteFiller("", 147));	//공백
+        headerData.append(CommonUtil.byteFiller("10", 2));	//레코드구분
+        headerData.append(CommonUtil.byteFiller(mid, 10));	//mid 구분
+        headerData.append(CommonUtil.byteFiller("", 338));	//공백
 
         bw.write(headerData.toString());
         bw.newLine();
@@ -444,7 +456,7 @@ public class WelcomeDiffUpload {
             bodyData.append(CommonUtil.byteFiller(map.getString("rootVanTrxId"), 40));	//PG원거래번호
             bodyData.append(CommonUtil.byteFiller(map.getString("trxId"), 64));	//가맹점 주문번호
             bodyData.append(CommonUtil.zerofill(map.getString("amount"), 15));	//하위사업자 매출액
-            bodyData.append(CommonUtil.zerofill(map.getString("amount"), 15));	//원거래 매입금액
+            bodyData.append(CommonUtil.zerofill(map.getString("rootAmount"), 15));	//원거래 매입금액
             bodyData.append(CommonUtil.zerofill(map.getString("rootTrxDay"), 8));	//원거래 승인일자
             bodyData.append(CommonUtil.byteFiller("", 40));	//가맹점 검증값
             bodyData.append(CommonUtil.byteFiller("", 97));	//가맹점 검증값
@@ -548,5 +560,9 @@ public class WelcomeDiffUpload {
                 bodyData.append(CommonUtil.byteFiller("", 11));
             }
         }
+    }
+
+    public static void main(String[] args) {
+        new WelcomeDiffUpload();
     }
 }

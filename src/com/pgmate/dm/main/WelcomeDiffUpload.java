@@ -318,10 +318,11 @@ public class WelcomeDiffUpload {
                 } else {
                     logger.info("===== WELCOME DIFFSETTLE UPLOAD FAIL =====");
                 }
+
+                dataCnt = 0;
+                dataAmt = 0;
             }
 
-            dataCnt = 0;
-            dataAmt = 0;
 
             endDiffSetting(bw);
             bw.close();

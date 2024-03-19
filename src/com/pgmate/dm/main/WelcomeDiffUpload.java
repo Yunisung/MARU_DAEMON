@@ -32,13 +32,12 @@ public class WelcomeDiffUpload {
 
 //    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
 //    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
-    private static String MCHT_PATH="/home/bkwinners/diff/mcht_welcome";
-    private static String SETTLE_PATH="/home/bkwinners/diff/settle_welcome";
+    private static String MCHT_PATH="/home/bkwinners/diff/mcht_welcome/";
+    private static String SETTLE_PATH="/home/bkwinners/diff/settle_welcome/";
 
 //    /upload/dfsttm/send (가맹점 요청파일)
 //    /upload/dfsttm/recv (내부검증 및 카드사 결과파일)
     private static String WELCOME_UPLOAD_PATH ="/upload/dfsttm/send";		//테스트 폴더
-    //	private static String GALAXIA_UPLOAD_PATH="/request";	//운영 폴더
 
     private String nowDate = "";
     private int dataCnt = 0;

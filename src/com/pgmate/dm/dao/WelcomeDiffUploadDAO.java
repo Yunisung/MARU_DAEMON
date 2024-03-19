@@ -83,7 +83,7 @@ public class WelcomeDiffUploadDAO extends DAO {
                 + "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
                 + "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
                 + "WHERE A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
-                + "AND E.trxId IS NULL "
+//                + "AND E.trxId IS NULL "
                 + "AND A.vanid = '" + mid +"' "
                 + "AND A.vanTrxId NOT LIKE 'TX%' ";
 
@@ -105,7 +105,7 @@ public class WelcomeDiffUploadDAO extends DAO {
                 + "LEFT JOIN PG_TRX_PAY G ON A.rootTrxId = G.trxId "
                 + "WHERE A.rfdAll = '전액' "
                 + "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
-                + "AND E.trxId IS NULL "
+//                + "AND E.trxId IS NULL "
                 + "AND A.vanid = '" + mid + "' "
                 + "AND A.vanTrxId NOT LIKE 'TX%' "
                 + "AND A.status = '완료' ";
@@ -125,7 +125,7 @@ public class WelcomeDiffUploadDAO extends DAO {
                 //------------------------ GALAXIA 맞게 수정 필요
                 + "AND A.rfdAll = '부분' "
                 + "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
-                + "AND E.trxId IS NULL "
+//                + "AND E.trxId IS NULL "
                 + "AND A.vanTrxId NOT LIKE 'TX%' "
                 + "AND A.status = '완료' "
                 + "WHERE A.vanid = '" + mid + "' "
@@ -162,7 +162,7 @@ public class WelcomeDiffUploadDAO extends DAO {
                 + "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
                 + "LEFT JOIN PG_TRX_PAY G ON A.rootTrxId = G.trxId "
                 + "WHERE A.rootTrxId = '" + rootTrxId + "' "
-                + "AND E.trxId IS NULL "
+//                + "AND E.trxId IS NULL "
                 + "ORDER BY A.regDay, A.regTime";
 
         RecordSet rset = super.query(q);

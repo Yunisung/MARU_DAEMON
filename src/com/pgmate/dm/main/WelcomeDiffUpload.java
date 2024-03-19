@@ -51,7 +51,7 @@ public class WelcomeDiffUpload {
 
     public WelcomeDiffUpload() {
         try {
-//			makeDiffMcht();		//하위사업자 등록
+			makeDiffMcht();		//하위사업자 등록
             makeDiffSettle();	//차액정산 등록
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -299,6 +299,7 @@ public class WelcomeDiffUpload {
                     dataDiffSetting(bw, payList, rfdList, partialList);
                 }
                 totalDiffSetting(bw);
+                bw.flush();
                 logger.info("WELCOME DIFFSETTLE DATA SETTING END");
 
 //                WELCOME 파일 업로드

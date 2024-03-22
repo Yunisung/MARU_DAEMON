@@ -34,7 +34,7 @@ public class WelcomeDiffTrxDownload {
     private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
 
     //    private static String GALAXIA_DOWNLOAD_PATH="/test/";	//테스트 폴더
-    private static String WELCOME_DOWNLOAD_PATH="/receive";	//운영 폴더
+    private static String WELCOME_DOWNLOAD_PATH="/upload/dfsttm/recv";	//운영 폴더
 
     private List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
 

@@ -217,6 +217,6 @@ public class WelcomeDiffTrxDownload {
 
     public static void main(String[] args) throws IOException {
 //        new WelcomeDiffTrxDownload(args[0]);
-        new WelcomeDiffTrxDownload("20240328");
+        new WelcomeDiffTrxDownload("20240326");
     }
 }

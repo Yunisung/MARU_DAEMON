@@ -119,8 +119,7 @@ public class WelcomeDiffDownloadDAO extends DAO {
                     pstmt.setString(i++, map.getString("cardType"));
                     pstmt.setLong(i++, map.getLong("diffStlAmt"));
                     pstmt.setString(i++, map.getString("diffStlDay"));
-//                    pstmt.setString(i++, map.getString("downDay"));
-                    pstmt.setString(i++, "20240326");
+                    pstmt.setString(i++, map.getString("downDay"));
                     pstmt.setString(i++, map.getString("trxId"));
 
                     pstmt.addBatch();

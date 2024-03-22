@@ -31,7 +31,8 @@ public class WelcomeDiffTrxDownload {
     private static String serverIdentity = "/home/bkwinners/.ssh/id_rsa";
 
     private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
-    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
+//    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
+    private static String SETTLE_PATH="/home/bkwinners/diff/settle_welcome/";
 
     //    private static String GALAXIA_DOWNLOAD_PATH="/test/";	//테스트 폴더
     private static String WELCOME_DOWNLOAD_PATH="/upload/dfsttm/recv";	//운영 폴더

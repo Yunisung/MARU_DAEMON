@@ -17,4 +17,4 @@ JVM_ARGS="$JVM_ARGS -cp $CP:../classes"
 
 TARGET_DATE="$(date +%Y%m%d)"
 
-java $JVM_ARGS com.pgmate.dm.main.WelcomeDiffTrxDownLoad $TARGET_DATE
+java $JVM_ARGS com.pgmate.dm.main.WelcomeDiffTrxDownload $TARGET_DATE

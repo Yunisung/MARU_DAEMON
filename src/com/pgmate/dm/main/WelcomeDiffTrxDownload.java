@@ -20,18 +20,15 @@ public class WelcomeDiffTrxDownload {
     private SmsGw smsGw = null;
     private String msgBody = "";
 
-    //JM VMWARE SFTP SERVER
-//	private static String HOST = "192.168.95.139";
-    //GALAXIA SFTP SERVER
-    private static String HOST = "119.207.70.214";
-    private static int PORT = 22;
+    // TEST SFTP SERVER
+    private static String HOST = "118.130.130.27";
+    // LIVE SFTP SERVER
+//    private static String HOST = "118.129.171.153";
+    private static int PORT = 5555;
 
-    //JM VMWARE SFTP SERVER
-//	final String userId = "mysftpuser";
-//	final String userPw = "1234";
-    //GALAXIA SFTP SERVER
-    private static String userId = "A2240732";
-    private static String userPw = "1!qnrnrdnlsjtm0732";
+    //WELCOME SFTP SERVER
+    private static String userId = "bkwinners";
+    private static String serverIdentity = "/home/bkwinners/.ssh/id_rsa";
 
     private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
     private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
@@ -71,7 +68,7 @@ public class WelcomeDiffTrxDownload {
 
         final SFTPUtil sftpUtil = new SFTPUtil();
         try {
-            sftpUtil.init(HOST, userId, userPw, PORT);
+            sftpUtil.initWithIdentity(HOST, userId, serverIdentity, PORT);
 
             for(String fileName : fileNameList) {
 
@@ -82,12 +79,13 @@ public class WelcomeDiffTrxDownload {
                     downloadPath += File.separator + nowDate + ".welcome.download";
                     sftpUtil.download(WELCOME_DOWNLOAD_PATH, fileName, downloadPath);
 
-                File file = new File(downloadPath);
+                    File file = new File(downloadPath);
 
-                is = new FileInputStream(file);                                                                                                                                                                                                                                                                                                                                            is = new FileInputStream(file);
-                isr = new InputStreamReader(is, "EUC-KR");
-                br = new BufferedReader(isr);
-                String line = "";
+                    is = new FileInputStream(file);
+                    isr = new InputStreamReader(is, "EUC-KR");
+                    br = new BufferedReader(isr);
+
+                    String line = "";
 
                     String fileType = fileName.substring(fileName.lastIndexOf("_") + 1);
                     while ((line = br.readLine()) != null) {

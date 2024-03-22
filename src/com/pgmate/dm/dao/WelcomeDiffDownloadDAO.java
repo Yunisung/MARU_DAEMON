@@ -85,10 +85,16 @@ public class WelcomeDiffDownloadDAO extends DAO {
         return inserted;
     }
 
-    public int updateTrxDiff(List<SharedMap<String, Object>> trxList) {
+    public int updateTrxDiff(List<SharedMap<String, Object>> trxList, String fileType) {
         int updated = 0;
         logger.debug("UPDATE PG_TRX_DIFF batch : {}", trxList.size());
-        String query = "UPDATE `PG_TRX_DIFF` SET recordType = ?, resultCd = ?, mchtType = ?, mchtCode = ?, cardType = ?, diffStlAmt = ?, diffStlDay = ?, downDay = ? WHERE trxId = ?;";
+        String query = "";
+
+        if(fileType.equals("res")) {
+            query = "UPDATE `PG_TRX_DIFF` SET recordType = ?, resultCd = ?, mchtType = ?, mchtCode = ?, cardType = ?, diffStlAmt = ?, diffStlDay = ?, downDay = ? WHERE trxId = ?;";
+        } else {
+            query = "UPDATE `PG_TRX_DIFF` SET recordType = ?, resultCd = ?, downDay = ? WHERE trxId = ?;";
+        }
 
         DBManager db = null;
         Connection conn = null;
@@ -102,21 +108,38 @@ public class WelcomeDiffDownloadDAO extends DAO {
             int batchSize = 100;
             int count = 0;
 
-            for (SharedMap<String, Object> map : trxList) {
-                int i = 1;
-                pstmt.setString(i++, map.getString("recordType"));
-                pstmt.setString(i++, map.getString("resultCd"));
-                pstmt.setString(i++, map.getString("mchtType"));
-                pstmt.setString(i++, map.getString("mchtCode"));
-                pstmt.setString(i++, map.getString("cardType"));
-                pstmt.setLong(i++, map.getLong("diffStlAmt"));
-                pstmt.setString(i++, map.getString("diffStlDay"));
-                pstmt.setString(i++, map.getString("downDay"));
-                pstmt.setString(i++, map.getString("trxId"));
+            // 카드사 검증 결과
+            if(fileType.equals("res")) {
+                for (SharedMap<String, Object> map : trxList) {
+                    int i = 1;
+                    pstmt.setString(i++, map.getString("recordType"));
+                    pstmt.setString(i++, map.getString("resultCd"));
+                    pstmt.setString(i++, map.getString("mchtType"));
+                    pstmt.setString(i++, map.getString("mchtCode"));
+                    pstmt.setString(i++, map.getString("cardType"));
+                    pstmt.setLong(i++, map.getLong("diffStlAmt"));
+                    pstmt.setString(i++, map.getString("diffStlDay"));
+                    pstmt.setString(i++, map.getString("downDay"));
+                    pstmt.setString(i++, map.getString("trxId"));
 
-                pstmt.addBatch();
-                if (++count % batchSize == 0) {
-                    updated += pstmt.executeBatch().length;
+                    pstmt.addBatch();
+                    if (++count % batchSize == 0) {
+                        updated += pstmt.executeBatch().length;
+                    }
+                }
+            } else {
+                // 웰컴 검증 결과
+                for (SharedMap<String, Object> map : trxList) {
+                    int i = 1;
+                    pstmt.setString(i++, map.getString("recordType"));
+                    pstmt.setString(i++, map.getString("resultCd"));
+                    pstmt.setString(i++, map.getString("downDay"));
+                    pstmt.setString(i++, map.getString("trxId"));
+
+                    pstmt.addBatch();
+                    if (++count % batchSize == 0) {
+                        updated += pstmt.executeBatch().length;
+                    }
                 }
             }
 
@@ -131,7 +154,7 @@ public class WelcomeDiffDownloadDAO extends DAO {
         return updated;
     }
 
-    public int updateTrxCap(String nowDate) {
+    public int updateTrxCap(String nowDate, String fileType) {
 
         List<SharedMap<String, Object>> list = getTrxCap(nowDate);
         String query = "UPDATE PG_TRX_CAP_DTL SET stlDistFee =?, stlDistRate=?, stlAgencyFee =?, stlAgencyRate =?, stlSalesFee =?,stlSalesRate =?, stlDiffAgencyRate =?, stlDiffAgencyFee =?, stlDiffDistRate =?, stlDiffDistFee =?, stlDiffSalesRate =?, stlDiffSalesFee =?, stlDiffVanAmt =?,"
@@ -156,7 +179,8 @@ public class WelcomeDiffDownloadDAO extends DAO {
                 capDtlMap.put("stlDiffResultMsg",map.getString("codeName"));
                 String stlDiffVanCardType = "";
 
-                if(map.getString("resultCd").equals("00")) {
+                // 월세앱 거래건이 아니고 정상결과 일 때
+                if(!map.getString("serviceType").equals("월세앱") && map.getString("resultCd").equals("00")) {
                     SharedMap<String, Object> mchtMngMap = getMchtMngById(map.getString("mchtId"));
                     SharedMap<String,Object> orgFeeMap = getOrgFee(map.getString("van"));
 
@@ -271,7 +295,7 @@ public class WelcomeDiffDownloadDAO extends DAO {
                     long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
 
                     capDtlMap.put("benefit"		, benefit1 + benefit2);
-                }else {
+                }else if(!map.getString("resultCd").equals("00")) {
                     //차액정산에 실패하였으므로 일반 수수료는 기존과 동일
                     capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
                     capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
@@ -289,10 +313,46 @@ public class WelcomeDiffDownloadDAO extends DAO {
                     capDtlMap.put("stlDiffSalesRate",0);
                     capDtlMap.put("stlDiffSalesFee",0);
 
-                    capDtlMap.put("stlDiffVanAmt"	, 0);
+                    long diffVanAmt = map.getLong("diffStlAmt");
+                    if(!map.getString("trxType").equals("0")) {
+                        if (map.getLong("diffStlAmt") < 0) {
+                            diffVanAmt = map.getLong("diffStlAmt");
+                        } else {
+                            diffVanAmt = -map.getLong("diffStlAmt");
+                        }
+                    }
+
+                    capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
                     capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
                     capDtlMap.put("stlDiffStatus", "차액정산실패");
+
                     capDtlMap.put("benefit"		, map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee"));
+                } else if(map.getString("serviceType").equals("월세앱")){
+                    // 월세앱 차액정산
+                    // 기존 수수료율 설정
+                    capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
+                    capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
+                    capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
+                    capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
+                    capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
+                    capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
+
+                    // 차액정산 수수료는 0으로 한다
+                    capDtlMap.put("stlDiffAgencyRate",0);
+                    capDtlMap.put("stlDiffAgencyFee",0);
+                    capDtlMap.put("stlDiffDistRate",0);
+                    capDtlMap.put("stlDiffDistFee",0);
+                    capDtlMap.put("stlDiffSalesRate",0);
+                    capDtlMap.put("stlDiffSalesFee",0);
+
+                    capDtlMap.put("stlDiffVanAmt"	, 0);
+                    capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+                    capDtlMap.put("stlDiffStatus", "입금대기");
+
+                    long benefit1 = map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee");
+                    long benefit2 = capDtlMap.getLong("stlDiffVanAmt");
+
+                    capDtlMap.put("benefit"		, benefit1 + benefit2);
                 }
 
                 int i = 1;
@@ -416,7 +476,7 @@ public class WelcomeDiffDownloadDAO extends DAO {
 
     public List<SharedMap<String, Object>> getTrxCap(String nowDate) {
         super.setDebug(true);
-        String query = "SELECT A.*, B.capId, C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlAgencyFee,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
+        String query = "SELECT A.*,B.capId,B.serviceType,C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlAgencyFee,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
                 + "INNER JOIN PG_TRX_CAP B ON A.trxId = B.trxId "
                 + "INNER JOIN PG_TRX_CAP_DTL C ON B.capId = C.capId "
                 + "LEFT JOIN PG_CODE D on A.resultCd = D.code and D.alias = 'DIFF_WEL' "
@@ -440,6 +500,7 @@ public class WelcomeDiffDownloadDAO extends DAO {
             super.setColumns("mchtid");
             super.setColumns("vanid");
             super.addWhere("mchtCompNo", mchtCompNo, eq);
+            super.addWhere("vanName", "WELCOME", eq);
             RecordSet rset = super.search();
             super.initRecord();
 

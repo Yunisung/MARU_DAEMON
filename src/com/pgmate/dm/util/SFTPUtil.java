@@ -84,19 +84,19 @@ public class SFTPUtil {
         Vector res = null;
         try {
             res = channelSftp.ls(path);
-            logger.info("===== GALAXIA FILE EXIST TRUE =====");
+            logger.info("===== FILE EXIST TRUE =====");
         } catch (SftpException e) {
             if(e.id == ChannelSftp.SSH_FX_NO_SUCH_FILE) {
-                logger.error("GALAXIA FILE EXIST FALSE  ", e);
+                logger.error("FILE EXIST FALSE  ", e);
             }
         }
 
         if(res != null && !res.isEmpty()){
-            logger.info("===== GALAXIA FILE IS NOT NULL =====");
+            logger.info("===== FILE IS NOT NULL =====");
             return true;
         }
 
-        logger.info("===== GALAXIA FILE IS NULL =====");
+        logger.info("===== FILE IS NULL =====");
         return false;
     }
 

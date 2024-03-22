@@ -21,24 +21,20 @@ public class WelcomeDiffMchtDownload {
     private SmsGw smsGw = null;
     private String msgBody = "";
 
-    //JM VMWARE SFTP SERVER
-//	private static String HOST = "192.168.95.139";
+    // TEST SFTP SERVER
+    private static String HOST = "118.130.130.27";
+    // LIVE SFTP SERVER
+//    private static String HOST = "118.129.171.153";
+    private static int PORT = 5555;
+
     //WELCOME SFTP SERVER
-    private static String HOST = "119.207.70.214";
-    private static int PORT = 22;
+    private static String userId = "bkwinners";
+    private static String serverIdentity = "/home/bkwinners/.ssh/id_rsa";
 
-    //JM VMWARE SFTP SERVER
-//	final String userId = "mysftpuser";
-//	final String userPw = "1234";
-    //WELCOME SFTP SERVER
-    private static String userId = "A2240732";
-    private static String userPw = "1!qnrnrdnlsjtm0732";
+    //    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
+    private static String MCHT_PATH="/home/bkwinners/diff/mcht_welcome";
 
-    private static String MCHT_PATH="D:\\galaxia\\diffMcht\\";
-    private static String SETTLE_PATH="D:\\galaxia\\diffSettle\\";
-
-    //    private static String GALAXIA_DOWNLOAD_PATH="/test/";	//테스트 폴더
-    private static String WELCOME_DOWNLOAD_PATH="/receive";	//운영 폴더
+    private static String WELCOME_DOWNLOAD_PATH ="/upload/dfsttm/recv";
 
     private List<SharedMap<String, Object>> list = new ArrayList<SharedMap<String,Object>>();
 
@@ -68,7 +64,7 @@ public class WelcomeDiffMchtDownload {
 
         final SFTPUtil sftpUtil = new SFTPUtil();
         try {
-            sftpUtil.init(HOST, userId, userPw, PORT);
+            sftpUtil.init(HOST, userId, serverIdentity, PORT);
 
             logger.info("===== WELCOME 하위사업자 결과 파일 경로 : {} =====", WELCOME_DOWNLOAD_PATH + File.separator + fileName);
 
@@ -159,10 +155,11 @@ public class WelcomeDiffMchtDownload {
         String mchtEmail	= CommonUtil.toString(resBuf,323,40).trim();
         String uploadDay	= CommonUtil.toString(resBuf,363,8).trim();
         String seq	= CommonUtil.toString(resBuf,371,20).trim();
-        String failMsg	= CommonUtil.toString(resBuf,391,2).trim();
-        String regResult	= CommonUtil.toString(resBuf,393,2).trim();
+        String failMsg	= CommonUtil.toString(resBuf,391,2).trim();         // 카드사 반송코드
+        String regResult	= CommonUtil.toString(resBuf,393,2).trim();     // 웰컴페이먼츠 반송코드
         String filler	= CommonUtil.toString(resBuf,395,105).trim();
 
+        // failMsg(카드사코드)를 상세메시지로 사용
         if(CommonUtil.isNullOrSpace(failMsg)) {
             switch (regResult) {
                 case "00":failMsg = "정상처리"	;break;

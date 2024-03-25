@@ -32,7 +32,7 @@ public class WelcomeDiffMchtDownload {
     private static String serverIdentity = "/home/bkwinners/.ssh/id_rsa";
 
     //    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
-    private static String MCHT_PATH="/home/bkwinners/diff/mcht_welcome";
+    private static String MCHT_PATH="/home/bkwinners/diff/mcht_welcome/";
 
     private static String WELCOME_DOWNLOAD_PATH ="/upload/dfsttm/recv";
 

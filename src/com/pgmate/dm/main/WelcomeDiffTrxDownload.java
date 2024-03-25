@@ -30,7 +30,6 @@ public class WelcomeDiffTrxDownload {
     private static String userId = "bkwinners";
     private static String serverIdentity = "/home/bkwinners/.ssh/id_rsa";
 
-//    private static String MCHT_PATH="D:\\welcome\\diffMcht\\";
 //    private static String SETTLE_PATH="D:\\welcome\\diffSettle\\";
     private static String SETTLE_PATH="/home/bkwinners/diff/settle_welcome/";
 

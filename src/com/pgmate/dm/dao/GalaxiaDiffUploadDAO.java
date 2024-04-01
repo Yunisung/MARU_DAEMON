@@ -35,7 +35,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 //				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183') "
+				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183', 'M2373543') "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' ";
 
 				
@@ -62,7 +62,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 //				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183')"
+				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183'', 'M2373543')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' ";
 
@@ -86,7 +86,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "AND A.rfdAll = '부분' "
 				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183')"
+				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183'', 'M2373543')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "
 				+ "GROUP BY A.rootTrxId";

@@ -305,4 +305,13 @@ public class WebHookDAO extends DAO {
 		super.initRecord();
 		return rset.getRowFirst().getString("rebillId");
 	}
+
+	public String getPubDay(String trxId) {
+		super.setTable("PG_CHARGE_SETTLE_FIRM_RESERVE");
+		super.setColumns("pubDay");
+		super.addWhere("refTrxId", trxId, eq);
+		RecordSet rset = super.search();
+		super.initRecord();
+		return rset.getRowFirst().getString("pubDay");
+	}
 }

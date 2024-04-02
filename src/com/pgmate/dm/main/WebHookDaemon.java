@@ -83,6 +83,12 @@ public class WebHookDaemon {
 		SharedMap<String, Object> ioMap;
 		// 월세앱 결제건 일 때
 		if(!sharedMap.getString("rentId").equals("")) {
+			// 예약이체 테이블의 예약이체일 가져오기
+			String pubDay = webHookDAO.getPubDay(sharedMap.getString("trxId"));
+			if(!CommonUtil.isNullOrSpace(pubDay)) {
+				sharedMap.put("pubDay", pubDay);
+			}
+
 			ioMap = webHookDAO.getTrxIo3d(sharedMap.getString("trxId"));
 			// 월세앱 일반결제
 			if(ioMap != null) {
@@ -166,6 +172,10 @@ public class WebHookDaemon {
 		if(!isRentApp) {
 			payLoadMap.put("udf2", sharedMap.getString("udf2"));
 			payLoadMap.put("rebillTrackId", sharedMap.getString("rebillTrackId"));
+		}
+		// 월세앱 결제건(리스크없는, 매입건)의 이체예정일 추가
+		if(!CommonUtil.isNullOrSpace(sharedMap.getString("pubDay"))) {
+			payLoadMap.put("pubDay", sharedMap.getString("pubDay"));
 		}
 
 		String payLoad = CommonUtil.toQueryString(payLoadMap,"UTF-8");

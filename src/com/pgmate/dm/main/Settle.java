@@ -244,8 +244,8 @@ public class Settle {
 				logger.info("= == === GRADE : {}", grage);
 				ImplRentSettle stlDAO = getRentDAO(grage);
 				if(stlDAO != null){
-
-					List<SharedMap<String,Object>> settleList = stlDAO.getSettleList(stlDay);
+					String stlDayMonth = String.valueOf(Integer.parseInt(stlDay)-1);
+					List<SharedMap<String,Object>> settleList = stlDAO.getSettleList(stlDayMonth);
 					logger.info("MAKE RENT SETTLE COUNT : {}", settleList.size());
 					for(SharedMap<String,Object> data : settleList){
 						String stlId = stlDAO.getSettleId();

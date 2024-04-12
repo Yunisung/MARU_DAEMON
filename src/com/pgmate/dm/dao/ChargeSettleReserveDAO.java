@@ -295,9 +295,9 @@ public class ChargeSettleReserveDAO extends DAO {
         return "S" + getFunction("FN_NEXTVAL2", "SETTLE");
     }
 
-    public boolean updateTrxCapDtlStlComplete(String trxId) {
+    public boolean updateTrxCapDtlStlComplete(String trxId, String stlDistDay) {
         String q = "UPDATE PG_TRX_CAP_DTL "
-                + "    SET stlStatus = '이체완료' , payOutDay = '" + CommonUtil.getCurrentDate("yyyyMMdd") + "' "
+                + "    SET stlStatus = '이체완료' , stlDistDay = '" + stlDistDay + "', payOutDay = '" + CommonUtil.getCurrentDate("yyyyMMdd") + "' "
                 + " WHERE capId IN (SELECT capId FROM PG_TRX_CAP WHERE trxId = '" +trxId + "')";
 
         boolean updated =  super.update(q);

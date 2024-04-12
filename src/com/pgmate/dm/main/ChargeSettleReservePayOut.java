@@ -3,6 +3,7 @@ package com.pgmate.dm.main;
 import com.pgmate.dm.bean.FirmBean;
 import com.pgmate.dm.dao.ChargeSettleReserveDAO;
 import com.pgmate.dm.dao.FirmFailCheckDAO;
+import com.pgmate.dm.dao.RealTimePayOutDAO;
 import com.pgmate.dm.util.FirmClient;
 import com.pgmate.dm.util.SmsGw;
 import com.pgmate.lib.util.lang.CommonUtil;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Properties;
 
@@ -370,14 +372,15 @@ public class ChargeSettleReservePayOut {
     private void insertChargeSettleAndStlComplete(ChargeSettleReserveDAO dao, SharedMap<String,Object> data) {
         SharedMap<String,Object> chargeSettleMap = createRefundChargeSettleMap(data);
         if(dao.insertChargeSettle(chargeSettleMap)) {
+            String stlDistDay = calcDay("M+10", CommonUtil.getCurrentDate("yyyyMMdd"));
             //이체완료처리
             if(!"집계".equals(data.getString("trxType"))) {
-                dao.updateTrxCapDtlStlComplete(data.getString("refTrxId"));
+                dao.updateTrxCapDtlStlComplete(data.getString("refTrxId"), stlDistDay);
             } else {
                 // 하위 거래건 정산완료 처리
                 List<SharedMap<String,Object>> reserveChildList = dao.getChareSettleReserveChildList(data.getString("trxId"));
                 for(SharedMap<String,Object> child : reserveChildList) {
-                    dao.updateTrxCapDtlStlComplete(child.getString("refTrxId"));
+                    dao.updateTrxCapDtlStlComplete(child.getString("refTrxId"), stlDistDay);
                 }
             }
         }
@@ -570,4 +573,23 @@ public class ChargeSettleReservePayOut {
         logger.info("payload : {}", mchtSettle);
         return mchtSettle;
     }
+
+    public String calcDay(String settleType,String today){
+        RealTimePayOutDAO dao = new RealTimePayOutDAO();
+        try {
+            int term = 1;
+            if(settleType.startsWith("M")){
+                term = CommonUtil.parseInt(settleType.replaceAll("M[+]", ""));
+                String nextMonth = CommonUtil.getOpDate(GregorianCalendar.MONTH,1,today).substring(0,6);
+                return dao.getSettleDay(nextMonth+CommonUtil.zerofill(term,2));
+            }else{
+                return "";
+            }
+        }catch(Exception e) {
+            logger.error("calcDay Error : [{}][{}]", e.getMessage(), e.getStackTrace());
+
+            return "";
+        }
+    }
+
 }

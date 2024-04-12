@@ -108,7 +108,18 @@ public class WelcomeDiffTrxDownload {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("WELCOME 차액정산 다운로드 차액예정일자 ERROR");
+            logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
+            msgBody = "웰컴 영중소 거래내역 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
+            smsGw.sendMessage("0", "4", msgBody);
+        }finally {
+            sftpUtil.disconnection();
+            try {
+                if(br != null) br.close();
+                if(isr != null) isr.close();
+                if(is != null) is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

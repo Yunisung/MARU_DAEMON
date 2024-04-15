@@ -64,7 +64,7 @@ public class WelcomeDiffMchtDownload {
 
         final SFTPUtil sftpUtil = new SFTPUtil();
         try {
-            sftpUtil.init(HOST, userId, serverIdentity, PORT);
+            sftpUtil.initWithIdentity(HOST, userId, serverIdentity, PORT);
 
             logger.info("===== WELCOME 하위사업자 결과 파일 경로 : {} =====", WELCOME_DOWNLOAD_PATH + File.separator + fileName);
 

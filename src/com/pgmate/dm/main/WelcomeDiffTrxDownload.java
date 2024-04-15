@@ -78,7 +78,7 @@ public class WelcomeDiffTrxDownload {
 
 //                    downloadPath += File.separator + nowDate + ".welcome.download";
                     int strIdx = fileName.lastIndexOf("_");
-                    downloadPath = SETTLE_PATH + nowDate.substring(0, 6) + File.separator + nowDate + ".welcome.download" + fileName.substring(strIdx);
+                    downloadPath = SETTLE_PATH + nowDate.substring(0, 6) + File.separator + nowDate + ".welcome.download." + fileName.substring(strIdx+1);
                     sftpUtil.download(WELCOME_DOWNLOAD_PATH, fileName, downloadPath);
 
                     File file = new File(downloadPath);

@@ -575,7 +575,7 @@ public class ChargeSettleReservePayOut {
     }
 
     public String calcDay(String settleType,String today){
-        RealTimePayOutDAO dao = new RealTimePayOutDAO();
+        ChargeSettleReserveDAO dao = new ChargeSettleReserveDAO();
         try {
             int term = 1;
             if(settleType.startsWith("M")){

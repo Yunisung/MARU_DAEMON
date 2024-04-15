@@ -296,6 +296,7 @@ public class ChargeSettleReserveDAO extends DAO {
     }
 
     public boolean updateTrxCapDtlStlComplete(String trxId, String stlDistDay) {
+        // stlDistDay만 update 하는 이유
         String q = "UPDATE PG_TRX_CAP_DTL "
                 + "    SET stlStatus = '이체완료' , stlDistDay = '" + stlDistDay + "', payOutDay = '" + CommonUtil.getCurrentDate("yyyyMMdd") + "' "
                 + " WHERE capId IN (SELECT capId FROM PG_TRX_CAP WHERE trxId = '" +trxId + "')";
@@ -430,5 +431,12 @@ public class ChargeSettleReserveDAO extends DAO {
 
         super.initRecord();
         return insert;
+    }
+
+    public String getSettleDay(String today) {
+        String q = "SELECT days FROM PG_CODE_HOLIDAY WHERE days >= '"+today+"' AND status ='no' limit 1";
+        RecordSet rset = super.query(q);
+        super.initRecord();
+        return rset.getRow(0).getString("days");
     }
 }

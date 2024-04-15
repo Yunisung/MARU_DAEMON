@@ -372,6 +372,7 @@ public class ChargeSettleReservePayOut {
     private void insertChargeSettleAndStlComplete(ChargeSettleReserveDAO dao, SharedMap<String,Object> data) {
         SharedMap<String,Object> chargeSettleMap = createRefundChargeSettleMap(data);
         if(dao.insertChargeSettle(chargeSettleMap)) {
+            // M+10 대행사 정산예정일 고정
             String stlDistDay = calcDay("M+10", CommonUtil.getCurrentDate("yyyyMMdd"));
             //이체완료처리
             if(!"집계".equals(data.getString("trxType"))) {

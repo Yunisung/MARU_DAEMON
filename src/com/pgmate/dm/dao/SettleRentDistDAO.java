@@ -33,7 +33,7 @@ public class SettleRentDistDAO extends SettleRentDAO implements ImplRentSettle {
 				+"  ,SUM(IF(capType ='매입', 0,stlFeeVat)) rfdVat "
 				+"  ,SUM(stlDistFee) stlFee "								// 정산 금액 (수수료를 정산)
 				+"  ,SUM(stlDiffDistFee) stlDiffFee "						// 차액정산 금액
-				+"  FROM VW_TRX_CAP_LIST WHERE stlStatus='이체완료' AND payOutDay between '"+month+"01' and '"+month+"31' and stlDistId ='' and serviceType='월세앱' group by distId, SUBSTRING(payOutDay,1,6)"
+				+"  FROM VW_TRX_CAP_LIST WHERE stlStatus='이체완료' AND stlDistDay between '"+month+"01' and '"+month+"31' and stlDistId ='' and serviceType='월세앱' group by distId, stlDistDay "
 				+"  ) A , PG_MAM_DIST_MNG  B WHERE A.distId = B.distId  ";
 		RecordSet rset = super.query(q);
 		super.initRecord();

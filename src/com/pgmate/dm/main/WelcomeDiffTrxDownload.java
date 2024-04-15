@@ -77,7 +77,8 @@ public class WelcomeDiffTrxDownload {
                     logger.info("WELCOME 차액정산 결과 파일 EXIST");
 
 //                    downloadPath += File.separator + nowDate + ".welcome.download";
-                    downloadPath = SETTLE_PATH + nowDate.substring(0, 6) + File.separator + nowDate + ".welcome.download";
+                    int strIdx = fileName.lastIndexOf("_");
+                    downloadPath = SETTLE_PATH + nowDate.substring(0, 6) + File.separator + nowDate + ".welcome.download" + fileName.substring(strIdx);
                     sftpUtil.download(WELCOME_DOWNLOAD_PATH, fileName, downloadPath);
 
                     File file = new File(downloadPath);

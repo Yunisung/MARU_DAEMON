@@ -44,14 +44,14 @@ public class SettleRentDistDAO extends SettleRentDAO implements ImplRentSettle {
 	public void setSettleToIdx(String stlDistId,String stlDistDay,String id){
 		String q = "INSERT INTO PG_RENT_SETTLE_IDX  "
 				+"	SELECT '"+stlDistId+"' ,capId, capType as capStatus "
-				+"  FROM VW_TRX_CAP_LIST where stlDistDay ='"+stlDistDay+"' and stlDistId ='' and distId ='"+id+"' ";
+				+"  FROM VW_TRX_CAP_LIST WHERE stlStatus='이체완료' AND stlDistDay ='"+stlDistDay+"' AND stlDistId ='' AND distId ='"+id+"' ";
 		logger.info("set PG_RENT_SETTLE_IDX : {}",super.update(q));
 		super.initRecord();
 	}
 	
 	public void updateTrxCap(String stlDistId){
 		String q = "UPDATE PG_RENT_SETTLE_IDX A JOIN PG_TRX_CAP_DTL B ON B.capId = A.capId "
-						+ "SET B.stlDistId='"+stlDistId+"' WHERE A.stlId='"+stlDistId+"' ";
+						+ "SET B.stlDistId='"+stlDistId+"' WHERE A.stlId='"+stlDistId+"' AND B.stlStatus='이체완료' ";
 		/*String q = "UPDATE PG_TRX_CAP_DTL SET stlDistId='"+stlDistId+"' "
 					+"	WHERE capId in (SELECT capId FROM PG_SETTLE_IDX WHERE stlId='"+stlDistId+"' )";*/
 		logger.info("set PG_TRX_CAP_DTL : {}",super.update(q));

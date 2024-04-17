@@ -240,7 +240,10 @@ public class Settle {
 		try {
 			logger.info("= == === === === === {} 월 월세앱 영업대행 정산 시작 === === === === == =", stlDay.substring(0, 6));
 
-			for(String grage : monthArray) {
+			// 월세앱 영업라인 정산은 대행사만 진행
+			// 에이전시, 지사 영업라인 하게 될 시 해당 함수들 쿼리문 조건절 수정 필요
+			String[] rentMonthArray = {"대행사"};
+			for(String grage : rentMonthArray) {
 				logger.info("= == === GRADE : {}", grage);
 				ImplRentSettle stlDAO = getRentDAO(grage);
 				if(stlDAO != null){

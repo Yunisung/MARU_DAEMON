@@ -182,7 +182,7 @@ public class WelcomeDiffTrxDownload {
                 stlDiffStlAmt = stlDiffStlAmt.substring(stlDiffStlAmt.indexOf("-"));
                 diffStlAmt = Long.valueOf(stlDiffStlAmt);
                 stlDiffStlAmtVat = stlDiffStlAmtVat.substring(stlDiffStlAmtVat.indexOf("-"));
-                diffStlAmt = Long.valueOf(stlDiffStlAmtVat);
+                diffStlAmtVat = Long.valueOf(stlDiffStlAmtVat);
             }
 
             String diffStlDay = CommonUtil.toString(resBuf, 286, 8).trim();

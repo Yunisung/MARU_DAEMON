@@ -175,14 +175,14 @@ public class WelcomeDiffTrxDownload {
 
             //차액정산금이 양수 일 때 그대로 반영
             if(!stlDiffStlAmt.contains("-")) {
-                diffStlAmt = Long.valueOf(stlDiffStlAmt);
-                diffStlAmtVat = Long.valueOf(diffStlAmtVat);
+                diffStlAmt = Long.valueOf(stlDiffStlAmt) + Long.valueOf(diffStlAmtVat);
+//                diffStlAmtVat = Long.valueOf(diffStlAmtVat);
                 //차액정산금이 음수 일 때 '-' 부호 앞의 '0'들 제거 후 반영
             } else {
                 stlDiffStlAmt = stlDiffStlAmt.substring(stlDiffStlAmt.indexOf("-"));
-                diffStlAmt = Long.valueOf(stlDiffStlAmt);
-                stlDiffStlAmtVat = stlDiffStlAmtVat.substring(stlDiffStlAmtVat.indexOf("-"));
-                diffStlAmtVat = Long.valueOf(stlDiffStlAmtVat);
+                diffStlAmt = Long.valueOf(stlDiffStlAmt) + Long.valueOf(stlDiffStlAmtVat);
+//                stlDiffStlAmtVat = stlDiffStlAmtVat.substring(stlDiffStlAmtVat.indexOf("-"));
+//                diffStlAmtVat = Long.valueOf(stlDiffStlAmtVat);
             }
 
             String diffStlDay = CommonUtil.toString(resBuf, 286, 8).trim();

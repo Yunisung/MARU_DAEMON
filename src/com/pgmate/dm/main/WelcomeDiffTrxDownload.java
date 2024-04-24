@@ -173,16 +173,17 @@ public class WelcomeDiffTrxDownload {
             Long diffStlAmt = 0L;
             Long diffStlAmtVat = 0L;
 
-            //차액정산금이 양수 일 때 그대로 반영
+            // 결과 금액이 "마이너스"일 경우 웰컴에서 우리에게 주는 금액
+            // 결과 금액이 "플러스"일 경우 웰컴에게 반환되는 금액
+            // 따라서 우리 입장에서 저장 할 때는 결과금액의 반대 금액으로 설정(음수->양수/양수->음수)
             if(!stlDiffStlAmt.contains("-")) {
                 diffStlAmt = Long.valueOf(stlDiffStlAmt) + Long.valueOf(diffStlAmtVat);
-//                diffStlAmtVat = Long.valueOf(diffStlAmtVat);
+                diffStlAmt = diffStlAmt * -1;
                 //차액정산금이 음수 일 때 '-' 부호 앞의 '0'들 제거 후 반영
             } else {
                 stlDiffStlAmt = stlDiffStlAmt.substring(stlDiffStlAmt.indexOf("-"));
                 diffStlAmt = Long.valueOf(stlDiffStlAmt) + Long.valueOf(stlDiffStlAmtVat);
-//                stlDiffStlAmtVat = stlDiffStlAmtVat.substring(stlDiffStlAmtVat.indexOf("-"));
-//                diffStlAmtVat = Long.valueOf(stlDiffStlAmtVat);
+                diffStlAmt = diffStlAmt * -1;
             }
 
             String diffStlDay = CommonUtil.toString(resBuf, 286, 8).trim();

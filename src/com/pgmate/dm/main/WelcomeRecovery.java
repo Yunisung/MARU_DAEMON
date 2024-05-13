@@ -73,8 +73,8 @@ public class WelcomeRecovery {
                             pay.put("mchtId", tmnMap.getString("mchtId"));
                             pay.put("tmnId", tmnMap.getString("tmnId"));
                             pay.put("trackId", getTrackId());
-                            pay.put("amount", data.getString("transAmount"));
-                            pay.put("installment", data.getInt("cardQuota"));
+                            pay.put("amount", data.getLong("transAmount"));
+                            pay.put("installment", data.getString("cardQuota"));
                             pay.put("cardId", GenKey.genKeys(CPKEY.CARD, pay.getString("trxId")));
                             pay.put("bin", data.getString("cardNumber").substring(0, 6));
                             pay.put("last4", data.getString("cardNumber").substring(data.getString("cardNumber").length()-4));
@@ -135,7 +135,7 @@ public class WelcomeRecovery {
                                 refund.put("mchtId", tmnMap.getString("mchtId"));
                                 refund.put("tmnId", tmnMap.getString("tmnId"));
                                 refund.put("trackId", getTrackId());
-                                refund.put("staus", "완료");
+                                refund.put("status", "완료");
 
                                 long amount = - rootTrxPayMap.getLong("amount");
                                 refund.put("rfdAmount", amount);

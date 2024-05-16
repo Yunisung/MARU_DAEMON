@@ -356,7 +356,9 @@ public class WelcomeDiffDownloadDAO extends DAO {
 
                     capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
                     capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+                    capDtlMap.put("stlDiffVanCardType", map.getString("cardType"));
                     capDtlMap.put("stlDiffStatus", "입금대기");
+                    capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
 
                     long benefit1 = map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee");
                     long benefit2 = capDtlMap.getLong("stlDiffVanAmt");

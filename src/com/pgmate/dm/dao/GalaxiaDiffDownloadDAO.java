@@ -191,7 +191,7 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 
 	public List<SharedMap<String, Object>> getTrxCap(String nowDate) {
 		super.setDebug(true);
-		String query = "SELECT A.*, B.capId, C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlDistRate,C.stlAgencyFee,C.stlAgencyRate,C.stlSalesFee,C.stlSalesRate,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
+		String query = "SELECT A.*, B.capId, B.serviceType, C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlDistRate,C.stlAgencyFee,C.stlAgencyRate,C.stlSalesFee,C.stlSalesRate,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
 				+ "INNER JOIN PG_TRX_CAP B ON A.trxId = B.trxId "
 				+ "INNER JOIN PG_TRX_CAP_DTL C ON B.capId = C.capId "
 				+ "LEFT JOIN PG_CODE D on A.resultCd = D.code and D.alias = 'DIFF_GAL' "
@@ -412,8 +412,8 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 					capDtlMap.put("stlDiffVanCardType", stlDiffVanCardType);
 					capDtlMap.put("stlDiffStatus", "입금대기");
 					capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
-					
-					
+
+
 					// 일반 수수료 처리
 					if(map.getString("stlDiffType").equals("일반")) {
 						if(capDtlMap.getString("stlDiffVanType").equals("일반")) {
@@ -516,7 +516,9 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 
 					capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
 					capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+					capDtlMap.put("stlDiffVanCardType", map.getString("cardType"));
 					capDtlMap.put("stlDiffStatus", "입금대기");
+					capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
 
 					long benefit1 = map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee");
 					long benefit2 = capDtlMap.getLong("stlDiffVanAmt");

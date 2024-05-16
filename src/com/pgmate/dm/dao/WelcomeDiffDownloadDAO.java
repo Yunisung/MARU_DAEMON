@@ -179,191 +179,273 @@ public class WelcomeDiffDownloadDAO extends DAO {
                 capDtlMap.put("stlDiffResultMsg",map.getString("codeName"));
                 String stlDiffVanCardType = "";
 
-                // 월세앱 거래건이 아니고 정상결과 일 때
-                if(!map.getString("serviceType").equals("월세앱") && map.getString("resultCd").equals("00")) {
-                    SharedMap<String, Object> mchtMngMap = getMchtMngById(map.getString("mchtId"));
-                    SharedMap<String,Object> orgFeeMap = getOrgFee(map.getString("van"));
+                if(!map.getString("serviceType").equals("월세앱")) {
+                    // 월세앱 거래건이 아니고 정상결과 일 때
+                    if (map.getString("resultCd").equals("00")) {
+                        SharedMap<String, Object> mchtMngMap = getMchtMngById(map.getString("mchtId"));
+                        SharedMap<String, Object> orgFeeMap = getOrgFee(map.getString("van"));
 
-                    double stlDiffAgencyRate = 0;
-                    double stlDiffDistRate = 0;
-                    double stlDiffSalesRate = 0;
-                    double diffRate = 0;
+                        double stlDiffAgencyRate = 0;
+                        double stlDiffDistRate = 0;
+                        double stlDiffSalesRate = 0;
+                        double diffRate = 0;
 
-                    if(map.getString("cardType").equals("1")) {
-                        switch(map.getString("mchtType")) {
-                            case "영세":diffRate = orgFeeMap.getDouble("diff1CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff0CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff0CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff0CheckSalesRate");break;
-                            case "중소1":diffRate = orgFeeMap.getDouble("diff2CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff1CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff1CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff1CheckSalesRate");break;
-                            case "중소2":diffRate = orgFeeMap.getDouble("diff3CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff2CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff2CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff2CheckSalesRate");break;
-                            case "중소3":diffRate = orgFeeMap.getDouble("diff4CheckRate");stlDiffAgencyRate = mchtMngMap.getDouble("diff3CheckAgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3CheckDistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3CheckSalesRate");break;
-                            default :stlDiffAgencyRate = 0;stlDiffDistRate = 0;break;
-                        }
-                        stlDiffVanCardType = "체크";
-                    }else {
-                        switch(map.getString("mchtType")) {
-                            case "영세":diffRate = orgFeeMap.getDouble("diff1Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff0AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff0DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff0SalesRate");break;
-                            case "중소1":diffRate = orgFeeMap.getDouble("diff2Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff1AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff1DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff1SalesRate");break;
-                            case "중소2":diffRate = orgFeeMap.getDouble("diff3Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff2AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff2DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff2SalesRate");break;
-                            case "중소3":diffRate = orgFeeMap.getDouble("diff4Rate");stlDiffAgencyRate = mchtMngMap.getDouble("diff3AgencyRate");stlDiffDistRate = mchtMngMap.getDouble("diff3DistRate");stlDiffSalesRate = mchtMngMap.getDouble("diff3SalesRate");break;
-                            default :stlDiffAgencyRate = 0;stlDiffDistRate = 0;break;
-                        }
-                        stlDiffVanCardType = "신용";
-                    }
-
-                    long amount = map.getLong("mchtSalesAmt");
-                    long diffVanAmt = map.getLong("diffStlAmt");
-                    if(!map.getString("trxType").equals("0")) {
-                        if(map.getLong("diffStlAmt") < 0) {
-                            diffVanAmt = map.getLong("diffStlAmt");
-                        }else {
-                            diffVanAmt = -map.getLong("diffStlAmt");
-                        }
-                        amount = -map.getLong("mchtSalesAmt");
-                    }
-                    long stlDiffAgencyFee = calcFeeVat(amount, stlDiffAgencyRate);
-                    long stlDiffDistFee = calcFeeVat(amount, stlDiffDistRate);
-
-                    capDtlMap.put("stlDiffAgencyRate",stlDiffAgencyRate);
-                    capDtlMap.put("stlDiffAgencyFee",stlDiffAgencyFee);
-                    capDtlMap.put("stlDiffDistRate",stlDiffDistRate);
-                    capDtlMap.put("stlDiffDistFee",stlDiffDistFee);
-                    capDtlMap.put("stlDiffSalesRate", stlDiffSalesRate);
-                    capDtlMap.put("stlDiffSalesFee"	, calcFee(capDtlMap.getLong("stlDiffAgencyFee"), capDtlMap.getDouble("stlDiffSalesRate")));
-
-                    // 에이전시 차액정산 최종 수수료 : 에이전시 차액정산 수수료 - 지사 차액정산 수수료
-                    capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee")-capDtlMap.getLong("stlDiffSalesFee"));
-
-                    // 일반 가맹점의 차액정산금 계산하기 위해 로직 추가
-                    // 본사차액정산금 계산
-                    capDtlMap.put("stlDiffRate"	, diffRate);
-                    capDtlMap.put("stlDiffAmt"	, calcFeeVat(amount, diffRate));
-
-                    capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
-                    capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
-                    capDtlMap.put("stlDiffVanCardType", stlDiffVanCardType);
-                    capDtlMap.put("stlDiffStatus", "입금대기");
-                    capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
-
-
-                    // 일반 수수료 처리
-                    if(map.getString("stlDiffType").equals("일반")) {
-                        if(capDtlMap.getString("stlDiffVanType").equals("일반")) {
-                            // 기존동일 변동없음
-                            capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
-                            capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
-                            capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
-                            capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
-                            capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
-                            capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
-                        }else {
-                            // 영중소로 차액정산 반영할 경우
-                            capDtlMap.put("stlDistFee", 0);
-                            capDtlMap.put("stlDistRate", 0);
-                            capDtlMap.put("stlAgencyFee", 0);
-                            capDtlMap.put("stlAgencyRate", 0);
-                            capDtlMap.put("stlSalesFee", 0);
-                            capDtlMap.put("stlSalesRate", 0);
-                        }
-                    }else {
-                        // 영중소가 아닌 일반으로 올경우
-                        if(capDtlMap.getString("stlDiffVanType").equals("일반")) {
-                            // 일반 수수료로 계산진행
-                            capDtlMap.put("stlAgencyRate", mchtMngMap.getDouble("rate")-mchtMngMap.getDouble("agencyRate"));
-                            capDtlMap.put("stlAgencyFee", calcFeeVat(amount, capDtlMap.getDouble("stlAgencyRate")));
-                            capDtlMap.put("stlSalesRate", mchtMngMap.getDouble("salesRate"));
-                            capDtlMap.put("stlSalesFee"	, calcFee(capDtlMap.getLong("stlAgencyFee"), capDtlMap.getDouble("stlSalesRate")));
-                            capDtlMap.put("stlDistRate"	, mchtMngMap.getDouble("agencyRate")-mchtMngMap.getDouble("distRate"));
-                            if(capDtlMap.getDouble("stlDistRate") < 0){
-                                capDtlMap.put("stlDistFee"	, 0);
-                            }else{
-                                capDtlMap.put("stlDistFee"	, calcFeeVat(amount, capDtlMap.getDouble("stlDistRate")));
+                        if (map.getString("cardType").equals("1")) {
+                            switch (map.getString("mchtType")) {
+                                case "영세":
+                                    diffRate = orgFeeMap.getDouble("diff1CheckRate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff0CheckAgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff0CheckDistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff0CheckSalesRate");
+                                    break;
+                                case "중소1":
+                                    diffRate = orgFeeMap.getDouble("diff2CheckRate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff1CheckAgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff1CheckDistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff1CheckSalesRate");
+                                    break;
+                                case "중소2":
+                                    diffRate = orgFeeMap.getDouble("diff3CheckRate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff2CheckAgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff2CheckDistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff2CheckSalesRate");
+                                    break;
+                                case "중소3":
+                                    diffRate = orgFeeMap.getDouble("diff4CheckRate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff3CheckAgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff3CheckDistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff3CheckSalesRate");
+                                    break;
+                                default:
+                                    stlDiffAgencyRate = 0;
+                                    stlDiffDistRate = 0;
+                                    break;
                             }
-                            // 에이전시 최종 수수료 : 에이전시 수수료 - 지사 수수료
-                            capDtlMap.put("stlAgencyFee", capDtlMap.getLong("stlAgencyFee")-capDtlMap.getLong("stlSalesFee"));
-
-                        }else {
-                            // 기존동일 변동없음
-                            capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
-                            capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
-                            capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
-                            capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
-                            capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
-                            capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
-                        }
-                    }
-
-                    long benefit1 = map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee");
-                    long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
-
-                    capDtlMap.put("benefit"		, benefit1 + benefit2);
-                }else if(!map.getString("resultCd").equals("00")) {
-                    //차액정산에 실패하였으므로 일반 수수료는 기존과 동일
-                    capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
-                    capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
-                    capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
-                    capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
-                    capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
-                    capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
-
-
-                    // 차액정산 수수료는 0으로 한다
-                    capDtlMap.put("stlDiffAgencyRate",0);
-                    capDtlMap.put("stlDiffAgencyFee",0);
-                    capDtlMap.put("stlDiffDistRate",0);
-                    capDtlMap.put("stlDiffDistFee",0);
-                    capDtlMap.put("stlDiffSalesRate",0);
-                    capDtlMap.put("stlDiffSalesFee",0);
-
-                    long diffVanAmt = map.getLong("diffStlAmt");
-                    if(!map.getString("trxType").equals("0")) {
-                        if (map.getLong("diffStlAmt") < 0) {
-                            diffVanAmt = map.getLong("diffStlAmt");
+                            stlDiffVanCardType = "체크";
                         } else {
-                            diffVanAmt = -map.getLong("diffStlAmt");
+                            switch (map.getString("mchtType")) {
+                                case "영세":
+                                    diffRate = orgFeeMap.getDouble("diff1Rate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff0AgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff0DistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff0SalesRate");
+                                    break;
+                                case "중소1":
+                                    diffRate = orgFeeMap.getDouble("diff2Rate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff1AgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff1DistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff1SalesRate");
+                                    break;
+                                case "중소2":
+                                    diffRate = orgFeeMap.getDouble("diff3Rate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff2AgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff2DistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff2SalesRate");
+                                    break;
+                                case "중소3":
+                                    diffRate = orgFeeMap.getDouble("diff4Rate");
+                                    stlDiffAgencyRate = mchtMngMap.getDouble("diff3AgencyRate");
+                                    stlDiffDistRate = mchtMngMap.getDouble("diff3DistRate");
+                                    stlDiffSalesRate = mchtMngMap.getDouble("diff3SalesRate");
+                                    break;
+                                default:
+                                    stlDiffAgencyRate = 0;
+                                    stlDiffDistRate = 0;
+                                    break;
+                            }
+                            stlDiffVanCardType = "신용";
                         }
-                    }
 
-                    capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
-                    capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
-                    capDtlMap.put("stlDiffStatus", "차액정산실패");
+                        long amount = map.getLong("mchtSalesAmt");
+                        long diffVanAmt = map.getLong("diffStlAmt");
+                        if (!map.getString("trxType").equals("0")) {
+                            if (map.getLong("diffStlAmt") < 0) {
+                                diffVanAmt = map.getLong("diffStlAmt");
+                            } else {
+                                diffVanAmt = -map.getLong("diffStlAmt");
+                            }
+                            amount = -map.getLong("mchtSalesAmt");
+                        }
+                        long stlDiffAgencyFee = calcFeeVat(amount, stlDiffAgencyRate);
+                        long stlDiffDistFee = calcFeeVat(amount, stlDiffDistRate);
 
-                    capDtlMap.put("benefit"		, map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee"));
-                } else if(map.getString("serviceType").equals("월세앱")){
-                    // 월세앱 차액정산
-                    // 기존 수수료율 설정
-                    capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
-                    capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
-                    capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
-                    capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
-                    capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
-                    capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
+                        capDtlMap.put("stlDiffAgencyRate", stlDiffAgencyRate);
+                        capDtlMap.put("stlDiffAgencyFee", stlDiffAgencyFee);
+                        capDtlMap.put("stlDiffDistRate", stlDiffDistRate);
+                        capDtlMap.put("stlDiffDistFee", stlDiffDistFee);
+                        capDtlMap.put("stlDiffSalesRate", stlDiffSalesRate);
+                        capDtlMap.put("stlDiffSalesFee", calcFee(capDtlMap.getLong("stlDiffAgencyFee"), capDtlMap.getDouble("stlDiffSalesRate")));
 
-                    // 차액정산 수수료는 0으로 한다
-                    capDtlMap.put("stlDiffAgencyRate",0);
-                    capDtlMap.put("stlDiffAgencyFee",0);
-                    capDtlMap.put("stlDiffDistRate",0);
-                    capDtlMap.put("stlDiffDistFee",0);
-                    capDtlMap.put("stlDiffSalesRate",0);
-                    capDtlMap.put("stlDiffSalesFee",0);
+                        // 에이전시 차액정산 최종 수수료 : 에이전시 차액정산 수수료 - 지사 차액정산 수수료
+                        capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee") - capDtlMap.getLong("stlDiffSalesFee"));
 
-                    long diffVanAmt = map.getLong("diffStlAmt");
-                    if(!map.getString("trxType").equals("0")) {
-                        if (map.getLong("diffStlAmt") < 0) {
-                            diffVanAmt = map.getLong("diffStlAmt");
+                        // 일반 가맹점의 차액정산금 계산하기 위해 로직 추가
+                        // 본사차액정산금 계산
+                        capDtlMap.put("stlDiffRate", diffRate);
+                        capDtlMap.put("stlDiffAmt", calcFeeVat(amount, diffRate));
+
+                        capDtlMap.put("stlDiffVanAmt", diffVanAmt);
+                        capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+                        capDtlMap.put("stlDiffVanCardType", stlDiffVanCardType);
+                        capDtlMap.put("stlDiffStatus", "입금대기");
+                        capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
+
+
+                        // 일반 수수료 처리
+                        if (map.getString("stlDiffType").equals("일반")) {
+                            if (capDtlMap.getString("stlDiffVanType").equals("일반")) {
+                                // 기존동일 변동없음
+                                capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
+                                capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
+                                capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
+                                capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
+                                capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
+                                capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
+                            } else {
+                                // 영중소로 차액정산 반영할 경우
+                                capDtlMap.put("stlDistFee", 0);
+                                capDtlMap.put("stlDistRate", 0);
+                                capDtlMap.put("stlAgencyFee", 0);
+                                capDtlMap.put("stlAgencyRate", 0);
+                                capDtlMap.put("stlSalesFee", 0);
+                                capDtlMap.put("stlSalesRate", 0);
+                            }
                         } else {
-                            diffVanAmt = -map.getLong("diffStlAmt");
+                            // 영중소가 아닌 일반으로 올경우
+                            if (capDtlMap.getString("stlDiffVanType").equals("일반")) {
+                                // 일반 수수료로 계산진행
+                                capDtlMap.put("stlAgencyRate", mchtMngMap.getDouble("rate") - mchtMngMap.getDouble("agencyRate"));
+                                capDtlMap.put("stlAgencyFee", calcFeeVat(amount, capDtlMap.getDouble("stlAgencyRate")));
+                                capDtlMap.put("stlSalesRate", mchtMngMap.getDouble("salesRate"));
+                                capDtlMap.put("stlSalesFee", calcFee(capDtlMap.getLong("stlAgencyFee"), capDtlMap.getDouble("stlSalesRate")));
+                                capDtlMap.put("stlDistRate", mchtMngMap.getDouble("agencyRate") - mchtMngMap.getDouble("distRate"));
+                                if (capDtlMap.getDouble("stlDistRate") < 0) {
+                                    capDtlMap.put("stlDistFee", 0);
+                                } else {
+                                    capDtlMap.put("stlDistFee", calcFeeVat(amount, capDtlMap.getDouble("stlDistRate")));
+                                }
+                                // 에이전시 최종 수수료 : 에이전시 수수료 - 지사 수수료
+                                capDtlMap.put("stlAgencyFee", capDtlMap.getLong("stlAgencyFee") - capDtlMap.getLong("stlSalesFee"));
+
+                            } else {
+                                // 기존동일 변동없음
+                                capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
+                                capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
+                                capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
+                                capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
+                                capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
+                                capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
+                            }
                         }
+
+                        long benefit1 = map.getLong("stlFee") + map.getLong("stlFeeVat") - capDtlMap.getLong("stlDistFee") - capDtlMap.getLong("stlAgencyFee") - map.getLong("stlVanFee");
+                        long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
+
+                        capDtlMap.put("benefit", benefit1 + benefit2);
+                    } else if (!map.getString("resultCd").equals("00")) {
+                        //차액정산에 실패하였으므로 일반 수수료는 기존과 동일
+                        capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
+                        capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
+                        capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
+                        capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
+                        capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
+                        capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
+
+
+                        // 차액정산 수수료는 0으로 한다
+                        capDtlMap.put("stlDiffAgencyRate", 0);
+                        capDtlMap.put("stlDiffAgencyFee", 0);
+                        capDtlMap.put("stlDiffDistRate", 0);
+                        capDtlMap.put("stlDiffDistFee", 0);
+                        capDtlMap.put("stlDiffSalesRate", 0);
+                        capDtlMap.put("stlDiffSalesFee", 0);
+
+                        long diffVanAmt = map.getLong("diffStlAmt");
+                        if (!map.getString("trxType").equals("0")) {
+                            if (map.getLong("diffStlAmt") < 0) {
+                                diffVanAmt = map.getLong("diffStlAmt");
+                            } else {
+                                diffVanAmt = -map.getLong("diffStlAmt");
+                            }
+                        }
+
+                        capDtlMap.put("stlDiffVanAmt", diffVanAmt);
+                        capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+                        capDtlMap.put("stlDiffStatus", "차액정산실패");
+
+                        capDtlMap.put("benefit", map.getLong("stlFee") + map.getLong("stlFeeVat") - capDtlMap.getLong("stlDistFee") - capDtlMap.getLong("stlAgencyFee") - map.getLong("stlVanFee"));
                     }
+                }else if(!map.getString("serviceType").equals("월세앱")) {
+                    if(map.getString("resultCd").equals("00")) {
+                        // 월세앱 차액정산
+                        // 기존 수수료율 설정
+                        capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
+                        capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
+                        capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
+                        capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
+                        capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
+                        capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
 
-                    capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
-                    capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
-                    capDtlMap.put("stlDiffVanCardType", map.getString("cardType"));
-                    capDtlMap.put("stlDiffStatus", "입금대기");
-                    capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
+                        // 차액정산 수수료는 0으로 한다
+                        capDtlMap.put("stlDiffAgencyRate", 0);
+                        capDtlMap.put("stlDiffAgencyFee", 0);
+                        capDtlMap.put("stlDiffDistRate", 0);
+                        capDtlMap.put("stlDiffDistFee", 0);
+                        capDtlMap.put("stlDiffSalesRate", 0);
+                        capDtlMap.put("stlDiffSalesFee", 0);
 
-                    long benefit1 = map.getLong("stlFee")+map.getLong("stlFeeVat")-capDtlMap.getLong("stlDistFee")-capDtlMap.getLong("stlAgencyFee")-map.getLong("stlVanFee");
-                    long benefit2 = capDtlMap.getLong("stlDiffVanAmt");
+                        long diffVanAmt = map.getLong("diffStlAmt");
+                        if (!map.getString("trxType").equals("0")) {
+                            if (map.getLong("diffStlAmt") < 0) {
+                                diffVanAmt = map.getLong("diffStlAmt");
+                            } else {
+                                diffVanAmt = -map.getLong("diffStlAmt");
+                            }
+                        }
 
-                    capDtlMap.put("benefit"		, benefit1 + benefit2);
+                        capDtlMap.put("stlDiffVanAmt", diffVanAmt);
+                        capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+                        capDtlMap.put("stlDiffVanCardType", map.getString("cardType"));
+                        capDtlMap.put("stlDiffStatus", "입금대기");
+                        capDtlMap.put("stlDiffVanDay", map.getString("diffStlDay"));
+
+                        long benefit1 = map.getLong("stlFee") + map.getLong("stlFeeVat") - capDtlMap.getLong("stlDistFee") - capDtlMap.getLong("stlAgencyFee") - map.getLong("stlVanFee");
+                        long benefit2 = capDtlMap.getLong("stlDiffVanAmt");
+
+                        capDtlMap.put("benefit", benefit1 + benefit2);
+                    } else if (!map.getString("resultCd").equals("00")) {
+                        //차액정산에 실패하였으므로 일반 수수료는 기존과 동일
+                        capDtlMap.put("stlDistFee", map.getLong("stlDistFee"));
+                        capDtlMap.put("stlDistRate", map.getDouble("stlDistRate"));
+                        capDtlMap.put("stlAgencyFee", map.getLong("stlAgencyFee"));
+                        capDtlMap.put("stlAgencyRate", map.getDouble("stlAgencyRate"));
+                        capDtlMap.put("stlSalesFee", map.getLong("stlSalesFee"));
+                        capDtlMap.put("stlSalesRate", map.getDouble("stlSalesRate"));
+
+
+                        // 차액정산 수수료는 0으로 한다
+                        capDtlMap.put("stlDiffAgencyRate", 0);
+                        capDtlMap.put("stlDiffAgencyFee", 0);
+                        capDtlMap.put("stlDiffDistRate", 0);
+                        capDtlMap.put("stlDiffDistFee", 0);
+                        capDtlMap.put("stlDiffSalesRate", 0);
+                        capDtlMap.put("stlDiffSalesFee", 0);
+
+                        long diffVanAmt = map.getLong("diffStlAmt");
+                        if (!map.getString("trxType").equals("0")) {
+                            if (map.getLong("diffStlAmt") < 0) {
+                                diffVanAmt = map.getLong("diffStlAmt");
+                            } else {
+                                diffVanAmt = -map.getLong("diffStlAmt");
+                            }
+                        }
+
+                        capDtlMap.put("stlDiffVanAmt", diffVanAmt);
+                        capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
+                        capDtlMap.put("stlDiffStatus", "차액정산실패");
+
+                        capDtlMap.put("benefit", map.getLong("stlFee") + map.getLong("stlFeeVat") - capDtlMap.getLong("stlDistFee") - capDtlMap.getLong("stlAgencyFee") - map.getLong("stlVanFee"));
+                    }
                 }
 
                 int i = 1;

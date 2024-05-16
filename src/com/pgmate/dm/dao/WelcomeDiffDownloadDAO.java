@@ -345,7 +345,16 @@ public class WelcomeDiffDownloadDAO extends DAO {
                     capDtlMap.put("stlDiffSalesRate",0);
                     capDtlMap.put("stlDiffSalesFee",0);
 
-                    capDtlMap.put("stlDiffVanAmt"	, 0);
+                    long diffVanAmt = map.getLong("diffStlAmt");
+                    if(!map.getString("trxType").equals("0")) {
+                        if (map.getLong("diffStlAmt") < 0) {
+                            diffVanAmt = map.getLong("diffStlAmt");
+                        } else {
+                            diffVanAmt = -map.getLong("diffStlAmt");
+                        }
+                    }
+
+                    capDtlMap.put("stlDiffVanAmt"	, diffVanAmt);
                     capDtlMap.put("stlDiffVanType", map.getString("mchtType"));
                     capDtlMap.put("stlDiffStatus", "입금대기");
 

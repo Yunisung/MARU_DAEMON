@@ -51,61 +51,67 @@ public class GalaxiaRecovery {
 					}else{
 						
 						if(data.getString("trnType").equals("승인")){
-							SharedMap<String,Object> pay = new SharedMap<String,Object>();
-							pay.put("trxId"		, getTrxId());
-							pay.put("mchtId"	, tmnMap.getString("mchtId"));
-							pay.put("tmnId"		, tmnMap.getString("tmnId"));
-							pay.put("trackId"	, getTrackId());
-							pay.put("amount"	, data.getLong("amount"));
-							pay.put("installment", CommonUtil.zerofill(data.getInt("installment"),2));
-							pay.put("cardId"	, GenKey.genKeys(CPKEY.CARD,pay.getString("trxId")));
-							pay.put("bin"		, data.getString("bin"));
-							pay.put("last4"		, data.getString("last4"));
-							pay.put("status"	, "승인");
-							pay.put("prodId"	, GenKey.genKeys(CPKEY.PRODUCT,pay.getString("trxId")));
-							
-							Card card = new Card();
-							card.cardId 	= pay.getString("cardId");
-							card.installment= pay.getInt("installment");
-							card.bin		= pay.getString("bin");
-							card.last4		= pay.getString("last4");
-							
-							SharedMap<String,Object> issuerMap = getDBIssuer(card.bin);
-							if(issuerMap != null){
-								card.cardType = issuerMap.getString("type") ;
-								card.issuer = issuerMap.getString("issuer");
-								card.acquirer = issuerMap.getString("acquirer");
-							}
-							
-							// 카드 정보를 json 형식으로 변경해서 
-							String encrypted = Base64.encodeToString(SeedKisa.encrypt(GsonUtil.toJson(card), ByteUtil.toBytes("696d697373796f7568616e6765656e61", 16)));
-							insertCard(card.cardId,encrypted);
-							
-							pay.put("cardType"	, card.cardType);
-							pay.put("issuer"	, card.issuer);
-							pay.put("acquirer"	, card.acquirer);
-							pay.put("reqDay"	, data.getString("trxDay"));
-							pay.put("reqTime"	, data.getString("trxTime"));
-							pay.put("authCd"	, data.getString("authCd"));
-							pay.put("resultCd"	, "0000");
-							pay.put("resultMsg"	, "[정상]정상승인");
-							pay.put("van"		, tmnMap.getString("van"));		
-							pay.put("vanId"		, data.getString("vanId"));
-							pay.put("vanTrxId"	, data.getString("vanTrxId"));
-							pay.put("regDay"	, data.getString("trxDay"));
-							pay.put("regTime"	, data.getString("trxTime"));
-							pay.put("regDate"	, data.getString("trxDay")+data.getString("trxTime"));
-							
-							// 주문자 정보 넣기 
-							data.put("trxId",pay.getString("trxId"));
-							data.put("tmnId",pay.getString("tmnId"));
-							
-							if(insertTrxPay(pay)){
-								data.put("exeStatus", "완료");
-								data.put("summary", "승인거래 등록완료");
-							}else{
+
+							if(getPayList(data.getString("tid")).size() > 0) {
 								data.put("exeStatus", "실패");
-								data.put("summary", "승인거래 등록실패");
+								data.put("summary", "기승인 거래건");
+							} else {
+								SharedMap<String,Object> pay = new SharedMap<String,Object>();
+								pay.put("trxId"		, getTrxId());
+								pay.put("mchtId"	, tmnMap.getString("mchtId"));
+								pay.put("tmnId"		, tmnMap.getString("tmnId"));
+								pay.put("trackId"	, getTrackId());
+								pay.put("amount"	, data.getLong("amount"));
+								pay.put("installment", CommonUtil.zerofill(data.getInt("installment"),2));
+								pay.put("cardId"	, GenKey.genKeys(CPKEY.CARD,pay.getString("trxId")));
+								pay.put("bin"		, data.getString("bin"));
+								pay.put("last4"		, data.getString("last4"));
+								pay.put("status"	, "승인");
+								pay.put("prodId"	, GenKey.genKeys(CPKEY.PRODUCT,pay.getString("trxId")));
+
+								Card card = new Card();
+								card.cardId 	= pay.getString("cardId");
+								card.installment= pay.getInt("installment");
+								card.bin		= pay.getString("bin");
+								card.last4		= pay.getString("last4");
+
+								SharedMap<String,Object> issuerMap = getDBIssuer(card.bin);
+								if(issuerMap != null){
+									card.cardType = issuerMap.getString("type") ;
+									card.issuer = issuerMap.getString("issuer");
+									card.acquirer = issuerMap.getString("acquirer");
+								}
+
+								// 카드 정보를 json 형식으로 변경해서
+								String encrypted = Base64.encodeToString(SeedKisa.encrypt(GsonUtil.toJson(card), ByteUtil.toBytes("696d697373796f7568616e6765656e61", 16)));
+								insertCard(card.cardId,encrypted);
+
+								pay.put("cardType"	, card.cardType);
+								pay.put("issuer"	, card.issuer);
+								pay.put("acquirer"	, card.acquirer);
+								pay.put("reqDay"	, data.getString("trxDay"));
+								pay.put("reqTime"	, data.getString("trxTime"));
+								pay.put("authCd"	, data.getString("authCd"));
+								pay.put("resultCd"	, "0000");
+								pay.put("resultMsg"	, "[정상]정상승인");
+								pay.put("van"		, tmnMap.getString("van"));
+								pay.put("vanId"		, data.getString("vanId"));
+								pay.put("vanTrxId"	, data.getString("vanTrxId"));
+								pay.put("regDay"	, data.getString("trxDay"));
+								pay.put("regTime"	, data.getString("trxTime"));
+								pay.put("regDate"	, data.getString("trxDay")+data.getString("trxTime"));
+
+								// 주문자 정보 넣기
+								data.put("trxId",pay.getString("trxId"));
+								data.put("tmnId",pay.getString("tmnId"));
+
+								if(insertTrxPay(pay)){
+									data.put("exeStatus", "완료");
+									data.put("summary", "승인거래 등록완료");
+								}else{
+									data.put("exeStatus", "실패");
+									data.put("summary", "승인거래 등록실패");
+								}
 							}
 						}else{
 							if(getRfdList(data.get("vanTrxId").toString()).size() > 0) {
@@ -504,7 +510,16 @@ public class GalaxiaRecovery {
 		}
 		return inserted;
 	}
-	
+
+	public List<SharedMap<String,Object>> getPayList(String vanTrxId){
+
+		DAO dao = new DAO();
+		dao.setTable("PG_TRX_PAY");
+		dao.setColumns("*");
+		dao.addWhere("vanTrxId",vanTrxId);
+		RecordSet rset = dao.search();
+		return rset.getRows();
+	}
 	
 	public List<SharedMap<String,Object>> getRfdList(String vanTrxId){
 			

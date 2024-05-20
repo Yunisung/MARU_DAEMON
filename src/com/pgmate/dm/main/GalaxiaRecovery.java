@@ -52,7 +52,7 @@ public class GalaxiaRecovery {
 						
 						if(data.getString("trnType").equals("승인")){
 
-							if(getPayList(data.getString("tid")).size() > 0) {
+							if(getPayList(data.getString("vanTrxId")).size() > 0) {
 								data.put("exeStatus", "실패");
 								data.put("summary", "기승인 거래건");
 							} else {

@@ -132,7 +132,7 @@ public class GalaxiaRecovery {
 									rfd.put("trackId"	, getTrackId());
 									rfd.put("status", "완료");
 									
-									long amount = rootMap.getLong("amount");
+									long amount = data.getLong("amount");
 									if(amount > 0){
 										amount = - amount;
 									}
@@ -238,23 +238,35 @@ public class GalaxiaRecovery {
 	}
 
 	private SharedMap<String, Object> getMchtTmnByTmnId(String tmnId) {
-		String key = "PG_MCHT_TMN_" + tmnId;
-				
-		if (Cache.map.containsKey(key)) {
-			return Cache.map.getUnchecked(key);
-		} else {
-			DAO dao = new DAO();
-			dao.setTable("PG_MCHT_TMN");
-			dao.setColumns("*");
-			dao.addWhere("tmnId", tmnId, DAO.eq);
-			RecordSet rset = dao.search();
-			
-			if(rset.size() > 0){
-				return Cache.map.put(key, rset.getRow(0));
-			
-			}else{
-				return new SharedMap<String,Object>();
-			}
+//		String key = "PG_MCHT_TMN_" + tmnId;
+//
+//		if (Cache.map.containsKey(key)) {
+//			return Cache.map.getUnchecked(key);
+//		} else {
+//			DAO dao = new DAO();
+//			dao.setTable("PG_MCHT_TMN");
+//			dao.setColumns("*");
+//			dao.addWhere("tmnId", tmnId, DAO.eq);
+//			RecordSet rset = dao.search();
+//
+//			if(rset.size() > 0){
+//				return Cache.map.put(key, rset.getRow(0));
+//
+//			}else{
+//				return new SharedMap<String,Object>();
+//			}
+//		}
+
+		DAO dao = new DAO();
+		dao.setTable("PG_MCHT_TMN");
+		dao.setColumns("*");
+		dao.addWhere("tmnId", tmnId, DAO.eq);
+		RecordSet rset = dao.search();
+
+		if(rset.size() > 0){
+			return rset.getRow(0);
+		}else{
+			return new SharedMap<String,Object>();
 		}
 	}
 	
@@ -305,7 +317,6 @@ public class GalaxiaRecovery {
 		dao.addWhere("bin"		, data.getString("bin"));
 		dao.addWhere("authCd"	, data.getString("authCd"));
 		dao.addWhere("vanId"	, data.getString("vanId"));
-		dao.addWhere("amount"	, -data.getLong("amount"));
 		
 		dao.setColumns("*");
 		RecordSet rset = dao.search();

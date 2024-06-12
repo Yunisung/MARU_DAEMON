@@ -155,8 +155,14 @@ public class WelcomeDiffDownloadDAO extends DAO {
     }
 
     public int updateTrxCap(String nowDate, String fileType) {
+        String alias = "";
+        if(fileType.equals("valid")) {
+            alias = "DIFF_WEL_1";
+        } else {
+            alias = "DIFF_WEL_2";
+        }
 
-        List<SharedMap<String, Object>> list = getTrxCap(nowDate);
+        List<SharedMap<String, Object>> list = getTrxCap(nowDate, alias);
         String query = "UPDATE PG_TRX_CAP_DTL SET stlDistFee =?, stlDistRate=?, stlAgencyFee =?, stlAgencyRate =?, stlSalesFee =?,stlSalesRate =?, stlDiffAgencyRate =?, stlDiffAgencyFee =?, stlDiffDistRate =?, stlDiffDistFee =?, stlDiffSalesRate =?, stlDiffSalesFee =?, stlDiffVanAmt =?,"
                 + " stlDiffStatus = ?, stlDiffVanType= ?, stlDiffVanCardType= ?, stlDiffVanDay =?, stlDiffResultMsg = ?, benefit = ?, stlDiffRate = ?, stlDiffAmt = ? WHERE capId = ?;";
 
@@ -567,12 +573,12 @@ public class WelcomeDiffDownloadDAO extends DAO {
         }
     }
 
-    public List<SharedMap<String, Object>> getTrxCap(String nowDate) {
+    public List<SharedMap<String, Object>> getTrxCap(String nowDate, String alias) {
         super.setDebug(true);
         String query = "SELECT A.*,B.capId,B.serviceType,C.stlFee,C.stlFeeVat,C.stlDistFee,C.stlAgencyFee,C.stlVanFee,C.stlDiffType,D.codeName FROM PG_TRX_DIFF A "
                 + "INNER JOIN PG_TRX_CAP B ON A.trxId = B.trxId "
                 + "INNER JOIN PG_TRX_CAP_DTL C ON B.capId = C.capId "
-                + "LEFT JOIN PG_CODE D on A.resultCd = D.code and D.alias = 'DIFF_WEL' "
+                + "LEFT JOIN PG_CODE D on A.resultCd = D.code and D.alias = '" + alias +"' "
                 + "WHERE A.downDay = '"+nowDate+"'";
         RecordSet rset = super.query(query);
         super.initRecord();

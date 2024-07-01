@@ -70,11 +70,9 @@ public class KsnetRecovery {
                         //확인된거면 PAY에 업데이트
                         String trxId = payData.getString("trxId");
                         String vanTrxId = data.getString("transactionNo");
-                        String cardNo = data.getString("cardNo");
-                        String last4 = cardNo.substring(cardNo.length() - 4);
 
-                        if(updateTrxPay(trxId, vanTrxId, last4)) {
-                            if(updateTrxCapture(trxId, vanTrxId, last4)) {
+                        if(updateTrxPay(trxId, vanTrxId)) {
+                            if(updateTrxCapture(trxId, vanTrxId)) {
                                 exeStatus = "성공";
                                 summary = trxId;
                             } else {
@@ -106,11 +104,9 @@ public class KsnetRecovery {
                         //확인된거면 REFUND에 업데이트
                         String trxId = refundData.getString("trxId");
                         String vanTrxId = data.getString("transactionNo");
-                        String cardNo = data.getString("cardNo");
-                        String last4 = cardNo.substring(cardNo.length() - 4);
 
-                        if(updateTrxRefund(trxId, vanTrxId, last4)) {
-                            if(updateTrxCapture(trxId, vanTrxId, last4)) {
+                        if(updateTrxRefund(trxId, vanTrxId)) {
+                            if(updateTrxCapture(trxId, vanTrxId)) {
                                 exeStatus = "성공";
                                 summary = trxId;
                             } else {
@@ -176,10 +172,9 @@ public class KsnetRecovery {
         return rset.getRowFirst();
     }
 
-    public boolean updateTrxPay(String trxId, String vanTrxId, String last4) {
+    public boolean updateTrxPay(String trxId, String vanTrxId) {
         DAO dao = new DAO();
         dao.setTable("PG_TRX_PAY");
-        dao.setRecord("last4", last4);
         dao.setRecord("vanTrxId", vanTrxId);
         dao.addWhere("trxId", trxId);
         boolean updated = dao.update();
@@ -187,10 +182,9 @@ public class KsnetRecovery {
         return updated;
     }
 
-    public boolean updateTrxRefund(String trxId, String vanTrxId, String last4) {
+    public boolean updateTrxRefund(String trxId, String vanTrxId) {
         DAO dao = new DAO();
         dao.setTable("PG_TRX_RFD");
-        dao.setRecord("last4", last4);
         dao.setRecord("vanTrxId", vanTrxId);
         dao.addWhere("trxId", trxId);
         boolean updated = dao.update();
@@ -198,10 +192,9 @@ public class KsnetRecovery {
         return updated;
     }
 
-    public boolean updateTrxCapture(String trxId, String vanTrxId, String last4){
+    public boolean updateTrxCapture(String trxId, String vanTrxId){
         DAO dao = new DAO();
         dao.setTable("PG_TRX_CAP A INNER JOIN PG_TRX_CAP_DTL B  ON A.capId = B.capId");
-        dao.setRecord("A.last4", last4);
         dao.setRecord("B.vanTrxId", vanTrxId);
         dao.addWhere("A.trxId",trxId);
         boolean updated = dao.update();

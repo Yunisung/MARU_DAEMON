@@ -55,9 +55,6 @@ public class KsnetRecovery {
                     //승인
                     SharedMap<String, Object> payData = getPay(data);
 
-                    String trxId = payData.getString("trxId");
-                    logger.info("승인 TrxId : {}", trxId);
-
                     if(CommonUtil.isNullOrSpace(payData.getString("trxId"))) {
                         //PAY에 없는 거래건 : 10회까지 재시도
                         retry = retry + 1;
@@ -91,9 +88,6 @@ public class KsnetRecovery {
                 } else if(data.getString("approvalType").equals("1011") && data.getString("status").equals("O")) {
                     //취소
                     SharedMap<String, Object> refundData = getRefund(data);
-
-                    String trxId = refundData.getString("trxId");
-                    logger.info("취소 TrxId : {}", trxId);
 
                     if(CommonUtil.isNullOrSpace(refundData.getString("trxId"))) {
                         //REFUND 에 없는 거래건 : 10회까지 재시도
@@ -137,6 +131,7 @@ public class KsnetRecovery {
 
         }catch (Exception e) {
             logger.error(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -160,7 +155,6 @@ public class KsnetRecovery {
         dao.addWhere("vanId", data.getString("storeId"));
         dao.addWhere("reqDay", data.getString("tradeDate"));
         dao.addWhere("authCd", data.getString("authNo"));
-        dao.addWhere("bin", data.getString("cardNo").substring(0, 6));
         RecordSet rset = dao.search();
         return rset.getRowFirst();
     }
@@ -173,7 +167,6 @@ public class KsnetRecovery {
         dao.addWhere("vanId", data.getString("storeId"));
         dao.addWhere("reqDay", data.getString("tradeDate"));
         dao.addWhere("authCd", data.getString("authNo"));
-        dao.addWhere("bin", data.getString("cardNo").substring(0, 6));
         RecordSet rset = dao.search();
         return rset.getRowFirst();
     }

@@ -83,6 +83,7 @@ public class KsnetRecovery {
                             SharedMap<String, Object> tmnMap = getMchtTmn(tmsData.get(0).getString("tmnId"));
 
                             pay.put("trxId", getTrxId());
+                            pay.put("trxType", "KITR");
                             pay.put("mchtId", tmsData.get(0).getString("mchtId"));
                             pay.put("tmnId", tmsData.get(0).getString("tmnId"));
                             pay.put("trackId", tmsData.get(0).getString("trackId"));
@@ -129,6 +130,8 @@ public class KsnetRecovery {
                             if(insertTrxPay(pay)) {
                                 exeStatus = "성공";
                                 summary = pay.getString("trxId");
+                                insertTrxREQ(pay.getString("trxId"), card, data, tmsData.get(0));
+                                insertTrxRES(pay.getString("trxId"), pay);
                                 updateTmsPay(pay.getString("trackId"), pay.getString("trxId"), "완료", "승인완료");
                                 logger.info("승인 거래 등록 완료 : {}", summary);
                             } else {
@@ -748,5 +751,54 @@ public class KsnetRecovery {
         dao.addWhere("trackId",  trackId);
         logger.info("set TMS_PAY : {}", dao.update());
         dao.initRecord();
+    }
+
+    public void insertTrxREQ(String trxId,Card card,SharedMap<String,Object> data,SharedMap<String, Object> tmsKeyMap) {
+        DAO dao = new DAO();
+
+        dao.setTable("PG_TRX_REQ");
+        dao.setRecord("trxId"			, trxId);
+        dao.setRecord("trxType"		, data.getString("trxType"));
+        dao.setRecord("mchtId"		, tmsKeyMap.getString("mchtId"));
+        dao.setRecord("tmnId"			, tmsKeyMap.getString("tmnId"));
+        dao.setRecord("trackId"		, data.getString("trackId"));
+        dao.setRecord("payerName"		, data.getString("payerName"));
+        dao.setRecord("payerEmail"	, data.getString("payerEmail"));
+        dao.setRecord("payerTel"		, data.getString("payerTel"));
+        dao.setRecord("amount"		, data.getLong("amount"));
+        dao.setRecord("cardId"		, card.cardId);
+        dao.setRecord("issuer"		, card.issuer);
+        dao.setRecord("last4"			, card.last4);
+        dao.setRecord("cardType"		, card.cardType);
+        dao.setRecord("bin"			, card.bin);
+        dao.setRecord("installment"	, CommonUtil.zerofill(card.installment,2));
+        dao.setRecord("acquirer"		, card.acquirer);
+        dao.setRecord("prodId"		, data.getString("prodId"));
+        dao.setRecord("regDay"		, data.getString("regDate").substring(0, 8));
+        dao.setRecord("regTime"		, data.getString("regDate").substring(8));
+
+        logger.info("set TRX_REQ : {}", dao.insert());
+        dao.initRecord();
+
+    }
+
+    public void insertTrxRES(String trxId,SharedMap<String,Object> data) {
+        DAO dao = new DAO();
+        dao.setTable("PG_TRX_RES");
+        dao.setRecord("trxId", trxId);
+        dao.setRecord("authCd", data.getString("authCd"));
+        dao.setRecord("resultCd",data.getString("resultCd"));
+        dao.setRecord("resultMsg", data.getString("resultMsg"));
+        dao.setRecord("van", data.getString("van"));
+        dao.setRecord("vanId", data.getString("vanId"));
+        dao.setRecord("vanTrxId", data.getString("vanTrxId"));
+        dao.setRecord("vanResultCd", data.getString("resultCd"));
+        dao.setRecord("vanResultMsg", data.getString("resultMsg"));
+        dao.setRecord("regDay", data.getString("regDay"));
+        dao.setRecord("regTime", data.getString("regtime"));
+        logger.info("set TRX_RES : {}", dao.insert());
+
+        dao.initRecord();
+
     }
 }

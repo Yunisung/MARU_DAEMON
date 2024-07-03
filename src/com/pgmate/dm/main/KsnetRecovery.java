@@ -651,7 +651,7 @@ public class KsnetRecovery {
         dao.addWhere("tmnId"	, tmnMap.getString("tmnId"));
         dao.addWhere("authCd"	, data.getString("authNo"));
         dao.addWhere("vanId"	, data.getString("storeId"));
-        dao.addWhere("vanTrxId"	, data.getLong("transacionNo"));
+        dao.addWhere("vanTrxId"	, data.getLong("transactionNo"));
 
 
         dao.setColumns("*");

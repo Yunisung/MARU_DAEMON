@@ -132,7 +132,7 @@ public class KsnetRecovery {
                                 summary = pay.getString("trxId");
                                 insertTrxREQ(pay.getString("trxId"), card, data, tmsData.get(0));
                                 insertTrxRES(pay.getString("trxId"), pay);
-                                updateTmsPay(pay.getString("trackId"), pay.getString("trxId"), "완료", "승인완료");
+                                updateTmsPay(pay.getString("trackId"), "승인", pay.getString("trxId"), "완료", "승인완료");
                                 logger.info("승인 거래 등록 완료 : {}", summary);
                             } else {
                                 exeStatus = "실패";
@@ -228,13 +228,13 @@ public class KsnetRecovery {
                                 refund.put("resultMsg", "정상");
                                 refund.put("van"		, rootTrxPayMap.getString("van"));
                                 refund.put("vanId"		, rootTrxPayMap.getString("vanId"));
-                                refund.put("vanTrxId"	, data.getString("transationNo"));
+                                refund.put("vanTrxId"	, data.getString("transactionNo"));
                                 refund.put("regDay", CommonUtil.getCurrentDate("yyyyMMdd"));
                                 refund.put("regTime", CommonUtil.getCurrentDate("HHmmdd"));
 
                                 if(insertTrxRfd(refund)) {
                                     updateTrxPay(rootTrxPayMap.getString("trxId"));
-                                    updateTmsPay(refund.getString("trackId"), refund.getString("trxId"), "완료", "취소완료");
+                                    updateTmsPay(refund.getString("trackId"), "취소", refund.getString("trxId"), "완료", "취소완료");
                                     exeStatus = "성공";
                                     summary = refund.getString("trxId");
                                     logger.info("취소 거래 등록 완료 : {}", summary);
@@ -742,13 +742,14 @@ public class KsnetRecovery {
         dao.initRecord();
     }
 
-    public void updateTmsPay(String trackId,String trxId,String status,String message){
+    public void updateTmsPay(String trackId,String reqType, String trxId,String status,String message){
         DAO dao = new DAO();
         dao.setTable("PG_TMS_PAY");
         dao.setRecord("trxId", trxId);
         dao.setRecord("status", status);
         dao.setRecord("message", message);
         dao.addWhere("trackId",  trackId);
+        dao.addWhere("reqType", reqType);
         logger.info("set TMS_PAY : {}", dao.update());
         dao.initRecord();
     }

@@ -130,7 +130,7 @@ public class KsnetRecovery {
                             if(insertTrxPay(pay)) {
                                 exeStatus = "성공";
                                 summary = pay.getString("trxId");
-                                insertTrxREQ(pay.getString("trxId"), card, data, tmsData.get(0));
+                                insertTrxREQ(pay.getString("trxId"), card, pay, tmsData.get(0));
                                 insertTrxRES(pay.getString("trxId"), pay);
                                 updateTmsPay(pay.getString("trackId"), "승인", pay.getString("trxId"), "완료", "승인완료");
                                 logger.info("승인 거래 등록 완료 : {}", summary);
@@ -775,8 +775,8 @@ public class KsnetRecovery {
         dao.setRecord("installment"	, CommonUtil.zerofill(card.installment,2));
         dao.setRecord("acquirer"		, card.acquirer);
         dao.setRecord("prodId"		, data.getString("prodId"));
-        dao.setRecord("regDay"		, data.getString("regDate").substring(0, 8));
-        dao.setRecord("regTime"		, data.getString("regDate").substring(8));
+        dao.setRecord("regDay"		, data.getString("regDay"));
+        dao.setRecord("regTime"		, data.getString("regTime"));
 
         logger.info("set TRX_REQ : {}", dao.insert());
         dao.initRecord();
@@ -796,7 +796,7 @@ public class KsnetRecovery {
         dao.setRecord("vanResultCd", data.getString("resultCd"));
         dao.setRecord("vanResultMsg", data.getString("resultMsg"));
         dao.setRecord("regDay", data.getString("regDay"));
-        dao.setRecord("regTime", data.getString("regtime"));
+        dao.setRecord("regTime", data.getString("regTime"));
         logger.info("set TRX_RES : {}", dao.insert());
 
         dao.initRecord();

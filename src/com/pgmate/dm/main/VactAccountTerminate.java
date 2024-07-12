@@ -82,7 +82,7 @@ public class VactAccountTerminate {
                 FirmBean firmBean = null;
                 //광주은행 예외처리
                 //신협도 일단 예외처리
-                if(vactBankCd.equals("034") || vactBankCd.equals("048")) {
+                if(vactBankCd.equals("034")) {
                     firmBean = new FirmBean();
                     firmBean.resultCd = "0000";
                     firmBean.resultMsg = "정상";

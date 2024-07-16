@@ -317,6 +317,7 @@ public class Settle {
 						data.put("status", "대기");
 						data.put("payStatus", "대기");
 						data.put("stlDay", stlDay);
+						data.put("payOutAmt", data.getLong("stlAmt"));
 						data.put("payOutDay", "");
 						data.put("regId", "SYSTEM");
 						data.put("regDay", CommonUtil.getCurrentDate("yyyyMMdd"));

@@ -120,9 +120,9 @@ public class ChargeSettlePayOut {
 							//errFlag = true;
 							//펌에러 테이블에 저장
 							SharedMap<String, Object> errData = dao.getChargeSettle(data.getString("trxId"));
-							errData.put("refId", data.getString("refId"));
-							errData.put("resultCd", data.getString("resultCd"));
-							errData.put("resultMsg", data.getString("resultMsg"));
+							errData.put("refId", idx);
+							errData.put("resultCd", firmBean.resultCd);
+							errData.put("resultMsg", firmBean.resultMsg);
 							String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
 							errData.put("regDay", regDate.substring(0, 8));
 							dao.insertTrxErr(errData);

@@ -187,7 +187,70 @@ public class ChargeSettlePayOut {
 						if(vactBankCd.equals("048")) {
 							logger.info("==재확인 체크==");
 							logger.info("resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]");
+
+							if(firmBean.resultCd.trim().equals("000")) {
+								//정상처리
+								status = "완료";
+								msgBody = "충전정산 출금 성공. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+								logger.info(msgBody);
+								
+								// 출금 완료 결과 noti 발송
+								if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+									String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
+									data.put("payLoad", payLoad);
+									data.put("trxType", "출금");
+									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
+								}
+							} else {
+								//실패처리
+								msgBody = "충전정산 출금 실패. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+								logger.info(msgBody);
+								//errFlag = true;
+								//펌에러 테이블에 저장
+								SharedMap<String, Object> errData = dao.getChargeSettle(data.getString("trxId"));
+								errData.put("refId", idx);
+								errData.put("resultCd", firmBean.resultCd);
+								errData.put("resultMsg", firmBean.resultMsg);
+								String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
+								errData.put("regDay", regDate.substring(0, 8));
+								dao.insertTrxErr(errData);
+
+								if (!firmBean.resultCd.equals("XXXX") && !firmBean.resultCd.equals("")) {
+									logger.info("===========================");
+									logger.info("충전정산 잔액 복구 로직 실행");
+									logger.info("가맹점 ID : {}", data.getString("mchtId"));
+									logger.info("복구금액 : {}", errData.getLong("netAmount"));
+									logger.info("===========================");
+
+									//실패거래건의 실출금액 조회
+									long netAmt = errData.getLong("netAmount");
+									//실패거래건의 실출금액 만큼 해당 계정의 이후 결제건의 잔액에 더해줌
+									dao.updateChargeSettleBalance(data.getString("trxId"), data.getString("mchtId"), netAmt);
+									//실패건 PG_CHARGE_SETTLE 테이블에서 삭제
+									dao.deleteChargeSettle(data.getString("trxId"));
+
+									logger.debug("hookAddr [{}]", chargeMngMap.getString("hookAddr"));
+									// 출금 실패결과 noti 발송
+									if (!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
+										String payLoad = setPayLoad(data, "출금실패", firmBean.resultCd, firmBean.resultMsg);
+										data.put("payLoad", payLoad);
+										data.put("trxType", "출금실패");
+										new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
+									}
+								}
+							}
 						
+							if(!dao.updateRefIdUpdate(data.getString("trxId"), idx)) {
+								msgBody = "PG_CHARGE_SETTLE UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
+								
+								logger.info(msgBody);
+							}
+							
+							if(!dao.updateRefIdUpdate2(data.getString("trxId"), idx)) {
+								msgBody = "PG_CHARGE_SETTLE_FIRM UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
+								
+								logger.info(msgBody);
+							}
 						}
 					}
 					else {

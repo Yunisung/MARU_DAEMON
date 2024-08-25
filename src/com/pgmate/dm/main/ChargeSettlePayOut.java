@@ -213,7 +213,7 @@ public class ChargeSettlePayOut {
 								errData.put("resultMsg", firmBean.resultMsg);
 								String regDate = CommonUtil.getCurrentDate("yyyyMMddHHmmss");
 								errData.put("regDay", regDate.substring(0, 8));
-								dao.insertTrxErr(errData);
+								//dao.insertTrxErr(errData);
 
 								if (!firmBean.resultCd.equals("XXXX") && !firmBean.resultCd.equals("")) {
 									logger.info("===========================");

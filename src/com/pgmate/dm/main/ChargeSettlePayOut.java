@@ -175,7 +175,7 @@ public class ChargeSettlePayOut {
 							
 							logger.info(msgBody);
 						}
-					} else if("1".equals(data.getString("retry")) {
+					} else if("1".equals(data.getString("retry"))) {
 						String orgSeq = "";
 						
 						orgSeq = dao.getSeqNo(data.getString("trxId"));
@@ -184,7 +184,7 @@ public class ChargeSettlePayOut {
 
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
 
-						if(vactBankCd.equals("048") {
+						if(vactBankCd.equals("048")) {
 							logger.info("==재확인 체크==");
 							logger.info("resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]");
 						

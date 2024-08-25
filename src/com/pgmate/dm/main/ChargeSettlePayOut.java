@@ -175,7 +175,22 @@ public class ChargeSettlePayOut {
 							
 							logger.info(msgBody);
 						}
-					}else {
+					} else if("1".equals(data.getString("retry")) {
+						String orgSeq = "";
+						
+						orgSeq = dao.getSeqNo(data.getString("trxId"));
+						
+						logger.info("충전정산 결과확인 출금 : [{}][{}][{}]", data.getString("trxId"), data.getString("retry"), orgSeq);
+
+						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
+
+						if(vactBankCd.equals("048") {
+							logger.info("==재확인 체크==");
+							logger.info("resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]");
+						
+						}
+					}
+					else {
 						String orgSeq = "";
 						
 						orgSeq = dao.getSeqNo(data.getString("trxId"));

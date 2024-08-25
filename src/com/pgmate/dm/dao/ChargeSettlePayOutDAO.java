@@ -33,7 +33,7 @@ public class ChargeSettlePayOutDAO extends DAO{
 		String q = "SELECT A.*, FN_AES_DEC(A.account) as decAccount, B.vactBankCd "
 				+"	FROM PG_CHARGE_SETTLE_FIRM A INNER JOIN PG_MCHT_MNG_VACT B"
 				+"  ON A.mchtId = B.mchtId"
-				+"  WHERE A.status != '완료' and A.status != '전송' and A.retry < 1 "
+				+"  WHERE A.status != '완료' and A.status != '전송' and A.retry < 2 "
 				+"  order by A.regDate";
 		
 		RecordSet rset = super.query(q);

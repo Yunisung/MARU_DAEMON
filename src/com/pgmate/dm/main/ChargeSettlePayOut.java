@@ -184,11 +184,13 @@ public class ChargeSettlePayOut {
 
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
 
+						idx = String.valueOf(firmBean.idx);
+
 						if(vactBankCd.equals("048")) {
 							logger.info("==재확인 체크==");
 							logger.info("resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]");
 
-							if(firmBean.resultCd.trim().equals("000")) {
+							if(firmBean.resultCd.trim().equals("000") || firmBean.resultCd.trim().equals("001")) {
 								//정상처리
 								status = "완료";
 								msgBody = "충전정산 출금 성공. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";

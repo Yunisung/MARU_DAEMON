@@ -87,6 +87,8 @@ public class VactAccountStatusHook extends Thread {
             if(ntsMap.getInt("code") == 200) {
                 if(ntsMap.getString("resData").indexOf("OK") > -1) {
                     ntsMap.put("status"		, "전송완료");
+                }else if(ntsMap.getString("resData").indexOf("0000") > -1) {
+                    ntsMap.put("status"		, "전송완료");
                 }else {
                     ntsMap.put("status"		, "전송실패");
                 }

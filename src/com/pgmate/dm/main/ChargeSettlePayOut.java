@@ -175,27 +175,34 @@ public class ChargeSettlePayOut {
 							
 							logger.info(msgBody);
 						}
-					} else if("1".equals(data.getString("retry"))) {
+					}
+					else {
 						String orgSeq = "";
 						
 						orgSeq = dao.getSeqNo(data.getString("trxId"));
 						
 						logger.info("충전정산 결과확인 출금 : [{}][{}][{}]", data.getString("trxId"), data.getString("retry"), orgSeq);
-
+						
+						//출금 실패한 건들은 결과확인
+						//운영
+						//PYS : 가상계좌은행 입력하게 변경
 						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
 
-						idx = String.valueOf(firmBean.idx);
+						//테스트
+//						firmBean = new FirmBean();
+//						firmBean.resultCd = "0000";
+//						firmBean.resultMsg = "처리완료";
 
+						//230405_PYS : 거래없음일때 출금 재시도 로직 추가
+						//230913_PYS : 광주은행 예외추가
+						//240904_PYS : 신협은행 예외추가
 						if(vactBankCd.equals("048")) {
-							logger.info("==재확인 체크==");
-							logger.info("resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]");
-
-							if(firmBean.resultCd.trim().equals("000") || firmBean.resultCd.trim().equals("001")) {
+							if(firmBean.resultCd.trim().equals("000")) {
 								//정상처리
 								status = "완료";
-								msgBody = "충전정산 출금 성공. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+								msgBody = "충전정산 출금 성공. trxId : [" + data.getString("trxId") + "]";
 								logger.info(msgBody);
-								
+
 								// 출금 완료 결과 noti 발송
 								if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
 									String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
@@ -203,6 +210,15 @@ public class ChargeSettlePayOut {
 									data.put("trxType", "출금");
 									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 								}
+							} else if(firmBean.resultCd.trim().equals("001")) {
+								//재시도
+								status = "재시도";
+								msgBody = "충전정산 출금 실패. 재확인 필요. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
+								logger.info(msgBody);
+
+								//retry 1 감소
+								dao.updateRetry(data.getString("trxId"));
+
 							} else {
 								//실패처리
 								msgBody = "충전정산 출금 실패. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";
@@ -241,40 +257,8 @@ public class ChargeSettlePayOut {
 									}
 								}
 							}
-						
-							if(!dao.updateRefIdUpdate(data.getString("trxId"), idx)) {
-								msgBody = "PG_CHARGE_SETTLE UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
-								
-								logger.info(msgBody);
-							}
-							
-							if(!dao.updateRefIdUpdate2(data.getString("trxId"), idx)) {
-								msgBody = "PG_CHARGE_SETTLE_FIRM UPDATE 실패. 확인요망 [" + data.getString("trxId") + "]";
-								
-								logger.info(msgBody);
-							}
 						}
-					}
-					else {
-						String orgSeq = "";
-						
-						orgSeq = dao.getSeqNo(data.getString("trxId"));
-						
-						logger.info("충전정산 결과확인 출금 : [{}][{}][{}]", data.getString("trxId"), data.getString("retry"), orgSeq);
-						
-						//출금 실패한 건들은 결과확인
-						//운영
-						//PYS : 가상계좌은행 입력하게 변경
-						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).resultCheck(vactBankCd, orgSeq);
-
-						//테스트
-//						firmBean = new FirmBean();
-//						firmBean.resultCd = "0000";
-//						firmBean.resultMsg = "처리완료";
-
-						//230405_PYS : 거래없음일때 출금 재시도 로직 추가
-						//230913_PYS : 광주은행 예외추가
-						if(vactBankCd.equals("034") || vactBankCd.equals("007")) {
+						else if(vactBankCd.equals("034") || vactBankCd.equals("007")) {
 							if(firmBean.resultCd.equals("0000")) {
 								status = "완료";
 								msgBody = "충전정산 결과확인 성공. trxId : [" + data.getString("trxId") + "], resultCd : [" + firmBean.resultCd + "], resultMsg : [" + firmBean.resultMsg + "]";

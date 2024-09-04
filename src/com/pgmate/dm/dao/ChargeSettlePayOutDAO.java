@@ -58,6 +58,17 @@ public class ChargeSettlePayOutDAO extends DAO{
 		super.initRecord();
 		return updateed;
 	}
+
+	public boolean updateRetry(String trxId) {
+		String q = "UPDATE PG_CHARGE_SETTLE_FIRM "
+				+ "    SET retry=retry-1 "
+				+ "	 WHERE trxId = '" + trxId + "'";
+
+		boolean updateed =  super.update(q);
+
+		super.initRecord();
+		return updateed;
+	}
 	
 	/**
 	 * 가상계좌 충전 출금 횟수 조회

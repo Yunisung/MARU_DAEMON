@@ -210,7 +210,7 @@ public class ChargeSettlePayOut {
 									data.put("trxType", "출금");
 									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();
 								}
-							} else if(firmBean.resultCd.trim().equals("001")) {
+							} else if(firmBean.resultCd.trim().equals("001") || firmBean.resultCd.equals("XXXX") ) {
 								//재시도
 								status = "재시도";
 								msgBody = "충전정산 출금 실패. 재확인 필요. trxId : [" + data.getString("trxId") + "], id : [" + data.getString("mchtId") + "], idx : [" + idx + "]";

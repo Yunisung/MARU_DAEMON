@@ -96,11 +96,7 @@ public class ChargeSettleHook extends Thread {
 			ntsMap.put("code", conn.getResponseCode());
 			
 			if(ntsMap.getInt("code") == 200) {
-				if(ntsMap.getString("resData").indexOf("OK") > -1) {
-					ntsMap.put("status"		, "전송완료");
-				}else {
-					ntsMap.put("status"		, "전송실패");
-				}
+				ntsMap.put("status"		, "전송완료");
 			}else {
 				ntsMap.put("status"		, "전송실패");
 			}

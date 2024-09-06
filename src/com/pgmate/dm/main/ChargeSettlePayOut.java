@@ -205,7 +205,7 @@ public class ChargeSettlePayOut {
 
 								// 출금 완료 결과 noti 발송
 								if(!CommonUtil.isNullOrSpace(chargeMngMap.getString("hookAddr"))) {
-									String payLoad = setPayLoad(data, "출금완료", firmBean.resultCd, firmBean.resultMsg);
+									String payLoad = setPayLoad(data, "출금완료", "0000", firmBean.resultMsg);
 									data.put("payLoad", payLoad);
 									data.put("trxType", "출금");
 									new ChargeSettleHook(chargeMngMap.getString("hookAddr"), data, "0").start();

@@ -83,6 +83,8 @@ public class ChargeSettlePayOut {
 					compNm = "";
 					//PYS : 어느 은행에서 돈을 이체할것인가
 					String vactBankCd = data.getString("vactBankCd");
+					//PYS : 이체할 모계좌 정하기
+					String mAccount = data.getString("mAccount");
 
 					SharedMap<String, Object> chargeMngMap = dao.getMchtChargeMng(data.getString("mchtId"));
 					
@@ -98,7 +100,7 @@ public class ChargeSettlePayOut {
 						//운영
 
 						//PYS : 가상계좌은행 입력하게 변경
-						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS");
+						firmBean = new FirmClient(firmServer, frimPort, firmTimeOut).transfer(vactBankCd, data.getString("bankCd"), data.getString("decAccount").replace("-", "").trim(), data.getLong("amount"), data.getString("trxId"), compNm, "CS", mAccount);
 
 						//테스트
 //						firmBean = new FirmBean();

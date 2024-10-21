@@ -150,7 +150,8 @@ public class VactAccountTerminate {
         }
 
         if(!msgBody.equals("")) {
-            smsGw.sendMessage("0", "4", msgBody);
+            logger.info("가상계좌 해지 오류 : {}", msgBody);
+//            smsGw.sendMessage("0", "4", msgBody);
         }
 
     }

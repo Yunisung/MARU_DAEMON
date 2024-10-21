@@ -110,8 +110,8 @@ public class WelcomeRecovery {
                             pay.put("van"		, tmnMap.getString("van"));
                             pay.put("vanId"		, data.getString("mid"));
                             pay.put("vanTrxId"	, data.getString("tid"));
-                            pay.put("regDay"	, CommonUtil.getCurrentDate("yyyyMMdd"));
-                            pay.put("regTime"	, CommonUtil.getCurrentDate("HHmmss"));
+                            pay.put("regDay"	, data.getString("transDate"));
+                            pay.put("regTime"	, data.getString("transTime"));
 
                             if(insertTrxPay(pay)) {
                                 exeStatus = "성공";
@@ -165,8 +165,8 @@ public class WelcomeRecovery {
                                 refund.put("van"		, rootTrxPayMap.getString("van"));
                                 refund.put("vanId"		, rootTrxPayMap.getString("vanId"));
                                 refund.put("vanTrxId"	, data.getString("tid"));
-                                refund.put("regDay", CommonUtil.getCurrentDate("yyyyMMdd"));
-                                refund.put("regTime", CommonUtil.getCurrentDate("HHmmdd"));
+                                refund.put("regDay"	, data.getString("transDate"));
+                                refund.put("regTime"	, data.getString("transTime"));
 
                                 if(insertTrxRfd(refund)) {
                                     updateTrxPay(rootTrxPayMap.getString("trxId"));

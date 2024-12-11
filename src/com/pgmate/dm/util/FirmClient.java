@@ -179,7 +179,7 @@ public class FirmClient {
 	 * @param sender
 	 * @return
 	 */
-	public FirmBean transfer(String bankCd, String recvBankCd,String recvAccount,long amount,String trxId, String sender, String type){
+	public FirmBean transfer(String bankCd, String recvBankCd,String recvAccount,long amount,String trxId, String sender, String type, String mAccount){
 		FirmBean firmBean = new FirmBean();
 		firmBean.bankCd 	= bankCd;
 		firmBean.msgType 	= "0100100";
@@ -189,6 +189,7 @@ public class FirmClient {
 		firmBean.data.put("recvAccount",recvAccount);
 		firmBean.data.put("recordInfo",trxId);
 		firmBean.data.put("procType", type);
+		firmBean.data.put("mAccount", mAccount);
 		
 		if(!"".equals(sender)) {
 			firmBean.data.put("sender",sender);

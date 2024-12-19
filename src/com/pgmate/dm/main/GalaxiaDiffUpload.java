@@ -55,6 +55,7 @@ public class GalaxiaDiffUpload {
 
 	public GalaxiaDiffUpload() {
 		try {
+			smsGw = new SmsGw();
 //			makeDiffMcht();		//하위사업자 등록
 			makeDiffSettle();	//차액정산 등록
 		} catch (Exception e) {

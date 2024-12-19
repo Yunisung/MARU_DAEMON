@@ -46,6 +46,7 @@ public class GalaxiaDiffMchtDownLoad {
     }
 
     private void downloadDiffMcht(String nowDate) {
+        smsGw = new SmsGw();
         logger.info("========== GALAXIA 하위사업자 결과 등록 START ==========");
         String downloadPath = MCHT_PATH + nowDate.substring(0, 6);
         String fileName = userId + "_RECEIVE_INFO." + nowDate;

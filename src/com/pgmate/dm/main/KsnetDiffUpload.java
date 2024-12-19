@@ -38,15 +38,15 @@ public class KsnetDiffUpload {
 	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011", "2010000001", "2010000013"};
 
 	public KsnetDiffUpload() {
+		smsGw = new SmsGw();
 		makeDiffMcht();
 		makeDiffSettle();
 	}
 	
 	public void makeDiffMcht() {
 		KsnetDiffUploadDAO dao = new KsnetDiffUploadDAO();
-		List<SharedMap<String, Object>> mchtList = dao.getMchtList(); 
-		smsGw = new SmsGw();
-		
+		List<SharedMap<String, Object>> mchtList = dao.getMchtList();
+
 		try {
 			String nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
 			day = nowDate.substring(0,4) + "년 " + nowDate.substring(4,6) + "월 " + nowDate.substring(6) + "일";

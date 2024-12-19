@@ -47,6 +47,7 @@ public class WelcomeDiffMchtDownload {
     public WelcomeDiffMchtDownload(String nowDate) { downloadDiffMcht(nowDate); }
 
     private void downloadDiffMcht(String nowDate) {
+        smsGw = new SmsGw();
         logger.info("========== WELCOME 하위사업자 결과 등록 START ==========");
         String downloadPath = MCHT_PATH + nowDate.substring(0, 6);
         String fileName = "merc_welcome_" + identity + "_" + nowDate + "_rslt";

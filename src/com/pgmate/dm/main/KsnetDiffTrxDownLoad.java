@@ -34,7 +34,7 @@ public class KsnetDiffTrxDownLoad {
 	private String day = "";
 	
 	//22.06.02 vanid 분리용 배열 추가
-	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011", "2010000001", "2010000013"};
+//	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011", "2010000001", "2010000013"};
 
 	public KsnetDiffTrxDownLoad(String nowDate) {
 		downLoadDiffTrx(nowDate);
@@ -44,13 +44,14 @@ public class KsnetDiffTrxDownLoad {
 		DecimalFormat formatter = new DecimalFormat("###,###");
 		smsGw = new SmsGw();
 		day = nowDate.substring(0,4) + "년 " + nowDate.substring(4,6) + "월 " + nowDate.substring(6) + "일";
-		
-		for (String id : vanId) {
 
+		KsnetDiffDownloadDAO dao = new KsnetDiffDownloadDAO();
+		List<SharedMap<String, Object>> vanIdList = dao.getVanIdList();
+		for (SharedMap<String, Object> vanIdMap : vanIdList) {
+			String id = vanIdMap.getString("vanId");
 			try {
 				String path = SETTLE_PATH+nowDate.substring(0, 6);
 				String fileName = path+File.separator+nowDate+"("+id+")"+".ksnet.download.txt";
-				KsnetDiffDownloadDAO dao = new KsnetDiffDownloadDAO();
 
 				if(dao.checkDownSettle(nowDate, id) > 0) {
 					logger.info("============= "+nowDate+"일자 차액정산 PASS ===============");

@@ -24,18 +24,20 @@ public class GalaxiaDiffUploadDAO extends DAO{
 	public GalaxiaDiffUploadDAO() {
 	}
 	
-	public List<SharedMap<String,Object>> getPayList(){
+	public List<SharedMap<String,Object>> getPayList(String aid){
 		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(B.identity) AS mchtCompNo, A.vanTrxId, A.amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo, '0' AS trxType, '0' AS rfdTurn "
 				+ "FROM PG_TRX_PAY A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId  "
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
-				+ "WHERE A.van like 'GALAXIA%' "
+				+ "LEFT JOIN PG_VAN F ON A.vanId = F.vanId "
+				+ "WHERE F.aid ='" + aid + "' "
+				+ "AND F.diffSettle = '사용' "
 //				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW(), '%Y%m%d') "
 //				+ "ELSE A.reqDay <= DATE_FORMAT(NOW(), '%Y%m%d') END "
 //				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183', 'M2373543', 'M2245531') "
+//				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183', 'M2373543', 'M2245531') "
 				+ "AND A.vanTrxId NOT LIKE 'TX%' ";
 
 				
@@ -45,7 +47,7 @@ public class GalaxiaDiffUploadDAO extends DAO{
 		return rset.getRows();
 	}
 
-	public List<SharedMap<String,Object>> getRfdList(){
+	public List<SharedMap<String,Object>> getRfdList(String aid){
 		String q = "SELECT A.vanId,A.reqDay AS trxDay, FN_AES_DEC(F.identity) AS mchtCompNo, A.vanTrxId, ABS(A.rfdAmount) AS amount, A.trxId, A.mchtId, A.van, A.tmnId, 'D' AS recordType, 'PG' AS systemType, '6758600152' AS compNo,"
 				+ "A.rootTrxId, A.reqTime as trxTime, "
 				+ "'1' as trxType, "
@@ -54,15 +56,17 @@ public class GalaxiaDiffUploadDAO extends DAO{
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
 				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
+				+ "LEFT JOIN PG_VAN G ON A.vanId = G.vanId "
 				//------------------------ GALAXIA 맞게 수정 필요
-				+ "WHERE A.van like 'GALAXIA%' "
+				+ "WHERE G.aid ='" + aid + "' "
+				+ "AND G.diffSettle = '사용' "
 				+ "AND A.rfdAll = '전액' "
 //				+ "AND CASE C.diffType WHEN '일반' THEN A.reqDay BETWEEN '20200101' AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')  "
 //				+ "ELSE A.reqDay <= DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') END "
 //				+ "AND A.regDay BETWEEN DATE_FORMAT(NOW() - INTERVAL 2 DAY, '%Y%m%d') AND DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') "
 				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183'', 'M2373543', 'M2245531')"
+//				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183'', 'M2373543', 'M2245531')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' ";
 
@@ -75,18 +79,20 @@ public class GalaxiaDiffUploadDAO extends DAO{
 		return rset.getRows();
 	}
 
-	public List<SharedMap<String,Object>> getRootTrxList(){
+	public List<SharedMap<String,Object>> getRootTrxList(String aid){
 		String q = "SELECT A.rootTrxId FROM "
 				+ "PG_TRX_RFD A INNER JOIN PG_MCHT B on A.mchtId = B.mchtId "
 				+ "INNER JOIN PG_MCHT_MNG C ON A.mchtId = C.mchtId "
 				+ "LEFT JOIN PG_TRX_DIFF E ON A.trxId = E.trxId "
 				+ "LEFT JOIN VW_TRX_PAY_LIST F ON A.rootTrxId = F.trxId "
+				+ "LEFT JOIN PG_VAN G ON A.vanId = G.vanId "
 				//------------------------ GALAXIA 맞게 수정 필요
-				+ "WHERE A.van like 'GALAXIA%' "
+				+ "WHERE G.aid ='" + aid + "' "
+				+ "AND G.diffSettle = '사용' "
 				+ "AND A.rfdAll = '부분' "
 				+ "AND A.regDay = DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')"
 				+ "AND E.trxId IS NULL "
-				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183'', 'M2373543', 'M2245531')"
+//				+ "AND A.vanid IN ('M2245697', 'M2253623', 'M2253625', 'M2245701', 'M2370705', 'M2373147', 'M2476183'', 'M2373543', 'M2245531')"
 				+ "AND A.vanTrxId NOT LIKE 'TX%' "
 				+ "AND A.status = '완료' "
 				+ "GROUP BY A.rootTrxId";
@@ -271,6 +277,18 @@ public class GalaxiaDiffUploadDAO extends DAO{
 		}
 		return updated;
 		
+	}
+
+	public List<SharedMap<String, Object>> getAidList() {
+		super.setTable("PG_VAN");
+		super.setColumns("aid");
+		super.addWhere("van", "GALAXIA", lk);
+		super.addWhere("diffSettle", "사용", eq);
+		super.setGroupBy("aid");
+
+		RecordSet rset = super.search();
+		super.initRecord();
+		return rset.getRows();
 	}
 }
 

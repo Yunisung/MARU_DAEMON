@@ -35,7 +35,7 @@ public class KsnetDiffUpload {
 	private String day = "";
 	
 	//22.06.02 vanid 분리용 배열 추가
-	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011", "2010000001", "2010000013"};
+//	private String[] vanId = {"2010000007" , "2010000008" , "2010000010" , "2010000011", "2010000001", "2010000013"};
 
 	public KsnetDiffUpload() {
 		smsGw = new SmsGw();
@@ -102,15 +102,17 @@ public class KsnetDiffUpload {
 		String nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
 		day = nowDate.substring(0,4) + "년 " + nowDate.substring(4,6) + "월 " + nowDate.substring(6) + "일";
 		KsnetDiffUploadDAO dao = new KsnetDiffUploadDAO();
-		
-		for (String id : vanId) {
 
-			List<SharedMap<String,Object>> payList = dao.getPayList(id);
-			List<SharedMap<String,Object>> rfdList = dao.getRfdList(id);
-			List<SharedMap<String,Object>> errList = dao.getErrList(id);
+		List<SharedMap<String, Object>> vanIdList = dao.getVanIdList();
+		for (SharedMap<String, Object> vanIdMap	: vanIdList) {
+			String vanId = vanIdMap.getString("vanId");
+
+			List<SharedMap<String,Object>> payList = dao.getPayList(vanId);
+			List<SharedMap<String,Object>> rfdList = dao.getRfdList(vanId);
+			List<SharedMap<String,Object>> errList = dao.getErrList(vanId);
 			try {
 				String path = SETTLE_PATH+nowDate.substring(0,6);
-				String fileName = path+File.separator+nowDate+"("+id+")"+".ksnet.upload.txt";
+				String fileName = path+File.separator+nowDate+"("+vanId+")"+".ksnet.upload.txt";
 				File folder = new File(path);
 				if(!folder.exists()) {
 					folder.mkdir();
@@ -181,10 +183,10 @@ public class KsnetDiffUpload {
 
 				String pass = ENC_SHOP_PASS;
 				// KSNET 파일업로드
-				if(id.equals("2010000013")){
+				if(vanId.equals("2010000013")){
 					pass = ENC_SHOP_PASS_13;
 				}
-				if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGTMS", id ,pass, nowDate) < 0) {
+				if(KSPGFtsUpDownLib.fileUpload(HOST, PORT, fileName, "PGTMS", vanId ,pass, nowDate) < 0) {
 					logger.error("DIFF TRX UPLOAD FAIL!");
 
 					String msgBody = day + " KSNET 차액정산 파일 송신 오류. 확인요망";

@@ -226,95 +226,102 @@ public class GalaxiaDiffUpload {
 		nowDate = CommonUtil.getCurrentDate("yyyyMMdd");
 
 		String uploadPath = SETTLE_PATH + nowDate.substring(0, 6);
-		String fileName = userId + "_REQUEST." + nowDate;
 
-		File folder = new File(uploadPath);
-		if(!folder.exists()) {
-			folder.mkdir();
-		}
+		GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
+		List<SharedMap<String, Object>> aidList = dao.getAidList();
 
-		FileOutputStream fos = null;
-		OutputStreamWriter osw = null;
-		BufferedWriter bw = null;
+		for(SharedMap<String, Object> aidMap : aidList) {
+			String aid = aidMap.getString("aid");
+			logger.info("========== GALAXIA 차액정산 등록 AID : {} ==========", aid);
+			String fileName = aid + "_REQUEST." + nowDate;
 
-		final SFTPUtil sftpUtil = new SFTPUtil();
-		try {
-			//SFTP 서버 접속
-			sftpUtil.init(HOST, userId, userPw, PORT);
-
-			uploadPath += File.separator + fileName;
-			logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPath);
-
-			GalaxiaDiffUploadDAO dao = new GalaxiaDiffUploadDAO();
-
-			//파일 객체 생성
-			File uploadFile = new File(uploadPath);
-
-			fos = new FileOutputStream(uploadFile);
-			osw = new OutputStreamWriter(fos, "euc-kr");
-			bw = new BufferedWriter(osw);
-
-			List<SharedMap<String, Object>> payList = dao.getPayList();
-			List<SharedMap<String, Object>> rfdList = dao.getRfdList();
-
-			// 23.09.20 부분취소 로직 추가
-			List<SharedMap<String, Object>> rootTrxList = dao.getRootTrxList();
-			List<SharedMap<String, Object>> partialList = new ArrayList<SharedMap<String,Object>>();
-
-			for(SharedMap<String, Object> map : rootTrxList) {
-				int rfdTurn;
-				String lastRfdTurn = dao.getLastRfdTurn(map.getString("rootTrxId"));
-				if(!lastRfdTurn.equals("")) {
-					rfdTurn = Integer.parseInt(lastRfdTurn) + 1;
-				} else {
-					rfdTurn = 2;
-				}
-
-				List<SharedMap<String, Object>> partialTrxList = dao.getPartialTrx(map.getString("rootTrxId"));
-				for(SharedMap<String, Object> partialTrxMap : partialTrxList) {
-					partialTrxMap.put("rfdTurn", rfdTurn);
-					partialList.add(partialTrxMap);
-					rfdTurn++;
-				}
+			File folder = new File(uploadPath);
+			if (!folder.exists()) {
+				folder.mkdir();
 			}
 
-			logger.info("GALAXIA DIFFSETTLE DATA SETTING START");
-			headerDiffSetting(bw);
-			if(payList.size() > 0 || rfdList.size() > 0 || partialList.size() > 0) {
-				dataDiffSetting(bw, payList, rfdList, partialList);
-			}
-			totalDiffSetting(bw);
-			bw.close();
-			logger.info("GALAXIA DIFFSETTLE DATA SETTING END");
+			FileOutputStream fos = null;
+			OutputStreamWriter osw = null;
+			BufferedWriter bw = null;
 
-			//GALAXIA 파일 업로드
-			if(sftpUtil.upload(GALAXIA_UPLOAD_PATH, uploadFile)){
-				logger.info("===== GALAXIA DIFF SETTLE UPLOAD SUCCESSS =====");
-				//----------------> 확인 필요
-				if(payList.size() > 0) {
-					dao.insertTrxDiffUpload(payList, nowDate);
-				}
-				if(rfdList.size() > 0) {
-					dao.insertTrxDiffUpload(rfdList, nowDate);
-				}
-				if(partialList.size() > 0) {
-					dao.insertTrxDiffUpload(partialList, nowDate);
-				}
-			} else {
-				logger.info("===== GALAXIA DIFFSETTLE UPLOAD FAIL =====");
-			}
-		} catch (Exception e) {
-			logger.error("MAKE DIFF SETTLE ERROR ===> {}", e.getMessage(), e);
-			msgBody = "갤럭시아 차액정산 업로드 오류. 확인요망 [" + e.getMessage() + "]";
-			smsGw.sendMessage("0", "4", msgBody);
-		} finally {
-			sftpUtil.disconnection();
+			final SFTPUtil sftpUtil = new SFTPUtil();
 			try {
-				if(bw != null) bw.close();
-				if(osw != null) osw.close();
-				if(fos != null) fos.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+				//SFTP 서버 접속
+				sftpUtil.init(HOST, userId, userPw, PORT);
+
+				String uploadPathName = uploadPath + File.separator + fileName;
+				logger.info("DIFF SETTLE UPLOAD FILE NAME ===> {}", uploadPathName);
+
+
+				//파일 객체 생성
+				File uploadFile = new File(uploadPathName);
+
+				fos = new FileOutputStream(uploadFile);
+				osw = new OutputStreamWriter(fos, "euc-kr");
+				bw = new BufferedWriter(osw);
+
+				List<SharedMap<String, Object>> payList = dao.getPayList(aid);
+				List<SharedMap<String, Object>> rfdList = dao.getRfdList(aid);
+
+				// 23.09.20 부분취소 로직 추가
+				List<SharedMap<String, Object>> rootTrxList = dao.getRootTrxList(aid);
+				List<SharedMap<String, Object>> partialList = new ArrayList<SharedMap<String, Object>>();
+
+				for (SharedMap<String, Object> map : rootTrxList) {
+					int rfdTurn;
+					String lastRfdTurn = dao.getLastRfdTurn(map.getString("rootTrxId"));
+					if (!lastRfdTurn.equals("")) {
+						rfdTurn = Integer.parseInt(lastRfdTurn) + 1;
+					} else {
+						rfdTurn = 2;
+					}
+
+					List<SharedMap<String, Object>> partialTrxList = dao.getPartialTrx(map.getString("rootTrxId"));
+					for (SharedMap<String, Object> partialTrxMap : partialTrxList) {
+						partialTrxMap.put("rfdTurn", rfdTurn);
+						partialList.add(partialTrxMap);
+						rfdTurn++;
+					}
+				}
+
+				logger.info("GALAXIA DIFFSETTLE DATA SETTING START");
+				headerDiffSetting(bw);
+				if (payList.size() > 0 || rfdList.size() > 0 || partialList.size() > 0) {
+					dataDiffSetting(bw, payList, rfdList, partialList);
+				}
+				totalDiffSetting(bw);
+				bw.close();
+				logger.info("GALAXIA DIFFSETTLE DATA SETTING END");
+
+				//GALAXIA 파일 업로드
+				if (sftpUtil.upload(GALAXIA_UPLOAD_PATH, uploadFile)) {
+					logger.info("===== GALAXIA DIFF SETTLE UPLOAD SUCCESSS =====");
+					//----------------> 확인 필요
+					if (payList.size() > 0) {
+						dao.insertTrxDiffUpload(payList, nowDate);
+					}
+					if (rfdList.size() > 0) {
+						dao.insertTrxDiffUpload(rfdList, nowDate);
+					}
+					if (partialList.size() > 0) {
+						dao.insertTrxDiffUpload(partialList, nowDate);
+					}
+				} else {
+					logger.info("===== GALAXIA DIFFSETTLE UPLOAD FAIL =====");
+				}
+			} catch (Exception e) {
+				logger.error("MAKE DIFF SETTLE ERROR ===> {}", e.getMessage(), e);
+				msgBody = "갤럭시아 차액정산 업로드 오류. 확인요망 [" + e.getMessage() + "]";
+				smsGw.sendMessage("0", "4", msgBody);
+			} finally {
+				sftpUtil.disconnection();
+				try {
+					if (bw != null) bw.close();
+					if (osw != null) osw.close();
+					if (fos != null) fos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 

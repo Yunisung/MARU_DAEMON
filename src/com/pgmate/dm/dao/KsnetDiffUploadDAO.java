@@ -208,6 +208,17 @@ public class KsnetDiffUploadDAO extends DAO{
 		return updated;
 		
 	}
+
+    public List<SharedMap<String, Object>> getVanIdList() {
+		super.setTable("PG_VAN");
+		super.setColumns("vanId");
+		super.addWhere("van", "KSPAY", lk);
+		super.addWhere("diffSettle", "사용", eq);
+
+		RecordSet rset = super.search();
+		super.initRecord();
+		return rset.getRows();
+    }
 }
 
 

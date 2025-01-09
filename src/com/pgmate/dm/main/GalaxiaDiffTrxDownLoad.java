@@ -49,68 +49,74 @@ public class GalaxiaDiffTrxDownLoad {
     private void downloadDiffTrx(String nowDate) {
         smsGw = new SmsGw();
         logger.info("========== GALAXIA 차액정산 결과 등록 START ==========");
-        String downloadPath = SETTLE_PATH + nowDate.substring(0, 6);
-        String fileName = userId + "_RECEIVE." + nowDate;
+        String downloadDirPath = SETTLE_PATH + nowDate.substring(0, 6);
 
         GalaxiaDiffDownloadDAO dao = new GalaxiaDiffDownloadDAO();
+        List<SharedMap<String, Object>> aidList = dao.getAidList();
 
-        File folder = new File(downloadPath);
-        if(!folder.exists()) {
-            folder.mkdir();
-        }
+        for(SharedMap<String, Object> aidMap : aidList){
+            String aid = aidMap.getString("aid");
+            String fileName = aid.toUpperCase() + "_RECEIVE." + nowDate;
 
-        FileInputStream is = null;
-        InputStreamReader isr = null;
-        BufferedReader br = null;
-
-        final SFTPUtil sftpUtil = new SFTPUtil();
-        try {
-
-            sftpUtil.init(HOST, userId, userPw, PORT);
-
-            logger.info("===== GALAXIA 차액정산 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
-            if(sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + "/" + fileName)) {
-                logger.info("GALAXIA 차액정산 결과 파일 EXIST");
-
-                downloadPath += File.separator + nowDate + ".galaxia.download";
-                sftpUtil.download(GALAXIA_DOWNLOAD_PATH, fileName, downloadPath);
-
-                File file = new File(downloadPath);
-
-                is = new FileInputStream(file);                                                                                                                                                                                                                                                                                                                                            is = new FileInputStream(file);
-                isr = new InputStreamReader(is, "EUC-KR");
-                br = new BufferedReader(isr);
-                String line = "";
-
-                while ((line = br.readLine()) != null) {
-                    logger.info("GALAXIA 차액정산 등록 DATA : [" + line + "]");
-
-                    if (line.startsWith("HD")) {
-                        parssingHeader(line);
-                    } else if (line.startsWith("DT")) {
-                        parssingData(line);
-                    } else if (line.startsWith("TR")) {
-                        parssingTotal(line);
-                    }
-                }
-//                if(dao.updateTrxDiff(list) > 0) {
-//                    logger.info("updateTrxCap [{}]",dao.updateTrxCap(nowDate));
-//                }
-            }else {
-                logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
+            File folder = new File(downloadDirPath);
+            if (!folder.exists()) {
+                folder.mkdir();
             }
-        } catch (Exception e) {
-            logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
-            msgBody = "갤럭시아 차액정산 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
-            smsGw.sendMessage("0", "4", msgBody);
-        }finally {
-            sftpUtil.disconnection();
+
+            FileInputStream is = null;
+            InputStreamReader isr = null;
+            BufferedReader br = null;
+
+            final SFTPUtil sftpUtil = new SFTPUtil();
             try {
-                if(br != null) br.close();
-                if(isr != null) isr.close();
-                if(is != null) is.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+
+                sftpUtil.init(HOST, userId, userPw, PORT);
+
+                logger.info("===== GALAXIA 차액정산 결과 파일 경로 : {} =====", GALAXIA_DOWNLOAD_PATH + File.separator + fileName);
+                if (sftpUtil.exists(GALAXIA_DOWNLOAD_PATH + "/" + fileName)) {
+                    logger.info("GALAXIA 차액정산 결과 파일 EXIST");
+
+                    String downloadPath = downloadDirPath + File.separator + nowDate + "_" + aid + ".galaxia.download";
+                    sftpUtil.download(GALAXIA_DOWNLOAD_PATH, fileName, downloadPath);
+
+                    File file = new File(downloadPath);
+
+                    is = new FileInputStream(file);
+                    is = new FileInputStream(file);
+                    isr = new InputStreamReader(is, "EUC-KR");
+                    br = new BufferedReader(isr);
+                    String line = "";
+
+                    while ((line = br.readLine()) != null) {
+                        logger.info("GALAXIA 차액정산 등록 DATA : [" + line + "]");
+
+                        if (line.startsWith("HD")) {
+                            parssingHeader(line);
+                        } else if (line.startsWith("DT")) {
+                            parssingData(line);
+                        } else if (line.startsWith("TR")) {
+                            parssingTotal(line);
+                        }
+                    }
+                    if (dao.updateTrxDiff(list) > 0) {
+                        logger.info("updateTrxCap [{}]", dao.updateTrxCap(nowDate, aid));
+                    }
+                } else {
+                    logger.info("GALAXIA 차액정산 결과 파일 NOT EXIST");
+                }
+            } catch (Exception e) {
+                logger.error("DOWNLOAD TRX DIFF ERROR ===> {}", e.getMessage());
+                msgBody = "갤럭시아 차액정산 다운로드 오류. 확인요망 [" + e.getMessage() + "]";
+                smsGw.sendMessage("0", "4", msgBody);
+            } finally {
+                sftpUtil.disconnection();
+                try {
+                    if (br != null) br.close();
+                    if (isr != null) isr.close();
+                    if (is != null) is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

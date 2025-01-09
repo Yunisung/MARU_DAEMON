@@ -34,6 +34,7 @@ public class WelcomeDiffUploadDAO extends DAO {
         super.setColumns("vanId");
 //        super.addWhere("van", "%WELCOME%", lk);
         super.addWhere("van", "WELCOME", eq);
+        super.addWhere("diffSettle", "사용", eq);
         RecordSet rset = super.search();
         super.initRecord();
         return rset.getRows();

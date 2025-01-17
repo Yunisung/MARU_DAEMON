@@ -124,8 +124,8 @@ public class KsnetRecovery {
                             pay.put("van"		, tmnMap.getString("van"));
                             pay.put("vanId"		, data.getString("storeId"));
                             pay.put("vanTrxId"	, data.getString("transactionNo"));
-                            pay.put("regDay"	, CommonUtil.getCurrentDate("yyyyMMdd"));
-                            pay.put("regTime"	, CommonUtil.getCurrentDate("HHmmss"));
+                            pay.put("regDay"	, data.getString("tradeDate"));
+                            pay.put("regTime"	, data.getString("tradeTime"));
 
                             if(insertTrxPay(pay)) {
                                 exeStatus = "성공";

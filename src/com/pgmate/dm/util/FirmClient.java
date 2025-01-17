@@ -179,7 +179,7 @@ public class FirmClient {
 	 * @param sender
 	 * @return
 	 */
-	public FirmBean transfer(String bankCd, String recvBankCd,String recvAccount,long amount,String trxId, String sender, String type, String mAccount){
+	public FirmBean transfer(String bankCd, String recvBankCd,String recvAccount,long amount,String trxId, String sender, String type){
 		FirmBean firmBean = new FirmBean();
 		firmBean.bankCd 	= bankCd;
 		firmBean.msgType 	= "0100100";
@@ -189,7 +189,6 @@ public class FirmClient {
 		firmBean.data.put("recvAccount",recvAccount);
 		firmBean.data.put("recordInfo",trxId);
 		firmBean.data.put("procType", type);
-		firmBean.data.put("mAccount", mAccount);
 		
 		if(!"".equals(sender)) {
 			firmBean.data.put("sender",sender);
@@ -203,6 +202,48 @@ public class FirmClient {
 			firmBean = comm(firmBean);
 		}
 		
+		logger.info("응답:{},{}",firmBean.resultCd,firmBean.resultMsg);
+		logger.info("idx:{},{}",firmBean.idx,firmBean.data.getLong("balance"));
+		logger.info("data : {}",GsonUtil.toJson(firmBean.data));
+		return firmBean;
+	}
+
+	/**
+	 * 모계좌별 이체
+	 * @param bankCd
+	 * @param recvBankCd
+	 * @param recvAccount
+	 * @param amount
+	 * @param trxId
+	 * @param sender
+	 * @param type
+	 * @param mAccount
+	 * @return
+	 */
+	public FirmBean transfer(String bankCd, String recvBankCd,String recvAccount,long amount,String trxId, String sender, String type, String mAccount){
+		FirmBean firmBean = new FirmBean();
+		firmBean.bankCd 	= bankCd;
+		firmBean.msgType 	= "0100100";
+		firmBean.userId		= "SYSTEM";
+		firmBean.data.put("amount",amount);
+		firmBean.data.put("recvBankCd",recvBankCd);
+		firmBean.data.put("recvAccount",recvAccount);
+		firmBean.data.put("recordInfo",trxId);
+		firmBean.data.put("procType", type);
+		firmBean.data.put("mAccount", mAccount);
+
+		if(!"".equals(sender)) {
+			firmBean.data.put("sender",sender);
+		}
+
+		if("VA".equals(type)) {
+			firmBean = vaPayOutComm(firmBean);
+		}else if("CS".equals(type)) {
+			firmBean = chargeComm(firmBean);
+		}else {
+			firmBean = comm(firmBean);
+		}
+
 		logger.info("응답:{},{}",firmBean.resultCd,firmBean.resultMsg);
 		logger.info("idx:{},{}",firmBean.idx,firmBean.data.getLong("balance"));
 		logger.info("data : {}",GsonUtil.toJson(firmBean.data));

@@ -119,8 +119,8 @@ public class KsnetOnlineRecovery {
 							pay.put("van"		, tmnMap.getString("van"));
 							pay.put("vanId"		, data.getString("storeId"));
 							pay.put("vanTrxId"	, data.getString("transactionNo"));
-							pay.put("regDay"	, CommonUtil.getCurrentDate("yyyyMMdd"));
-							pay.put("regTime"	, CommonUtil.getCurrentDate("HHmmss"));
+							pay.put("regDay"	, data.getString("tradeDate"));
+							pay.put("regTime"	, data.getString("tradeTime"));
 
 							if(insertTrxPay(pay)) {
 								exeStatus = "성공";
@@ -190,8 +190,8 @@ public class KsnetOnlineRecovery {
 								refund.put("van"		, rootTrxPayMap.getString("van"));
 								refund.put("vanId"		, rootTrxPayMap.getString("vanId"));
 								refund.put("vanTrxId"	, data.getString("transactionNo"));
-								refund.put("regDay", CommonUtil.getCurrentDate("yyyyMMdd"));
-								refund.put("regTime", CommonUtil.getCurrentDate("HHmmdd"));
+								refund.put("regDay", data.getString("tradeDate"));
+								refund.put("regTime", data.getString("tradeTime"));
 
 								if(insertTrxRfd(refund)) {
 									updateTrxPay(rootTrxPayMap.getString("trxId"));

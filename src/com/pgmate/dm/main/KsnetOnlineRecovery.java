@@ -76,61 +76,68 @@ public class KsnetOnlineRecovery {
 						SharedMap<String, Object> pay = new SharedMap<>();
 						SharedMap<String, Object> tmnMap = getMchtTmn(data.getString("identity"), data.getString("storeId"));
 
-						pay.put("trxId", getTrxId());
-						pay.put("trxType", "KSON");
-						pay.put("mchtId", tmnMap.getString("mchtId"));
-						pay.put("tmnId", tmnMap.getString("tmnId"));
-						pay.put("trackId", data.getString("orderNumber"));
-						pay.put("amount", data.getLong("amount"));
-						pay.put("installment", data.getString("installment"));
-						pay.put("cardId", GenKey.genKeys(CPKEY.CARD, pay.getString("trxId")));
-						pay.put("bin", data.getString("cardNo").substring(0,6));
-						pay.put("last4", data.getString("cardNo").substring(data.getString("cardNo").length()-4));
-						pay.put("status", "승인");
-						pay.put("prodId", GenKey.genKeys(CPKEY.PRODUCT, pay.getString("trxId")));
+						if(tmnMap != null) {
+							pay.put("trxId", getTrxId());
+							pay.put("trxType", "KSON");
+							pay.put("mchtId", tmnMap.getString("mchtId"));
+							pay.put("tmnId", tmnMap.getString("tmnId"));
+							pay.put("trackId", data.getString("orderNumber"));
+							pay.put("amount", data.getLong("amount"));
+							pay.put("installment", data.getString("installment"));
+							pay.put("cardId", GenKey.genKeys(CPKEY.CARD, pay.getString("trxId")));
+							pay.put("bin", data.getString("cardNo").substring(0,6));
+							pay.put("last4", data.getString("cardNo").substring(data.getString("cardNo").length()-4));
+							pay.put("status", "승인");
+							pay.put("prodId", GenKey.genKeys(CPKEY.PRODUCT, pay.getString("trxId")));
 
-						Card card = new Card();
-						card.cardId = pay.getString("cardId");
-						card.bin = pay.getString("bin");
-						card.last4 = pay.getString("last4");
+							Card card = new Card();
+							card.cardId = pay.getString("cardId");
+							card.bin = pay.getString("bin");
+							card.last4 = pay.getString("last4");
 
-						SharedMap<String, Object> issuerMap = getDBIssuer(card.bin);
-						if(issuerMap != null) {
-							card.cardType = issuerMap.getString("type");
-							card.issuer = issuerMap.getString("issuer");
-							card.acquirer = issuerMap.getString("acquirer");
-						}
+							SharedMap<String, Object> issuerMap = getDBIssuer(card.bin);
+							if(issuerMap != null) {
+								card.cardType = issuerMap.getString("type");
+								card.issuer = issuerMap.getString("issuer");
+								card.acquirer = issuerMap.getString("acquirer");
+							}
 
-						String encrypted = Base64.encodeToString(SeedKisa.encrypt(GsonUtil.toJson(card), ByteUtil.toBytes("696d697373796f7568616e6765656e61", 16)));
-						insertCard(card.cardId,encrypted);
+							String encrypted = Base64.encodeToString(SeedKisa.encrypt(GsonUtil.toJson(card), ByteUtil.toBytes("696d697373796f7568616e6765656e61", 16)));
+							insertCard(card.cardId,encrypted);
 
-						pay.put("cardType"	, card.cardType);
-						pay.put("issuer"	, card.issuer);
-						pay.put("acquirer"	, card.acquirer);
+							pay.put("cardType"	, card.cardType);
+							pay.put("issuer"	, card.issuer);
+							pay.put("acquirer"	, card.acquirer);
 
-						pay.put("reqDay"	, data.getString("tradeDate"));
-						pay.put("reqTime"	, data.getString("tradeTime"));
-						pay.put("authCd"	, data.getString("authNo"));
+							pay.put("reqDay"	, data.getString("tradeDate"));
+							pay.put("reqTime"	, data.getString("tradeTime"));
+							pay.put("authCd"	, data.getString("authNo"));
 
-						pay.put("resultCd"	, "0000");
-						pay.put("resultMsg"	, "정상");
+							pay.put("resultCd"	, "0000");
+							pay.put("resultMsg"	, "정상");
 
-						pay.put("van"		, tmnMap.getString("van"));
-						pay.put("vanId"		, data.getString("storeId"));
-						pay.put("vanTrxId"	, data.getString("transactionNo"));
-						pay.put("regDay"	, CommonUtil.getCurrentDate("yyyyMMdd"));
-						pay.put("regTime"	, CommonUtil.getCurrentDate("HHmmss"));
+							pay.put("van"		, tmnMap.getString("van"));
+							pay.put("vanId"		, data.getString("storeId"));
+							pay.put("vanTrxId"	, data.getString("transactionNo"));
+							pay.put("regDay"	, CommonUtil.getCurrentDate("yyyyMMdd"));
+							pay.put("regTime"	, CommonUtil.getCurrentDate("HHmmss"));
 
-						if(insertTrxPay(pay)) {
-							exeStatus = "성공";
-							summary = pay.getString("trxId");
-							insertTrxREQ(pay.getString("trxId"), card, pay, tmnMap);
-							insertTrxRES(pay.getString("trxId"), pay);
-							logger.info("승인 거래 등록 완료 : {}", summary);
+							if(insertTrxPay(pay)) {
+								exeStatus = "성공";
+								summary = pay.getString("trxId");
+								insertTrxREQ(pay.getString("trxId"), card, pay, tmnMap);
+								insertTrxRES(pay.getString("trxId"), pay);
+								logger.info("승인 거래 등록 완료 : {}", summary);
+							} else {
+								exeStatus = "실패";
+								summary = "중복거래건 : " + pay.getString("vanTrxId");
+							}
 						} else {
 							exeStatus = "실패";
-							summary = "중복거래건 : " + pay.getString("vanTrxId");
+							summary = "매칭실패 : " + data.getString("identity");
 						}
+
+
 					}
 
 				} else if(data.getString("approvalType").equals("1011") && isStatus) {
@@ -142,63 +149,66 @@ public class KsnetOnlineRecovery {
 						//신규 취소건 생성
 						SharedMap<String, Object> tmnMap = getMchtTmn(data.getString("identity"), data.getString("storeId"));
 
-						SharedMap<String, Object> refund = new SharedMap<>();
-						SharedMap<String, Object> rootTrxPayMap = getPayMap(data, tmnMap);
+						if(tmnMap != null) {
+							SharedMap<String, Object> refund = new SharedMap<>();
+							SharedMap<String, Object> rootTrxPayMap = getPayMap(data, tmnMap);
 
-						if(rootTrxPayMap.size() > 0) {
-							refund.put("trxId", getTrxId());
-							refund.put("mchtId", tmnMap.getString("mchtId"));
-							refund.put("tmnId", tmnMap.getString("tmnId"));
-							refund.put("trackId", data.getString("orderNumber"));
-							refund.put("status", "완료");
+							if(rootTrxPayMap.size() > 0) {
+								refund.put("trxId", getTrxId());
+								refund.put("mchtId", tmnMap.getString("mchtId"));
+								refund.put("tmnId", tmnMap.getString("tmnId"));
+								refund.put("trackId", data.getString("orderNumber"));
+								refund.put("status", "완료");
 
-							long amount = - rootTrxPayMap.getLong("amount");
-							refund.put("rfdAmount", amount);
+								long amount = - rootTrxPayMap.getLong("amount");
+								refund.put("rfdAmount", amount);
 
-							if(data.getLong("amount") == rootTrxPayMap.getLong("amount")) {
-								refund.put("rfdAll", "전액");
-							} else {
-								refund.put("rfdAll", "부분");
+								if(data.getLong("amount") == rootTrxPayMap.getLong("amount")) {
+									refund.put("rfdAll", "전액");
+								} else {
+									refund.put("rfdAll", "부분");
+								}
+
+								refund.put("rfdVat", calcRootVat(amount));
+								refund.put("cardId", rootTrxPayMap.getString("cardId"));
+								refund.put("bin", rootTrxPayMap.getString("bin"));
+								refund.put("last4", rootTrxPayMap.getString("last4"));
+								refund.put("issuer"	, rootTrxPayMap.getString("issuer"));
+								refund.put("acquirer"	, rootTrxPayMap.getString("acquirer"));
+								refund.put("rootTrnDay", rootTrxPayMap.getString("reqDay"));
+								refund.put("rootTrxId"	, rootTrxPayMap.getString("trxId"));
+								refund.put("rootTrackId", rootTrxPayMap.getString("trackId"));
+								refund.put("rootAmount", rootTrxPayMap.getLong("amount"));
+								refund.put("rootVat"	, calcRootVat(rootTrxPayMap.getLong("amount")));
+
+								refund.put("reqDay"	, data.getString("tradeDate"));
+								refund.put("reqTime"	, data.getString("tradeTime"));
+								refund.put("authCd"	, data.getString("authNo"));
+
+								refund.put("resultCd"	, "0000");
+								refund.put("resultMsg", "정상");
+								refund.put("van"		, rootTrxPayMap.getString("van"));
+								refund.put("vanId"		, rootTrxPayMap.getString("vanId"));
+								refund.put("vanTrxId"	, data.getString("transactionNo"));
+								refund.put("regDay", CommonUtil.getCurrentDate("yyyyMMdd"));
+								refund.put("regTime", CommonUtil.getCurrentDate("HHmmdd"));
+
+								if(insertTrxRfd(refund)) {
+									updateTrxPay(rootTrxPayMap.getString("trxId"));
+									updateTrxAdminRfd(refund.getString("trxId"), data.getString("transactionNo"));
+									exeStatus = "성공";
+									summary = refund.getString("trxId");
+									logger.info("취소 거래 등록 완료 : {}", summary);
+								} else {
+									exeStatus = "실패";
+									summary = "중복거래건 : " + refund.getString("vanTrxId");
+								}
 							}
 
-							refund.put("rfdVat", calcRootVat(amount));
-							refund.put("cardId", rootTrxPayMap.getString("cardId"));
-							refund.put("bin", rootTrxPayMap.getString("bin"));
-							refund.put("last4", rootTrxPayMap.getString("last4"));
-							refund.put("issuer"	, rootTrxPayMap.getString("issuer"));
-							refund.put("acquirer"	, rootTrxPayMap.getString("acquirer"));
-							refund.put("rootTrnDay", rootTrxPayMap.getString("reqDay"));
-							refund.put("rootTrxId"	, rootTrxPayMap.getString("trxId"));
-							refund.put("rootTrackId", rootTrxPayMap.getString("trackId"));
-							refund.put("rootAmount", rootTrxPayMap.getLong("amount"));
-							refund.put("rootVat"	, calcRootVat(rootTrxPayMap.getLong("amount")));
-
-							refund.put("reqDay"	, data.getString("tradeDate"));
-							refund.put("reqTime"	, data.getString("tradeTime"));
-							refund.put("authCd"	, data.getString("authNo"));
-
-							refund.put("resultCd"	, "0000");
-							refund.put("resultMsg", "정상");
-							refund.put("van"		, rootTrxPayMap.getString("van"));
-							refund.put("vanId"		, rootTrxPayMap.getString("vanId"));
-							refund.put("vanTrxId"	, data.getString("transactionNo"));
-							refund.put("regDay", CommonUtil.getCurrentDate("yyyyMMdd"));
-							refund.put("regTime", CommonUtil.getCurrentDate("HHmmdd"));
-
-							if(insertTrxRfd(refund)) {
-								updateTrxPay(rootTrxPayMap.getString("trxId"));
-								updateTrxAdminRfd(refund.getString("trxId"), data.getString("transactionNo"));
-								exeStatus = "성공";
-								summary = refund.getString("trxId");
-								logger.info("취소 거래 등록 완료 : {}", summary);
-							} else {
-								exeStatus = "실패";
-								summary = "중복거래건 : " + refund.getString("vanTrxId");
-							}
 
 						} else {
 							exeStatus = "실패";
-							summary = "원거래 없음";
+							summary = "매칭실패 : " + data.getString("identity");
 						}
 					}
 				}
@@ -486,7 +496,11 @@ public class KsnetOnlineRecovery {
 		dao.addWhere("vanId", vanId, DAO.eq);
 		dao.addWhere("status", "사용", DAO.eq);
 		RecordSet rset = dao.search();
-		return rset.getRowFirst();
+		if(rset.size() > 0) {
+			return rset.getRowFirst();
+		} else {
+			return null;
+		}
 	}
 
 	public boolean insertTrxPay(SharedMap<String,Object> map){

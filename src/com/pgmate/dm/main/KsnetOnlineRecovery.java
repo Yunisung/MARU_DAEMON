@@ -90,6 +90,13 @@ public class KsnetOnlineRecovery {
 							pay.put("status", "승인");
 							pay.put("prodId", GenKey.genKeys(CPKEY.PRODUCT, pay.getString("trxId")));
 
+							Product product = new Product();
+							product.price = Long.parseLong(data.getString("amount"));
+							product.name = data.getString("prodName");
+							product.qty = Integer.parseInt(data.getString("qty"));
+							product.desc = data.getString("description");
+							insertProduct(pay.getString("prodId"),product, data.getString("regDate"));
+
 							Card card = new Card();
 							card.cardId = pay.getString("cardId");
 							card.bin = pay.getString("bin");
@@ -225,6 +232,20 @@ public class KsnetOnlineRecovery {
 			logger.error(e.getMessage());
 			e.printStackTrace();
 		}
+	}
+
+	private void insertProduct(String prodId, Product product, String regDate) {
+		DAO dao = new DAO();
+		dao.setTable("PG_TRX_PRD");
+		logger.info("set product id : {}", prodId);
+		dao.setRecord("prodId", prodId);//1개
+		dao.setRecord("description", CommonUtil.nToB(product.desc));
+		dao.setRecord("name", CommonUtil.nToB(product.name));
+		dao.setRecord("price", product.price);
+		dao.setRecord("qty", product.qty);
+		dao.setRecord("regDate", regDate);
+		dao.insert();
+		dao.initRecord();
 	}
 
 	private void updateTrxAdminRfd(String trxId, String vanTrxId) {

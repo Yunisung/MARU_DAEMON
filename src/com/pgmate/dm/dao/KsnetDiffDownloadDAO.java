@@ -448,13 +448,16 @@ public class KsnetDiffDownloadDAO extends DAO{
 						long stlDiffAgencyFee = calcFeeVat(amount, stlDiffAgencyRate);
 						//대행사 부과세 계산
 						long stlDiffDistFee = calcFeeVat(amount, stlDiffDistRate);
+						//지사 계산
+						long stlDiffSalesFee = calcFeeVat(amount, stlDiffSalesRate);
 
 						capDtlMap.put("stlDiffAgencyRate", stlDiffAgencyRate);
 						capDtlMap.put("stlDiffAgencyFee", stlDiffAgencyFee);
 						capDtlMap.put("stlDiffDistRate", stlDiffDistRate);
 						capDtlMap.put("stlDiffDistFee", stlDiffDistFee);
 						capDtlMap.put("stlDiffSalesRate", stlDiffSalesRate);
-						capDtlMap.put("stlDiffSalesFee", calcFee(capDtlMap.getLong("stlDiffAgencyFee"), capDtlMap.getDouble("stlDiffSalesRate")));
+//						capDtlMap.put("stlDiffSalesFee", calcFee(capDtlMap.getLong("stlDiffAgencyFee"), capDtlMap.getDouble("stlDiffSalesRate")));
+						capDtlMap.put("stlDiffSalesFee", stlDiffSalesFee);
 
 						// 에이전시 차액정산 최종 수수료 : 에이전시 차액정산 수수료 - 지사 차액정산 수수료
 						capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee") - capDtlMap.getLong("stlDiffSalesFee"));
@@ -506,7 +509,8 @@ public class KsnetDiffDownloadDAO extends DAO{
 								capDtlMap.put("stlSalesRate", 0);
 							}
 							long benefit1 = map.getLong("stlFee") + map.getLong("stlFeeVat") - capDtlMap.getLong("stlDistFee") - capDtlMap.getLong("stlAgencyFee") - map.getLong("stlVanFee");
-							long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
+//							long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
+							long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee + stlDiffSalesFee);
 
 							capDtlMap.put("benefit", benefit1 + benefit2);
 //

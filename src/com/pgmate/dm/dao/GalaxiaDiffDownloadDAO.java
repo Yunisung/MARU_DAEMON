@@ -441,16 +441,19 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 
 						long stlDiffAgencyFee = calcFeeVat(amount, stlDiffAgencyRate);
 						long stlDiffDistFee = calcFeeVat(amount, stlDiffDistRate);
+						long stlDiffSalesFee = calcFeeVat(amount, stlDiffSalesRate);
 
 						capDtlMap.put("stlDiffAgencyRate", stlDiffAgencyRate);
 						capDtlMap.put("stlDiffAgencyFee", stlDiffAgencyFee);
 						capDtlMap.put("stlDiffDistRate", stlDiffDistRate);
 						capDtlMap.put("stlDiffDistFee", stlDiffDistFee);
 						capDtlMap.put("stlDiffSalesRate", stlDiffSalesRate);
-						capDtlMap.put("stlDiffSalesFee", calcFee(capDtlMap.getLong("stlDiffAgencyFee"), capDtlMap.getDouble("stlDiffSalesRate")));
+						capDtlMap.put("stlDiffSalesFee", stlDiffSalesFee);
+//						capDtlMap.put("stlDiffSalesFee", calcFee(capDtlMap.getLong("stlDiffAgencyFee"), capDtlMap.getDouble("stlDiffSalesRate")));
+
 
 						// 에이전시 차액정산 최종 수수료 : 에이전시 차액정산 수수료 - 지사 차액정산 수수료
-						capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee") - capDtlMap.getLong("stlDiffSalesFee"));
+//						capDtlMap.put("stlDiffAgencyFee", capDtlMap.getLong("stlDiffAgencyFee") - capDtlMap.getLong("stlDiffSalesFee"));
 
 						// 일반 가맹점의 차액정산금 계산하기 위해 로직 추가
 						// 본사차액정산금 계산
@@ -497,7 +500,8 @@ public class GalaxiaDiffDownloadDAO extends DAO{
 							}
 
 							long benefit1 = map.getLong("stlFee") + map.getLong("stlFeeVat") - capDtlMap.getLong("stlDistFee") - capDtlMap.getLong("stlAgencyFee") - map.getLong("stlVanFee");
-							long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
+//							long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee);
+							long benefit2 = capDtlMap.getLong("stlDiffVanAmt") - (stlDiffDistFee + stlDiffAgencyFee + stlDiffSalesFee);
 
 							capDtlMap.put("benefit", benefit1 + benefit2);
 						// 영업라인 차액정산 미사용일 때(영업라인 일반수수료 적용)

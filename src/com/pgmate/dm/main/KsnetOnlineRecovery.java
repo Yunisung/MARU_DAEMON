@@ -516,6 +516,7 @@ public class KsnetOnlineRecovery {
 		dao.addWhere("identity", identity, DAO.eq);
 		dao.addWhere("vanId", vanId, DAO.eq);
 		dao.addWhere("status", "사용", DAO.eq);
+		dao.setOrderBy("regDate desc");
 		RecordSet rset = dao.search();
 		if(rset.size() > 0) {
 			return rset.getRowFirst();

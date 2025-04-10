@@ -15,10 +15,12 @@ public class VactRiskCheck {
 
     public VactRiskCheck() {
         vactTrxRiskCheck();
-//        vactRegRiskCheck();
+        vactRegRiskCheck();
     }
 
     public void vactTrxRiskCheck() {
+        logger.info("==== {} VACT TRX RISK CHECK START ====", CommonUtil.getCurrentDate("yyyyMMdd"));
+
         VactRiskCheckDAO vactRiskCheckDao = new VactRiskCheckDAO();
         // 출금계좌 입금 횟수 10회, 금액 4000만원 초과
         List<SharedMap<String, Object>> withdrawAccountTotalList = vactRiskCheckDao.getWithdrawAccountTotalList();
@@ -35,7 +37,6 @@ public class VactRiskCheck {
 
         for(SharedMap<String, Object> withdrawAccountTotalMap : withdrawAccountTotalList) {
             withdrawAccountTotalMap.put("risk", "출금계좌 입금 횟수, 금액 초과");
-            logger.info("vactId : {}, withdrawAccount : {}, risk : {}", withdrawAccountTotalMap.getString("vactId"), withdrawAccountTotalMap.getString("withdrawAccount"), withdrawAccountTotalMap.getString("risk"));
             riskMap.put(withdrawAccountTotalMap.getString("vactId"), withdrawAccountTotalMap);
         }
         for(SharedMap<String, Object> accountTotalMap : accountTotalList) {
@@ -56,9 +57,13 @@ public class VactRiskCheck {
         }
 
         vactRiskCheckDao.insertVactTrxRisk(riskMap);
+
+        logger.info("==== VACT TRX RISK CHECK END ====");
     }
 
     private void vactRegRiskCheck() {
+        logger.info("==== {} VACT TRX REG CHECK START ====", CommonUtil.getCurrentDate("yyyyMMdd"));
+
         VactRiskCheckDAO vactRiskCheckDao = new VactRiskCheckDAO();
         SharedMap<String, SharedMap> riskMap = new SharedMap<>();
 
@@ -70,6 +75,8 @@ public class VactRiskCheck {
         }
 
         vactRiskCheckDao.insertVactRegRisk(riskMap);
+
+        logger.info("==== VACT TRX REG CHECK END ====");
     }
 
     public static void main(String[] args) {

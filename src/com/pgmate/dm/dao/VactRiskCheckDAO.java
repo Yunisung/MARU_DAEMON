@@ -137,10 +137,12 @@ public class VactRiskCheckDAO extends DAO {
 
 	public List<SharedMap<String, Object>> getRegLimitList() {
 		super.setTable("(SELECT * FROM HT_VACT_REG WHERE (withdrawAccount, regDay) IN (SELECT withdrawAccount, regDay " +
-				"FROM (SELECT COUNT(withdrawAccount) AS count, withdrawAccount, regDay FROM HT_VACT_REG WHERE regDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') " +
+//				"FROM (SELECT COUNT(withdrawAccount) AS count, withdrawAccount, regDay FROM HT_VACT_REG WHERE regDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') " +
+				"FROM (SELECT COUNT(withdrawAccount) AS count, withdrawAccount, regDay FROM HT_VACT_REG WHERE regDay='20250406' " +
 				"AND trxType='0' GROUP BY withdrawAccount) A WHERE COUNT>=2) AND trxType='0') B " +
-				"LEFT OUTER JOIN HT_VACT_DTL C ON B.trackId=C.trackId ");
-		super.setColumns("C.issueId, B.*");
+				"LEFT OUTER JOIN HT_VACT_DTL C ON B.trackId=C.trackId " +
+				"LEFT OUTER JOIN PG_MCHT D ON B.mchtId=D.mchtId ");
+		super.setColumns("C.issueId, D.name as mchtName, B.*");
 		super.setOrderBy("B.regDate desc");
 		RecordSet rset = super.search();
 		super.initRecord();
@@ -151,7 +153,7 @@ public class VactRiskCheckDAO extends DAO {
 		int inserted = 0;
 		logger.info("insert PG_VACT_REG_RISK batch : {}", riskMap.size());
 
-		String query = "INSERT INTO PG_VACT_REG_RISK (issueId,bankCd,account,withdrawBankCd,withdrawAccount,holderName,trackId,risk,pubDay,pubTime,regDay) VALUES (?,?,?,?,?,?,?,?,?,?,?);";
+		String query = "INSERT INTO PG_VACT_REG_RISK (issueId,mchtId,mchtName,bankCd,account,withdrawBankCd,withdrawAccount,holderName,trackId,risk,pubDay,pubTime,regDay) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);";
 
 		DBManager db = null;
 		Connection conn = null;
@@ -169,6 +171,8 @@ public class VactRiskCheckDAO extends DAO {
 			for (Map.Entry<String, SharedMap> map : riskMap.entrySet()) {
 				int i = 1;
 				pstmt.setString(i++, map.getValue().getString("issueId"));
+				pstmt.setString(i++, map.getValue().getString("mchtId"));
+				pstmt.setString(i++, map.getValue().getString("mchtName"));
 				pstmt.setString(i++, map.getValue().getString("bankCd"));
 				pstmt.setString(i++, map.getValue().getString("account"));
 				pstmt.setString(i++, map.getValue().getString("withdrawBankCd"));

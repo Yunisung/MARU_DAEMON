@@ -103,7 +103,7 @@ public class VactRiskCheckDAO extends DAO {
 			String regDay = CommonUtil.getCurrentDate("yyyyMMdd");
 
 			for (Map.Entry<String, SharedMap> map : riskMap.entrySet()) {
-				logger.info("vactId : {}, risk : {}", map.getKey(), map.getValue().getString("risk"));
+				//logger.info("vactId : {}, risk : {}", map.getKey(), map.getValue().getString("risk"));
 				int i = 1;
 				pstmt.setString(i++, map.getValue().getString("vactId"));
 				pstmt.setString(i++, map.getValue().getString("mchtId"));

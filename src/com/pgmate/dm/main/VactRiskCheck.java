@@ -68,7 +68,7 @@ public class VactRiskCheck {
         SharedMap<String, SharedMap> riskMap = new SharedMap<>();
 
         List<SharedMap<String, Object>> regLimitList = vactRiskCheckDao.getRegLimitList();
-        logger.info("size : {}",regLimitList.size());
+        //logger.info("size : {}",regLimitList.size());
         for (SharedMap<String, Object> regLimitMap : regLimitList) {
             regLimitMap.put("risk", "출금계좌 발급 횟수 초과");
             riskMap.put(regLimitMap.getString("issueId"), regLimitMap);

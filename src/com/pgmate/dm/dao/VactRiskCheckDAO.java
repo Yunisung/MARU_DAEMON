@@ -29,41 +29,41 @@ public class VactRiskCheckDAO extends DAO {
 	}
 
 	public List<SharedMap<String, Object>> getWithdrawAccountTotalList() {
-		super.setTable("PG_VACT_TRX_WITHDRAW");
-		super.setColumns("*");
-		super.addWhere("(withdrawAccount, trxDay) IN " +
-				"(SELECT withdrawAccount, trxDay FROM (SELECT COUNT(withdrawAccount) AS count, SUM(if(trxType='입금',amount,0)) AS sumAmount, withdrawAccount, trxDay " +
-				"FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY withdrawAccount) A WHERE COUNT>=10 AND sumAmount>=40000000)");
+		super.setTable("(SELECT * FROM PG_VACT_TRX_WITHDRAW WHERE (withdrawAccount, trxDay) IN (SELECT withdrawAccount, trxDay " +
+				"FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY withdrawAccount HAVING COUNT(withdrawAccount)>=10 AND SUM(if(trxType='입금',amount,0))>=40000000)) A " +
+				"LEFT OUTER JOIN PG_MCHT B ON A.mchtId=B.mchtId");
+		super.setColumns("B.name as mchtName, A.*");
+		super.setOrderBy("A.regDate desc");
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRows();
 	}
 
 	public List<SharedMap<String, Object>> getAccountTotalList() {
-		super.setTable("PG_VACT_TRX_WITHDRAW");
-		super.setColumns("*");
-		super.addWhere("(account, trxDay) IN " +
-				"(SELECT account, trxDay FROM (SELECT COUNT(account) AS count, SUM(if(trxType='입금',amount,0)) AS sumAmount, account, trxDay " +
-				"FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY account) A WHERE COUNT>=10 AND sumAmount>=40000000)");
+		super.setTable("(SELECT * FROM PG_VACT_TRX_WITHDRAW WHERE (account, trxDay) IN (SELECT account, trxDay " +
+				"FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY ACCOUNT HAVING COUNT(ACCOUNT)>=10 AND SUM(if(trxType='입금',amount,0))>=40000000)) A " +
+				"LEFT OUTER JOIN PG_MCHT B ON A.mchtId=B.mchtId");
+		super.setColumns("B.name as mchtName, A.*");
+		super.setOrderBy("A.regDate desc");
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRows();
 	}
 
 	public List<SharedMap<String, Object>> getLimitDayList() {
-		super.setTable("PG_VACT_TRX_WITHDRAW");
-		super.setColumns("*");
-		super.addWhere("(withdrawAccount, trxDay) IN " +
-				"(SELECT withdrawAccount, trxDay FROM (SELECT SUM(if(trxType='입금',amount,0)) AS sumAmount, withdrawAccount, trxDay " +
-				"FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY withdrawAccount) A WHERE sumAmount>=30000000)");
+		super.setTable("(SELECT * FROM PG_VACT_TRX_WITHDRAW WHERE (withdrawAccount, trxDay) IN (SELECT withdrawAccount, trxDay " +
+				"FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY withdrawAccount HAVING SUM(if(trxType='입금',amount,0))>=30000000)) A " +
+				"LEFT OUTER JOIN PG_MCHT B ON A.mchtId=B.mchtId");
+		super.setColumns("B.name as mchtName, A.*");
+		super.setOrderBy("A.regDate desc");
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRows();
 	}
 
 	public List<SharedMap<String, Object>> getLimitOnceList() {
-		super.setTable("PG_VACT_TRX_WITHDRAW");
-		super.setColumns("*");
+		super.setTable("(SELECT B.name as mchtName, A.* FROM PG_VACT_TRX_WITHDRAW A LEFT OUTER JOIN PG_MCHT B ON A.mchtId=B.mchtId WHERE A.trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') AND A.amount>=3000000) C ");
+		super.setColumns("C.*");
 		super.addWhere("trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d')");
 		super.addWhere("amount", 3000000, ge);
 		RecordSet rset = super.search();
@@ -72,11 +72,11 @@ public class VactRiskCheckDAO extends DAO {
 	}
 
 	public List<SharedMap<String, Object>> getLimitCountList() {
-		super.setTable("PG_VACT_TRX_WITHDRAW");
-		super.setColumns("*");
-		super.addWhere("(withdrawAccount, trxDay) IN " +
-				"(SELECT withdrawAccount, trxDay FROM (SELECT COUNT(withdrawAccount) AS count, withdrawAccount, trxDay " +
-				"FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY withdrawAccount) A WHERE COUNT>=7)");
+		super.setTable("(SELECT * FROM PG_VACT_TRX_WITHDRAW WHERE (withdrawAccount, trxDay) IN  " +
+				"(SELECT withdrawAccount, trxDay FROM PG_VACT_TRX_WITHDRAW WHERE trxDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') GROUP BY withdrawAccount HAVING COUNT(withdrawAccount)>=7)) A " +
+				"LEFT OUTER JOIN PG_MCHT B ON A.mchtId=B.mchtId ");
+		super.setColumns("B.name as mchtName, A.*");
+		super.setOrderBy("A.regDate desc");
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRows();
@@ -136,14 +136,14 @@ public class VactRiskCheckDAO extends DAO {
 	}
 
 	public List<SharedMap<String, Object>> getRegLimitList() {
-		super.setTable("(SELECT * FROM HT_VACT_REG WHERE (withdrawAccount, regDay) IN (SELECT withdrawAccount, regDay " +
-//				"FROM (SELECT COUNT(withdrawAccount) AS count, withdrawAccount, regDay FROM HT_VACT_REG WHERE regDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') " +
-				"FROM (SELECT COUNT(withdrawAccount) AS count, withdrawAccount, regDay FROM HT_VACT_REG WHERE regDay='20250406' " +
-				"AND trxType='0' GROUP BY withdrawAccount) A WHERE COUNT>=2) AND trxType='0') B " +
-				"LEFT OUTER JOIN HT_VACT_DTL C ON B.trackId=C.trackId " +
-				"LEFT OUTER JOIN PG_MCHT D ON B.mchtId=D.mchtId ");
-		super.setColumns("C.issueId, D.name as mchtName, B.*");
-		super.setOrderBy("B.regDate desc");
+		super.setTable("(SELECT * FROM HT_VACT_REG WHERE (withdrawAccount, regDay) IN " +
+				"(SELECT withdrawAccount, regDay FROM HT_VACT_REG WHERE regDay=DATE_FORMAT(NOW() - INTERVAL 1 DAY, '%Y%m%d') " +
+//				"FROM (SELECT COUNT(withdrawAccount) AS count, withdrawAccount, regDay FROM HT_VACT_REG WHERE regDay='20250406' " +
+				"AND trxType='0' GROUP BY withdrawAccount HAVING COUNT(withdrawAccount)>=2) AND trxType='0') A " +
+				"LEFT OUTER JOIN HT_VACT_DTL B ON A.trackId=B.trackId " +
+				"LEFT OUTER JOIN PG_MCHT C ON A.mchtId=C.mchtId ");
+		super.setColumns("B.issueId, C.name as mchtName, A.*");
+		super.setOrderBy("A.regDate desc");
 		RecordSet rset = super.search();
 		super.initRecord();
 		return rset.getRows();

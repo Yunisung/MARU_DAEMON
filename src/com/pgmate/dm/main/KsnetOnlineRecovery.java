@@ -296,7 +296,7 @@ public class KsnetOnlineRecovery {
 		DAO dao = new DAO();
 		dao.setTable("PG_TRX_RFD");
 		dao.setColumns("*");
-		dao.addWhere("vanTrxId", data.getString("vanTransactionNo"));
+		dao.addWhere("vanTrxId", data.getString("transactionNo"));
 		dao.addWhere("vanId", data.getString("storeId"));
 		dao.addWhere("reqDay", data.getString("tradeDate"));
 		dao.addWhere("authCd", data.getString("authNo"));

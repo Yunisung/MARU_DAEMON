@@ -123,9 +123,9 @@ public class GalaxiaRecovery {
 							} else {
 								SharedMap<String,Object> rfd = new SharedMap<String,Object>();
 								SharedMap<String,Object> rootMap = getPayMap(data, tmnMap.getString("mchtId"));
-								logger.info("root status : [{}]",rootMap.getString("status"));
-								
-								if(rootMap == null || rootMap.size() > 0){
+
+								if(rootMap.size() > 0){
+									logger.info("root status : [{}]",rootMap.getString("status"));
 									rfd.put("trxId"		, getTrxId());
 									rfd.put("mchtId"	, tmnMap.getString("mchtId"));
 									rfd.put("tmnId"		, data.getString("tmnId"));
@@ -139,8 +139,15 @@ public class GalaxiaRecovery {
 									
 									if(data.getLong("amount") == -rootMap.getLong("amount")){
 										rfd.put("rfdAll", "전액");
-									}else{
+									}else if(data.getLong("cancel_amount") < rootMap.getLong("amount")){
 										rfd.put("rfdAll", "부분");
+
+										amount = - data.getLong("cancel_amount");
+
+										//-로 들어올시 예외처리
+										if(amount > 0) {
+											amount = - amount;
+										}
 									}
 									rfd.put("rfdAmount"	, amount);
 									rfd.put("rfdVat"	, calcRootVat(amount));

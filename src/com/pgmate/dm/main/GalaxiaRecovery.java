@@ -148,6 +148,9 @@ public class GalaxiaRecovery {
 										if(amount > 0) {
 											amount = - amount;
 										}
+									}else if(data.getLong("cancel_amount") == rootMap.getLong("amount")) {
+										rfd.put("rfdAll", "전액");
+										amount = - rootMap.getLong("amount");
 									}
 									rfd.put("rfdAmount"	, amount);
 									rfd.put("rfdVat"	, calcRootVat(amount));
